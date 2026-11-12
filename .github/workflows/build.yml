@@ -1,0 +1,38 @@
+name: Build and prototype checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 15
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git cmake g++ make pkg-config \
+            qt6-base-dev qt6-base-private-dev qt6-declarative-dev qt6-wayland-dev qt6-wayland-dev-tools libqt6svg6 qt6-svg-plugins \
+            liblayershellqtinterface-dev plasma-wayland-protocols libwayland-dev plasma-workspace \
+            qml6-module-qtquick qml6-module-qtqml-workerscript qml6-module-qtqml-models \
+            qml6-module-qtquick-window qml6-module-qtquick-controls qml6-module-qtquick-templates \
+            qml6-module-qtquick-layouts qml6-module-qtquick-shapes qml6-module-qttest \
+            qml6-module-org-kde-kirigami breeze-icon-theme
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build --parallel 2
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --timeout 60
+      - name: Check isolated installation
+        run: |
+          DESTDIR="$PWD/stage" cmake --install build
+          test -x stage/usr/bin/plasma-next-dock
+          test -f stage/usr/share/applications/org.sarbalabs.PlasmaNextDock.desktop
+          test ! -d stage/usr/share/plasma/plasmoids
+          bash -n install.sh uninstall.sh
