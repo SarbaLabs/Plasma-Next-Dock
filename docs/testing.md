@@ -65,6 +65,13 @@ an overall smoke pass as proof of compositor behavior.
 
 ## Initial results — 2026-11-13
 
+CachyOS installation exposed a configure failure with newer Qt: the public Gui
+package no longer implicitly imports Qt6::GuiPrivate. CMake now explicitly finds
+GuiPrivate when the target is absent, retaining compatibility with Qt 6.8. Qt 6.12
+also receives the explicit PUBLIC_CODE Wayland generator option to preserve the
+adapter's generated API without the QTP0006 warning. Local Qt 6.8 rebuild and all
+seven tests pass; compilation on the maintainer's newer Qt remains to be confirmed.
+
 The native executable builds successfully. All seven CTest entries pass locally:
 geometry/controller, pointer/render, four edge smoke cases and actual KDE model
 loading. Staged installation contains only the executable and its desktop file;

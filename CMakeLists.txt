@@ -7,6 +7,11 @@ set(CMAKE_AUTOMOC ON)
 include(GNUInstallDirs)
 include(CTest)
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Quick Qml WaylandClient)
+# Recent Qt releases no longer import private targets through public modules.
+# Older releases provide GuiPrivate through Gui without a separate package.
+if(NOT TARGET Qt6::GuiPrivate)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+endif()
 find_package(LayerShellQt REQUIRED)
 find_package(PlasmaWaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -16,7 +21,12 @@ target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick)
 add_executable(plasma-next-dock src/main.cpp src/screenedge.cpp)
 target_link_libraries(plasma-next-dock PRIVATE dockcore Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
-qt6_generate_wayland_protocol_client_sources(plasma-next-dock FILES
+set(wayland_codegen_options)
+if(Qt6_VERSION VERSION_GREATER_EQUAL 6.12)
+    # Preserve the public generator API used by the adapter, explicitly (QTP0006).
+    list(APPEND wayland_codegen_options PUBLIC_CODE)
+endif()
+qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
     qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js)
