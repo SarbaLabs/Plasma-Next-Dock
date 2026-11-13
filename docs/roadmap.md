@@ -73,3 +73,14 @@ Wayland popup placement and native running-task drag behavior await desktop chec
 - Generate the desktop entry with an absolute Exec path so host portal registration
   does not depend on ~/.local/bin being in the portal's PATH. GLib loading verified;
   maintainer portal confirmation pending.
+
+## 2026-11-14 — Adaptive sizing
+
+The maintainer confirmed both final PR #2 corrections (native popup placement and
+portal registration) on CachyOS and merged PR #2. Settings, pinning, immediate
+ordering and in-dock drag are the accepted baseline.
+
+Branch `feature/adaptive-dock-sizing` adds count/output-based icon and capsule
+reduction, preservation of preferred settings, a normal 24 px floor and wheel/
+trackpad overflow. Local validation is recorded in testing.md. Real desktop
+validation remains pending; native application menus are the next planned stage.

@@ -52,7 +52,7 @@ For the settings development branch:
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/settings-and-launchers https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/adaptive-dock-sizing https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -107,7 +107,13 @@ Useful options:
 | `--launcher URL` | none | Repeat for each desktop-entry launcher |
 | `--demo` | disabled | Inert sample icons, no window avoidance |
 
-Long task lists can be scrolled inside the drawing surface. Settings are not
+The configured icon size is a preferred size. Long task lists automatically reduce
+icons, spacing and capsule thickness to fit the selected output, reserving room
+for magnification. Settings are never overwritten by this adaptation. At the
+24 logical pixel minimum, lists that still overflow can be scrolled with a mouse
+wheel or touchpad (on horizontal and vertical docks). Removing tasks restores the
+preferred size. The full-zoom reservation is deliberately conservative so moving
+quickly across icons cannot overflow due to overlapping animations. Settings are not
 imported from the old dock.
 
 ## Configure and pin applications

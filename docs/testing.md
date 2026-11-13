@@ -202,3 +202,26 @@ positions on top/bottom. Check screen ends, HiDPI, closing outside/Escape,
 reopening, Pin/Unpin and Configure, output/edge changes and re-hide after closing.
 The two desktop outcomes remain pending maintainer confirmation. Do not describe
 synthetic positioner tests as successful visual Wayland testing.
+
+## Adaptive sizing — 2026-11-14
+
+Maintainer accepted the final PR #2 menu/portal fixes and merged them. This is the
+baseline for the new sizing branch; earlier pending notes above are historical.
+
+Added tests sweep 0–100 tasks, preferred sizes 24/40/96 and zoom 1/1.5/2.5,
+checking monotonic reduction, minimum/preferred limits, canvas bounds and the
+full-zoom width budget before overflow. Tiny output geometry and scroll clamping
+are included. A rendered offscreen QML fixture grows from 5 to 18 to 80 tasks,
+checks reduced capsule thickness and magnification, wheels the overflowing strip,
+reaches the last icon, removes extra tasks, and verifies recovery and unchanged
+preferred size. Existing hover, drag, menu, settings, collision and four-edge
+smoke coverage remains enabled. All nine local CTest entries pass (Qt 6.8.2).
+
+Manual CachyOS acceptance: on each edge, add/remove enough pinned/running apps to
+trigger reduction; try 40 px / 1.5x and 96 px / 2.5x, rapid hover across the strip,
+then enough apps to reach minimum size and scroll to both ends. Check native
+reordering and popup alignment after scrolling; change output/resolution/scaling,
+check restoration after closing apps and unchanged settings after restart. Verify
+capsule-only dodge and edge recall. Fractional scaling, actual KWin resizing and
+GPU animation smoothness are not proven by offscreen tests. No visual Wayland
+success is claimed for this new stage.

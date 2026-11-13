@@ -166,3 +166,26 @@ DESTDIR without embedding the staging root. This needs no portal restart,
 PATH modification or global desktop configuration change. A nonstandard prefix
 outside XDG application search directories still requires normal XDG discovery.
 Source: [GLib desktop app info loading](https://github.com/GNOME/glib/blob/main/gio/gdesktopappinfo.c).
+
+## Adaptive task sizing
+
+`AdaptiveLayout.js` derives effective dimensions solely from task count, preferred
+icon size, zoom, selected output dimensions and edge gap. The original canvas
+budget (count * (maximum icon size + 12) + 32, at least 200) is uniformly scaled
+when it exceeds the output axis minus 16 logical pixels. This reserves full zoom
+for every slot, including animation tails; it intentionally favors a conservative
+fit over maximizing resting icon size. Hover/animated Row width never feeds back
+into this sizing decision, preventing oscillation.
+
+The scale normally stops at 24 logical pixels per icon. Cross-axis fitting can
+override that floor on pathological tiny outputs, and clamps an impossible edge
+gap. Icon spacing, end padding and capsule thickness scale together; the saved
+radius and edge gap retain their normal meanings. Preferred settings are read-only
+inputs. Magnification animates its factor rather than absolute pixels, so count
+or output changes immediately respect the new bounds without stale larger icons.
+
+Overflow at the floor uses the existing Flickable content, with wheel/trackpad
+input and clamped offsets on content/output changes. Left dragging belongs only
+to native task reorder, avoiding competing Flickable grabs. The popup envelope
+ignores offscreen icons. Input remains clipped to the drawing surface and dodge
+continues to follow the capsule only. No timers or compositor changes are added.
