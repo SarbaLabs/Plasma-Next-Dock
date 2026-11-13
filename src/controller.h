@@ -23,7 +23,7 @@ public:
     void setEdgeAvailable(bool available);
     void setDodgeEnabled(bool enabled);
     void setSurfaceOrigin(QPoint origin);
-    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons);
+    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom);
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void evaluate();
 Q_SIGNALS:

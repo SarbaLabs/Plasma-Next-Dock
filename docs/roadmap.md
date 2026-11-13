@@ -38,3 +38,11 @@ not feature parity with Plasma macOS Dock and not a replacement recommendation.
 Preserve the existing working dock throughout this process. Do not bulk-copy its
 Plasmoid-bound root or claim parity merely because some visual files are shared.
 No release or automatic merge is planned for this foundation PR.
+
+## Edge spacing requirement — 2026-11-13
+
+The maintainer requires a pixel-based capsule-to-screen-edge spacing setting in
+the final settings UI (both smaller and larger than the prototype's 8 px gap).
+The input corridor must follow the actual capsule geometry at every spacing;
+window collision must remain capsule-only. The current fix deliberately derives
+the corridor from geometry instead of hardcoding 8 px.

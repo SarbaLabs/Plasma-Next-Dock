@@ -46,7 +46,7 @@ Item {
             const p = slot.iconItem.mapToItem(root, 0, 0);
             icons.push(Qt.rect(p.x, p.y, slot.iconItem.width, slot.iconItem.height));
         }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.radius, icons);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.radius, icons, dockOptions.edge);
     }
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()

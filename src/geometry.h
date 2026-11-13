@@ -8,6 +8,6 @@ namespace DockGeometry {
 enum Edge { Bottom, Top, Left, Right };
 QRect surface(const QRect &screen, const QSize &size, Edge edge);
 QPainterPath capsule(const QRectF &rect, qreal radius);
-QRegion inputRegion(const QRectF &capsuleRect, qreal radius, const QList<QRectF> &icons, const QRect &bounds);
+QRegion inputRegion(const QRectF &capsuleRect, qreal radius, const QList<QRectF> &icons, const QRect &bounds, Edge edge = Bottom);
 bool overlaps(const QRectF &window, const QRectF &capsuleRect, qreal radius);
 }

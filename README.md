@@ -15,6 +15,8 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 - A separate Qt Quick window using LayerShellQt, anchored to any screen edge.
 - Independent drawing bounds, rounded capsule collision geometry and mouse input region.
+  The empty gap to the screen edge accepts hover so edge-only recall can re-hide
+  correctly; interior drawing margins remain click-through.
 - Continuous icon magnification (40 logical pixels and 1.5× by default).
 - Running tasks and optional command-line launchers through KDE's native TasksModel;
   clicking a task delegates activation/launching to KDE. Tasks are ungrouped and

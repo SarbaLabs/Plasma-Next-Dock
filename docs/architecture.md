@@ -79,3 +79,13 @@ runtime QML modules fail visibly rather than silently producing an empty dock.
 - [KWin layer-shell windows](https://github.com/KDE/kwin/blob/master/src/layershellv1window.cpp)
 
 These inform the design; they do not replace desktop validation of this host.
+
+### Edge input corridor
+
+The pointer region also includes the gap between capsule and physical screen
+edge, with a connector through outward rounded corners and an edge strip across
+the full surface recall span. This lets edge-only recall produce hover entry and
+subsequent exit, rearming dodge after the existing leave grace period. It allows
+continuous magnification while moving along the physical edge. Interior drawing
+margins remain click-through. This corridor is neither painted nor used for
+window collision, and follows capsule geometry for future configurable spacing.

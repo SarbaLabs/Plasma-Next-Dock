@@ -45,6 +45,37 @@ private Q_SLOTS:
         QVERIFY(region.contains(QPoint(250,120)));
         QVERIFY(!region.contains(QPoint(20,20))); // Transparent margins pass through.
     }
+    void edgeCorridorCoversRecallSpanWithoutChangingCollision() {
+        const QRect bounds(0, 0, 400, 400);
+        // Different gaps ensure the corridor is derived from capsule geometry.
+        for (int gap : {0, 8, 30}) {
+            for (int e = 0; e < 4; ++e) {
+                const auto edge = static_cast<DockGeometry::Edge>(e);
+                QRectF bar(100, 100, 200, 60);
+                QPoint outer, corner;
+                switch (edge) {
+                case DockGeometry::Bottom:
+                    bar.moveBottom(400 - gap); outer = QPoint(200, 399); corner = QPoint(100, 399); break;
+                case DockGeometry::Top:
+                    bar.moveTop(gap); outer = QPoint(200, 0); corner = QPoint(100, 0); break;
+                case DockGeometry::Left:
+                    bar = QRectF(gap, 100, 60, 200); outer = QPoint(0, 200); corner = QPoint(0, 100); break;
+                case DockGeometry::Right:
+                    bar = QRectF(340 - gap, 100, 60, 200); outer = QPoint(399, 200); corner = QPoint(399, 100); break;
+                }
+                const auto input = DockGeometry::inputRegion(bar, 20, {}, bounds, edge);
+                QVERIFY(input.contains(outer));
+                QVERIFY(input.contains(corner));
+                QVERIFY(!input.contains(QPoint(200, 200)));
+                if (gap > 0) {
+                    QVERIFY(!DockGeometry::overlaps(QRectF(outer, QSizeF(1, 1)), bar, 20));
+                    const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
+                    QVERIFY(input.contains(end));
+                }
+                QCOMPARE(input.intersected(bounds), input);
+            }
+        }
+    }
     void dodgeUsesVisibleCapsuleAndFailsOpen() {
         DockController dock;
         WindowModel model;

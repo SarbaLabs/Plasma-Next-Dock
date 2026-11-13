@@ -30,6 +30,20 @@ TestCase {
         tryCompare(last, "size", 40);
         verify(!dock.item.hovering);
     }
+    function test_magnificationAlongPhysicalEdge() {
+        tryCompare(dock, "status", Loader.Ready);
+        const first = findChild(dock.item, "task0");
+        const last = findChild(dock.item, "task4");
+        const firstIcon = findChild(dock.item, "icon0");
+        const lastIcon = findChild(dock.item, "icon4");
+        mouseMove(dock.item, firstIcon.mapToItem(dock.item, firstIcon.width / 2, 0).x, dock.item.height - 1);
+        tryVerify(() => first.size > 55);
+        mouseMove(dock.item, lastIcon.mapToItem(dock.item, lastIcon.width / 2, 0).x, dock.item.height - 1);
+        tryVerify(() => last.size > 55);
+        mouseMove(testCase, 700, 250);
+        tryCompare(last, "size", 40);
+        verify(!dock.item.hovering);
+    }
     function test_transparentDrawingMargin() {
         tryCompare(dock, "status", Loader.Ready);
         mouseMove(testCase, 700, 250);

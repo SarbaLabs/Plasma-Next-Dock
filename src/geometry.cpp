@@ -23,9 +23,30 @@ QPainterPath capsule(const QRectF &rect, qreal radius)
     path.addRoundedRect(rect, radius, radius);
     return path;
 }
-QRegion inputRegion(const QRectF &rect, qreal radius, const QList<QRectF> &icons, const QRect &bounds)
+QRegion inputRegion(const QRectF &rect, qreal radius, const QList<QRectF> &icons, const QRect &bounds, Edge edge)
 {
     QRegion region(capsule(rect, radius).toFillPolygon().toPolygon());
+    if (!rect.isEmpty()) {
+        // The entire recall span must receive pointer entry, including empty ends.
+        // A connector fills the outward rounded corners without expanding dodge.
+        QRectF strip(bounds), connector(rect);
+        switch (edge) {
+        case Bottom:
+            strip.setTop(rect.bottom()); connector.setTop(rect.center().y());
+            connector.setBottom(bounds.y() + bounds.height()); break;
+        case Top:
+            strip.setBottom(rect.top()); connector.setBottom(rect.center().y());
+            connector.setTop(bounds.top()); break;
+        case Left:
+            strip.setRight(rect.left()); connector.setRight(rect.center().x());
+            connector.setLeft(bounds.left()); break;
+        case Right:
+            strip.setLeft(rect.right()); connector.setLeft(rect.center().x());
+            connector.setRight(bounds.x() + bounds.width()); break;
+        }
+        region += strip.toAlignedRect();
+        region += connector.toAlignedRect();
+    }
     for (const auto &icon : icons) region += icon.toAlignedRect();
     return region.intersected(bounds);
 }

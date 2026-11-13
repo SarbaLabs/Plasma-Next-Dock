@@ -84,3 +84,17 @@ although theme icons load successfully as QIcon pixmaps. Thus these captures are
 and capsule painting are tested; actual icon rendering and all compositor behavior
 remain to be checked on the maintainer's GPU-backed Plasma desktop. No visual parity
 with the existing dock is claimed.
+
+## Edge recall follow-up — 2026-11-13
+
+The maintainer confirmed that the prototype runs on CachyOS after the Qt configure
+fix. Desktop testing revealed that recalling without entering the capsule left
+the dock visible: the input mask excluded the gap, so no hover enter/leave reached
+the controller. The input region now joins the capsule to the physical edge and
+includes the empty edge strip across the full recall span. Collision remains the
+rounded capsule only; glow remains clipped to the capsule.
+
+Regression geometry checks cover all four edges, gaps of 0/8/30 px, outer corners,
+recall span ends, canvas bounds and collision exclusion. Local build and all seven
+CTest entries pass. Real KWin re-hide after edge-only entry/exit still requires
+maintainer confirmation; no compositor success is inferred from these tests.

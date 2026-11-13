@@ -32,12 +32,12 @@ void DockController::setSurfaceOrigin(QPoint origin)
     m_origin = origin;
     scheduleEvaluation();
 }
-void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons)
+void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge)
 {
     QList<QRectF> iconRects;
     for (const auto &icon : icons) iconRects << icon.toRectF();
     if (m_window) {
-        const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects, QRect(QPoint(), m_window->size()));
+        const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects, QRect(QPoint(), m_window->size()), static_cast<DockGeometry::Edge>(edge));
         // Under Qt Wayland this is the surface input region, not a rendering clip.
         if (input != m_lastInput) {
             m_lastInput = input;
