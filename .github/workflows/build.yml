@@ -34,5 +34,6 @@ jobs:
           DESTDIR="$PWD/stage" cmake --install build
           test -x stage/usr/bin/plasma-next-dock
           test -f stage/usr/share/applications/org.sarbalabs.PlasmaNextDock.desktop
+          grep -Fx 'Exec="/usr/bin/plasma-next-dock"' stage/usr/share/applications/org.sarbalabs.PlasmaNextDock.desktop
           test ! -d stage/usr/share/plasma/plasmoids
           bash -n install.sh uninstall.sh

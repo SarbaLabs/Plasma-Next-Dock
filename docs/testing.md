@@ -98,3 +98,107 @@ Regression geometry checks cover all four edges, gaps of 0/8/30 px, outer corner
 recall span ends, canvas bounds and collision exclusion. Local build and all seven
 CTest entries pass. Real KWin re-hide after edge-only entry/exit still requires
 maintainer confirmation; no compositor success is inferred from these tests.
+
+## Settings and launcher validation — 2026-11-13
+
+The maintainer confirmed the edge corridor fix and merged PR #1. New automated
+coverage adds INI round trips, defaults, input sanitation, ordered launcher saving
+and removal, memory-only demo isolation, settings-window QML loading, and a native
+KDE TasksModel test using temporary desktop entries (no applications are launched).
+A software screenshot of the configuration window was inspected for control layout.
+These checks do not validate native popup focus or KWin output switching.
+
+Manual acceptance for this stage:
+
+- Right-click the empty capsule and each task; menu positions correctly on all edges.
+- Configure opens a normal window with working keyboard, Apply and Close; dock stays
+  available while settings/menu are open. Quit terminates the process.
+- Apply spacing 0/8/30/128, radius 0/10, zoom and icon size; collision remains capsule
+  only and magnification/edge recall remain correct.
+- Change edge/output while visible and previously hidden; no stale edge registration
+  or duplicate dock. Disconnect the chosen output and inspect primary fallback.
+- Pin a running app, close/reopen it, unpin while running and while stopped; inspect
+  positions and persistence. Open two windows from the same app (still ungrouped).
+- Reorder pins with Up/Down, remove, add an installed desktop entry by ID; restart
+  without CLI overrides and verify saved state/order.
+- Demo settings/pins must not overwrite the real settings file.
+- Retest settings under Qt 6.12/CachyOS and genuine Wayland rendering.
+
+Local result: all nine CTest entries pass with Qt 6.8.2. The QML suite includes
+12 checks including setup/cleanup, Apply/discard behavior and right-click opening.
+The native launcher fixture exercises identity/list/order APIs, not visible task
+rows: the offscreen window backend leaves the concatenated task model without
+usable display columns. Window replacement and visible ordering remain manual
+Wayland checks. The platform also reports unsupported popup keyboard grabs.
+
+Zero-spacing regression: the input strip retains one logical pixel across the
+full recall span even when the capsule touches the edge. Otherwise a recall
+beyond its shorter length could again miss pointer entry. All-edge tests now
+check the recall ends at zero gap as well. This does not enlarge dodge geometry.
+
+## Breeze settings startup follow-up
+
+CachyOS reported implicitWidth binding loops in the two Breeze ComboBoxes. The
+settings form now supplies an explicit font-scaled preferred width, independent
+of the style content item's available width. The UI test checks stable preferred
+widths at different window sizes. Local tests use Fusion; the maintainer's Breeze
+version still requires confirmation.
+
+QML warnings were also incorrectly treated as fatal startup errors. Normal runs
+now keep logging warnings without terminating a successfully loaded interface.
+Missing/invalid QML roots remain fatal. Smoke tests still fail on any QML warning,
+so this runtime robustness change does not hide warnings from validation.
+
+## Menu anchoring and live reordering
+
+Maintainer desktop feedback: the context menu appeared away from the click and
+settings reordering did not immediately update the dock. Menus now have an
+explicit dock-root parent, negative margins (allowing the popup window outside
+the narrow host), and an edge-aware position beside the visible dock/icon bounds
+aligned to the click. KWin retains final popup constraint handling at screen edges.
+
+LiveTasks observes the settings QObject directly instead of waiting for host
+context-map replacement. External launcher-list changes also rebuild KDE's manual
+sort map; changing the saved list alone is not a visible-row move. The native test
+now changes order on the existing model rather than recreating it.
+
+Drag reordering uses a root DragHandler with the platform threshold, TasksModel.move
+and syncLaunchers on release. Zoom pauses during dragging to stabilize targets.
+A temporary inert model tests the full gesture, a changed row order, one save, and
+no activation; the test explicitly waits for Row layout after replacing its model.
+This is distinct from live KDE window/launcher testing. Placement calculations
+cover all four edges and different click positions.
+
+Manual: test right-click near both ends of each dock edge, magnified icons, screen
+corners and HiDPI; test immediate Up/Down, drag running/stopped pinned apps, close/
+reopen apps, restart persistence, drag cancellation and long overflowing task lists.
+Actual KWin popup placement and native visible row movement require confirmation.
+
+## Native Wayland anchoring and desktop identity follow-up
+
+Maintainer confirmed the previous reorder/drag fixes work, but the menu still
+opened at a fixed bottom-left position. The previous placement calculation tests
+did not exercise Qt Wayland's parent-control positioner. They are retained as
+fallback geometry tests, not evidence of compositor placement.
+
+New checks: native QWindow surface creation applies parent-local anchor/gravity
+for all four edges; reuse updates the click; destroy/recreate retains the latest
+anchor; out-of-bounds anchors clamp inside the host; unrelated settings popups
+remain untouched. QML tests cover four-edge anchor points and existing menu
+opening, drag, settings and hover behavior. Qt 6.8.2 build and all nine CTest
+entries pass. No live KWin session is available here.
+
+The portal warning has a reproducible contributing mechanism: with PATH limited
+to /usr/bin:/bin, GLib rejects an entry with Exec=plasma-next-dock and accepts the
+same entry with a quoted absolute executable path (including a directory with
+spaces). Isolated installation verifies --prefix overrides, quoted Exec and no
+DESTDIR leakage. CI also checks the installed /usr/bin Exec. QML parsing, shell
+syntax and git diff whitespace checks pass.
+
+Manual acceptance on CachyOS: stop the dock, update this branch, run ./install.sh,
+and launch ~/.local/bin/plasma-next-dock. Check the portal warning is absent;
+right-click at different heights on the left/right and different horizontal
+positions on top/bottom. Check screen ends, HiDPI, closing outside/Escape,
+reopening, Pin/Unpin and Configure, output/edge changes and re-hide after closing.
+The two desktop outcomes remain pending maintainer confirmation. Do not describe
+synthetic positioner tests as successful visual Wayland testing.

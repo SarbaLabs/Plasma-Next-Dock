@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+file(READ "@CMAKE_CURRENT_SOURCE_DIR@/data/org.sarbalabs.PlasmaNextDock.desktop" desktop_entry)
+set(executable "${CMAKE_INSTALL_PREFIX}/@CMAKE_INSTALL_BINDIR@/plasma-next-dock")
+if(IS_ABSOLUTE "@CMAKE_INSTALL_BINDIR@")
+    set(executable "@CMAKE_INSTALL_BINDIR@/plasma-next-dock")
+endif()
+# Desktop Entry Exec quoting (including the string-value escaping layer).
+string(REPLACE "\\" "\\\\\\\\" executable "${executable}")
+string(REPLACE "\"" "\\\\\"" executable "${executable}")
+string(REPLACE "`" "\\\\`" executable "${executable}")
+string(REPLACE "$" "\\\\$" executable "${executable}")
+string(REPLACE "%" "%%" executable "${executable}")
+string(REPLACE "Exec=plasma-next-dock" "Exec=\"${executable}\"" desktop_entry "${desktop_entry}")
+file(WRITE "@CMAKE_CURRENT_BINARY_DIR@/org.sarbalabs.PlasmaNextDock.desktop" "${desktop_entry}")
+set(desktop_destination "${CMAKE_INSTALL_PREFIX}/@CMAKE_INSTALL_DATADIR@/applications")
+if(IS_ABSOLUTE "@CMAKE_INSTALL_DATADIR@")
+    set(desktop_destination "@CMAKE_INSTALL_DATADIR@/applications")
+endif()
+file(INSTALL "@CMAKE_CURRENT_BINARY_DIR@/org.sarbalabs.PlasmaNextDock.desktop"
+    DESTINATION "${desktop_destination}")

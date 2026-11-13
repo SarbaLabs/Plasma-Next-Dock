@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "popupanchor.h"
 #include <QTest>
 #include <QSignalSpy>
 
@@ -24,6 +25,33 @@ class CoreTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void nativePopupAnchorLifecycle() {
+        QQuickWindow dock;
+        dock.resize(300, 400);
+        PopupAnchor anchor;
+        QWindow popup;
+        popup.setFlags(Qt::Popup);
+        popup.setTransientParent(&dock);
+        const Qt::Edges gravity[] = {Qt::TopEdge, Qt::BottomEdge, Qt::RightEdge, Qt::LeftEdge};
+        for (int edge = 0; edge < 4; ++edge) {
+            anchor.prepare(dock.contentItem(), QPointF(80, 120 + edge * 20), edge);
+            popup.create();
+            QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(80, 120 + edge * 20, 1, 1));
+            QCOMPARE(popup.property("_q_waylandPopupGravity").value<Qt::Edges>(), gravity[edge]);
+            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 24u);
+        }
+        // Reuse and recreation must both pick up the new click, not the first one.
+        popup.destroy();
+        anchor.prepare(dock.contentItem(), QPointF(-10, 999), 2);
+        popup.create();
+        QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(0, 399, 1, 1));
+        QQuickWindow settings;
+        QWindow unrelated;
+        unrelated.setFlags(Qt::Popup);
+        unrelated.setTransientParent(&settings);
+        unrelated.create();
+        QVERIFY(!unrelated.property("_q_waylandPopupAnchorRect").isValid());
+    }
     void allEdgesAndNegativeOutputOrigin() {
         const QRect screen(-1920, 120, 1920, 1080);
         const QSize size(600, 100);
@@ -69,9 +97,9 @@ private Q_SLOTS:
                 QVERIFY(!input.contains(QPoint(200, 200)));
                 if (gap > 0) {
                     QVERIFY(!DockGeometry::overlaps(QRectF(outer, QSizeF(1, 1)), bar, 20));
-                    const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
-                    QVERIFY(input.contains(end));
                 }
+                const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
+                QVERIFY(input.contains(end)); // Recall span must work even at zero gap.
                 QCOMPARE(input.intersected(bounds), input);
             }
         }
