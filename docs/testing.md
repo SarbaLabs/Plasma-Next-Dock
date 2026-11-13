@@ -210,8 +210,8 @@ baseline for the new sizing branch; earlier pending notes above are historical.
 
 Added tests sweep 0–100 tasks, preferred sizes 24/40/96 and zoom 1/1.5/2.5,
 checking monotonic reduction, minimum/preferred limits, canvas bounds and the
-full-zoom width budget before overflow. Tiny output geometry and scroll clamping
-are included. A rendered offscreen QML fixture grows from 5 to 18 to 80 tasks,
+local-zoom width budget before overflow. Tiny output geometry and scroll clamping
+are included. A rendered offscreen QML fixture grows from 5 to 22 to 80 tasks,
 checks reduced capsule thickness and magnification, wheels the overflowing strip,
 reaches the last icon, removes extra tasks, and verifies recovery and unchanged
 preferred size. Existing hover, drag, menu, settings, collision and four-edge
@@ -225,3 +225,14 @@ check restoration after closing apps and unchanged settings after restart. Verif
 capsule-only dodge and edge recall. Fractional scaling, actual KWin resizing and
 GPU animation smoothness are not proven by offscreen tests. No visual Wayland
 success is claimed for this new stage.
+
+### Premature shrinking correction
+
+Maintainer reported that the initial implementation shrank the dock immediately
+and appeared unable to shrink further. Reserving full zoom for every slot inflated
+the width budget and reached the minimum prematurely. Replace it with resting
+width plus at most two zoom equivalents. Regression: 18 icons at 40 px/1.5x on
+984 px keep 40 px; 22 reduce but remain above 24 px; 80 use minimum-size overflow.
+The animation-tail test explicitly exceeds the aggregate budget and checks its
+bounded rendered weight. All nine CTest entries pass after the correction; staged
+installation and QML checks pass. Live CachyOS confirmation remains pending.

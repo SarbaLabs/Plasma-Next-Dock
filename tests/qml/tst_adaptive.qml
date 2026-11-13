@@ -19,14 +19,17 @@ TestCase {
                     verify(m.base >= 24 && m.base <= preferred);
                     verify(m.length <= 984 && m.depth <= 700);
                     if (m.base > 24) {
-                        // Even simultaneous full zoom fits; animation tails cannot clip.
-                        verify(count * m.base * zoom + Math.max(0, count - 1) * 10 * m.scale + 24 * m.scale <= m.length + 0.001);
+                        // Resting strip plus the bounded local zoom budget fits.
+                        verify(count * m.base + Math.min(count, 2) * m.base * (zoom - 1) + Math.max(0, count - 1) * 10 * m.scale + 24 * m.scale <= m.length + 0.001);
                     }
                     previous = m.base;
                 }
             }
         }
         compare(Adaptive.metrics(5, 40, 1.5, 984, 700, 8).base, 40);
+        // Eighteen icons fit at rest AND at maximum local magnification.
+        compare(Adaptive.metrics(18, 40, 1.5, 984, 700, 8).base, 40);
+        verify(Adaptive.metrics(22, 40, 1.5, 984, 700, 8).base > 24);
         const tiny = Adaptive.metrics(100, 96, 2.5, 60, 40, 128);
         verify(tiny.length <= 60 && tiny.depth <= 40 && tiny.base > 0);
         compare(Adaptive.scrollPosition(200, 100, 500, 300), 200);
@@ -40,7 +43,7 @@ TestCase {
         const viewport = findChild(dock.item, "taskViewport");
         const original = tasks.count;
         tryCompare(dock.item, "base", 40);
-        for (let i = original; i < 18; ++i)
+        for (let i = original; i < 22; ++i)
             tasks.append({decoration: "folder", display: "Extra", IsWindow: false, IsActive: false});
         tryVerify(() => dock.item.base < 40 && dock.item.base > 24);
         verify(dock.item.barThickness < 60);
@@ -49,6 +52,12 @@ TestCase {
         dock.item.pointerIndex = 0;
         tryVerify(() => first.size > dock.item.base);
         verify(first.size <= dock.item.maximum + 0.001);
+        // Simulate animation tails at distant icons without changing count/output.
+        const next = findChild(dock.item, "task1");
+        const third = findChild(dock.item, "task2");
+        first.animatedFactor = 1; next.animatedFactor = 1; third.animatedFactor = 1;
+        tryVerify(() => dock.item.animatedWeight >= 2.99);
+        verify(dock.item.animatedWeight * dock.item.zoomBudgetScale <= 2.001);
         for (let i = tasks.count; i < 80; ++i)
             tasks.append({decoration: "folder", display: "Overflow", IsWindow: false, IsActive: false});
         tryCompare(dock.item, "base", 24);

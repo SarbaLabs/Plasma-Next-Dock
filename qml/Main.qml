@@ -44,6 +44,9 @@ Item {
         if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
         dockController.setHovered(pointer.hovered || contextMenu.visible);
     }
+    // Bound only overlapping zoom animation tails, not preferred icon sizes.
+    property real animatedWeight: 0
+    readonly property real zoomBudgetScale: Math.min(1, 2 / Math.max(2, animatedWeight))
     property real pointerIndex: -10
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
@@ -155,7 +158,13 @@ Item {
                     required property var model
                     readonly property real factor: root.hovering && !root.dragging ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
                     property real animatedFactor: factor * factor
-                    readonly property real size: root.base + (root.maximum - root.base) * animatedFactor
+                    property real reportedFactor: 0
+                    onAnimatedFactorChanged: {
+                        root.animatedWeight += animatedFactor - reportedFactor;
+                        reportedFactor = animatedFactor;
+                    }
+                    Component.onDestruction: root.animatedWeight -= reportedFactor
+                    readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias iconItem: icon
                     width: size
                     height: viewport.height

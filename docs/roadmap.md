@@ -84,3 +84,8 @@ Branch `feature/adaptive-dock-sizing` adds count/output-based icon and capsule
 reduction, preservation of preferred settings, a normal 24 px floor and wheel/
 trackpad overflow. Local validation is recorded in testing.md. Real desktop
 validation remains pending; native application menus are the next planned stage.
+
+Sizing follow-up: desktop testing found premature shrink caused by reserving full
+zoom for every task. The branch now budgets only local magnification and caps
+animation tails independently of the resting size. Regression coverage includes a
+crowded list that still fits at its preferred size. Awaiting desktop confirmation.

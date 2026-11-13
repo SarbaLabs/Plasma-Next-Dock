@@ -112,8 +112,9 @@ icons, spacing and capsule thickness to fit the selected output, reserving room
 for magnification. Settings are never overwritten by this adaptation. At the
 24 logical pixel minimum, lists that still overflow can be scrolled with a mouse
 wheel or touchpad (on horizontal and vertical docks). Removing tasks restores the
-preferred size. The full-zoom reservation is deliberately conservative so moving
-quickly across icons cannot overflow due to overlapping animations. Settings are not
+preferred size. Only the local magnification around the pointer is reserved (at most two full-icon
+zoom equivalents), rather than full zoom for every application. Overlapping
+animation tails share that same bounded budget. Settings are not
 imported from the old dock.
 
 ## Configure and pin applications

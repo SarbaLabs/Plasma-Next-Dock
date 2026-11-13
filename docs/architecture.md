@@ -170,12 +170,18 @@ Source: [GLib desktop app info loading](https://github.com/GNOME/glib/blob/main/
 ## Adaptive task sizing
 
 `AdaptiveLayout.js` derives effective dimensions solely from task count, preferred
-icon size, zoom, selected output dimensions and edge gap. The original canvas
-budget (count * (maximum icon size + 12) + 32, at least 200) is uniformly scaled
-when it exceeds the output axis minus 16 logical pixels. This reserves full zoom
-for every slot, including animation tails; it intentionally favors a conservative
-fit over maximizing resting icon size. Hover/animated Row width never feeds back
-into this sizing decision, preventing oscillation.
+icon size, zoom, selected output dimensions and edge gap. The width budget is the
+resting row (count * preferred size + gaps + end padding) plus at most two full
+zoom equivalents for the local squared falloff. It is scaled when exceeding the
+output axis minus 16 logical pixels. Hover/animated Row width never feeds back
+into the base-size decision, preventing oscillation.
+
+Each delegate reports changes of its animated zoom weight to a shared total and
+subtracts its contribution on destruction. If animation tails overlap enough to
+exceed two equivalents, only their zoom increments are proportionally capped.
+Normal local magnification remains below that limit. This requires no scan or
+polling and preserves the existing 90 ms per-icon animation. The base scale does
+not depend on the aggregate; shrinking is solely count/settings/output driven.
 
 The scale normally stops at 24 logical pixels per icon. Cross-axis fitting can
 override that floor on pathological tiny outputs, and clamps an impossible edge
