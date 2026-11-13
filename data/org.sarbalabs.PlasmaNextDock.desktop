@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Plasma Next Dock
+Comment=Experimental standalone dock for KDE Plasma Wayland
+Exec=plasma-next-dock
+Icon=preferences-desktop-panel
+Terminal=false
+Categories=Utility;Qt;KDE;
+StartupNotify=false
+X-KDE-Wayland-Interfaces=org_kde_plasma_window_management,org_kde_plasma_activation_feedback
