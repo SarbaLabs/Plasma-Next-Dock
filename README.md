@@ -7,8 +7,9 @@ The project grows out of [our Plasma macOS Dock fork](https://github.com/SarbaLa
 Its goal is to let icons grow beyond the visible capsule without a larger invisible
 Plasma panel causing premature window avoidance.
 
-**Status: first architectural prototype, not yet a replacement for the existing dock.**
-It needs real KWin desktop validation. It does not modify Plasma or KWin, install a
+**Status: early standalone dock with persistent settings, not yet feature-complete.**
+The foundation and edge recall were tested by the maintainer on CachyOS. New
+settings, screen switching and launcher interactions still need desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -18,17 +19,19 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
   The empty gap to the screen edge accepts hover so edge-only recall can re-hide
   correctly; interior drawing margins remain click-through.
 - Continuous icon magnification (40 logical pixels and 1.5× by default).
-- Running tasks and optional command-line launchers through KDE's native TasksModel;
+- Running tasks and persistent pinned launchers through KDE's native TasksModel;
   clicking a task delegates activation/launching to KDE. Tasks are ungrouped and
   filtered to the current desktop and activity.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
 - Solid capsule, configurable corner radius and optional bounded application-color glow.
+- A normal configuration window, saved launcher order, and right-click Pin/Unpin,
+  Configure and Quit actions.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
 This first stage intentionally does **not** port advanced context menus, Places,
-recents, window previews, grouping, drag-and-drop pinning, persistent settings,
+recents, window previews, grouping, drag-and-drop reordering,
 System Blur/Liquid Glass, bounce, badges or the full indicator system. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
@@ -44,12 +47,12 @@ paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the first prototype branch:
+For the settings development branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/standalone-prototype https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/settings-and-launchers https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -75,8 +78,7 @@ Start with the inert demonstration on a free edge, away from existing panels:
 ~/.local/bin/plasma-next-dock --demo --edge left --glow
 ```
 
-Stop it with **Ctrl+C in the launching terminal**. The first prototype deliberately
-has no tray controller or quit context menu. Then try live tasks:
+Stop it with **Ctrl+C in the launching terminal**. You can also right-click the dock and choose **Quit Plasma Next Dock**. Then try live tasks:
 
 ```bash
 ~/.local/bin/plasma-next-dock --edge left --glow \
@@ -98,13 +100,45 @@ Useful options:
 | `--icon-size 40` | 40 | Resting size, 24–96 logical pixels |
 | `--zoom 1.5` | 1.5 | Magnification, 1–2.5 |
 | `--radius 10` | 10 | Capsule radius, 0–96 logical pixels, clamped to its size |
+| `--spacing 8` | 8 | Capsule distance from physical screen edge, 0–128 logical pixels |
+| `--settings` | closed | Open the configuration window |
 | `--glow` | disabled | Enable bounded application-color glow |
 | `--no-dodge` | dodge enabled | Keep the dock visible |
 | `--launcher URL` | none | Repeat for each desktop-entry launcher |
 | `--demo` | disabled | Inert sample icons, no window avoidance |
 
-Long task lists can be scrolled inside the drawing surface. Settings currently
-come from command-line options and are not imported from the old dock.
+Long task lists can be scrolled inside the drawing surface. Settings are not
+imported from the old dock.
+
+## Configure and pin applications
+
+Right-click an icon or the capsule and choose **Configure Plasma Next Dock…**.
+The configuration window can also be opened at startup with `--settings` (if a live
+dock is already running, use its menu instead of starting a second process).
+
+- Screen, edge, icon size, magnification, distance from the edge, corner radius,
+  glow and window avoidance are saved with **Apply**. Closing discards unapplied
+  appearance edits. Screen/edge changes briefly recreate only the dock surface.
+- The distance from the edge accepts **0–128 logical pixels**, default 8. The
+  pointer corridor follows it; window avoidance still uses only the visible capsule.
+- Right-click a running app to pin it; right-click a pinned app to unpin it.
+  The native KDE model handles application identity and launcher matching.
+- **Pinned applications** lists saved launchers in order. Use **Up**, **Down** or
+  **Remove**; these actions save immediately. You can add an installed application's
+  desktop entry ID (for example `org.kde.dolphin.desktop`) without opening it first.
+  This initial UI is not a searchable application catalog; unavailable desktop
+  entries may not produce a task until their application is installed.
+- The dock stays visible while its menu or configuration window is open.
+
+Settings live in `$XDG_CONFIG_HOME/plasma-next-dock.ini`, normally
+`~/.config/plasma-next-dock.ini`. Defaults preserve the initial prototype appearance:
+40 px icons, 1.5× zoom, 8 px spacing, 10 px radius, bottom/primary output, glow off,
+dodge on and no pinned apps. No background service or autostart is created.
+
+CLI geometry/launcher options override saved values for the current session;
+explicitly applying settings or changing pins saves the current values. Demo and
+smoke modes ignore saved settings and never write configuration. `--demo` therefore
+lets you experiment without overwriting your real dock setup.
 
 ## Important prototype limits
 
@@ -117,8 +151,9 @@ come from command-line options and are not imported from the old dock.
   pixels. Hover temporarily inhibits avoidance, including when icons enlarge.
 - The top layer is for normal desktop windows; behavior around fullscreen apps,
   other panels, gestures and shared monitor edges needs desktop validation.
-- If the selected output is removed, the prototype exits rather than relocating
-  unexpectedly. There is one live instance per user; demo instances are separate.
+- If the selected output is unavailable, the dock uses the primary output while
+  retaining the saved output preference. Removing the current output recreates the dock
+  on an available primary output. There is one live instance per user; demo instances are separate.
 - Automated offscreen tests cannot prove KWin recall, input passthrough, real
   application activation or fractional-scale compositor behavior.
 
@@ -133,7 +168,8 @@ cd ~/git/Plasma-Next-Dock
 ./uninstall.sh
 ```
 
-Only this project's executable and desktop entry are removed. If you used a
+Only this project's executable and desktop entry are removed. Your settings file is
+retained so a later installation can reuse it. If you used a
 custom prefix, supply the same `PLASMA_NEXT_DOCK_PREFIX`. No Plasma reset is needed.
 
 ## Development and licensing

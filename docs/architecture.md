@@ -63,7 +63,8 @@ hiding, which the separate collision region addresses.
 Installation defaults to ~/.local and uses the unique executable/desktop ID
 `plasma-next-dock` / `org.sarbalabs.PlasmaNextDock`. There is no autostart, service,
 config migration, global environment setting or plasmoid plugin registration.
-Output removal exits safely; multi-instance/multi-output management is future work.
+Output removal recreates the dock on the primary remaining screen; simultaneous
+multi-instance/multi-output management is future work.
 
 The KDE screen-edge and task-manager APIs are desktop integration interfaces,
 not a promise of cross-compositor or indefinite binary compatibility. In particular,
@@ -89,3 +90,29 @@ subsequent exit, rearming dodge after the existing leave grace period. It allows
 continuous magnification while moving along the physical edge. Interior drawing
 margins remain click-through. This corridor is neither painted nor used for
 window collision, and follows capsule geometry for future configurable spacing.
+
+## Persistent settings and launcher stage
+
+`DockSettings` owns a validated QVariantMap backed by QSettings in the application's
+own INI file. Unknown keys are ignored, numeric ranges are clamped and non-finite
+values fall back to defaults. Launcher URLs are structured desktop-entry URLs,
+normalized/deduplicated without interpreting commands. Writes use QSettings sync;
+errors are shown in the configuration window. Demo/smoke modes use memory only.
+
+`DockHost` owns the view, controller and screen-edge adapter as one lifecycle unit.
+The application keeps the configuration engine separate. LayerShellQt::Window::get
+selects layer-shell for the dock only; the former process-wide Shell::useLayerShell
+call is removed, leaving configuration windows on normal xdg-shell. The configuration
+window can take keyboard focus while the dock cannot. Settings/menu interaction
+inhibits hiding. Screen/edge changes queue reconstruction of the host, destroying
+QML before the controller; this surface recreation is not used for ordinary dodge.
+
+The live TasksModel uses SortManual, separateLaunchers and launchInPlace. Pin/Unpin
+calls its native requestAddLauncher/requestRemoveLauncher methods and persists the
+resulting launcherList. Settings reorder that list without modifying desktop files
+or launching shell commands. The model still remains ungrouped for collision checks.
+No KDE global shortcuts backend is instantiated.
+
+Source reference: LayerShellQt `src/interfaces/window.cpp` (including v6.3.4) for
+per-window shell selection; KDE `libtaskmanager/tasksmodel.h` for launcher APIs.
+These APIs are used, not copied into this repository.

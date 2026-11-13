@@ -11,24 +11,22 @@ initial task activation, demo mode, four edges, screen selection, continuous zoo
 bounded optional glow, corner radius, window-avoidance controller and native edge
 adapter. User-local build/install/uninstall scripts and regression tests accompany it.
 
-**Not yet accepted on the maintainer's KWin desktop.** See docs/testing.md for the
+**Foundation accepted and PR #1 merged by the maintainer.** See docs/testing.md for the
 actual scope of automated evidence. This is a prototype to validate architecture,
 not feature parity with Plasma macOS Dock and not a replacement recommendation.
 
-## Next gate: prove the architecture
+## Extended desktop matrix (still pending)
 
 - Check actual layer placement, input passthrough, overlap and edge recall on CachyOS.
 - Check task activation and launchers with the actual KDE model and installed apps.
 - Test all edges, multiple output origins, fractional scale, fullscreen policy,
   interaction with existing panels and reveal/leave sequences.
-- Resolve any platform/lifecycle findings before adding more features.
+- Preserve the accepted capsule-only dodge and edge corridor while expanding the dock.
 
 ## Subsequent stages, not implemented yet
 
-1. Persistent settings, configuration window, clean quit controls and an explicitly
-   enabled autostart option. Decide whether to host existing Plasma UI components
-   or adapt them behind a dedicated application interface.
-2. Native application context menus, Places/recents and durable Pin/Unpin using
+1. Optional autostart (explicit opt-in), application chooser and further configuration polish.
+2. Native application context menus and Places/recents using
    the existing focused backend, without instantiating KDE's shortcut-registering backend.
 3. Grouped tasks, interactive previews, keyboard navigation, drag/drop and badges.
 4. Port the optional blur component with its full lifecycle regression coverage,
@@ -46,3 +44,17 @@ the final settings UI (both smaller and larger than the prototype's 8 px gap).
 The input corridor must follow the actual capsule geometry at every spacing;
 window collision must remain capsule-only. The current fix deliberately derives
 the corridor from geometry instead of hardcoding 8 px.
+
+## 2026-11-13 — Settings and launchers
+
+Branch: `feature/settings-and-launchers`, based on merged `main`. Implemented:
+normal keyboard-capable configuration window, persistent geometry/appearance/dodge
+settings, native KDE Pin/Unpin, saved launcher order, immediate reorder/remove
+controls, desktop-entry-ID addition, and Configure/Quit menu actions. The spacing
+requirement above is now exposed (0–128 logical px).
+
+The host scopes layer-shell to the dock alone. Screen/edge changes rebuild that
+surface; other settings update the live scene. Demo/smoke sessions never read or
+write normal settings. No autostart or migration from the old plasmoid is added.
+Desktop validation of these new interactions is pending; the foundation's accepted
+behavior is preserved as a regression requirement.

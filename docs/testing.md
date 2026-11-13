@@ -98,3 +98,35 @@ Regression geometry checks cover all four edges, gaps of 0/8/30 px, outer corner
 recall span ends, canvas bounds and collision exclusion. Local build and all seven
 CTest entries pass. Real KWin re-hide after edge-only entry/exit still requires
 maintainer confirmation; no compositor success is inferred from these tests.
+
+## Settings and launcher validation — 2026-11-13
+
+The maintainer confirmed the edge corridor fix and merged PR #1. New automated
+coverage adds INI round trips, defaults, input sanitation, ordered launcher saving
+and removal, memory-only demo isolation, settings-window QML loading, and a native
+KDE TasksModel test using temporary desktop entries (no applications are launched).
+A software screenshot of the configuration window was inspected for control layout.
+These checks do not validate native popup focus or KWin output switching.
+
+Manual acceptance for this stage:
+
+- Right-click the empty capsule and each task; menu positions correctly on all edges.
+- Configure opens a normal window with working keyboard, Apply and Close; dock stays
+  available while settings/menu are open. Quit terminates the process.
+- Apply spacing 0/8/30/128, radius 0/10, zoom and icon size; collision remains capsule
+  only and magnification/edge recall remain correct.
+- Change edge/output while visible and previously hidden; no stale edge registration
+  or duplicate dock. Disconnect the chosen output and inspect primary fallback.
+- Pin a running app, close/reopen it, unpin while running and while stopped; inspect
+  positions and persistence. Open two windows from the same app (still ungrouped).
+- Reorder pins with Up/Down, remove, add an installed desktop entry by ID; restart
+  without CLI overrides and verify saved state/order.
+- Demo settings/pins must not overwrite the real settings file.
+- Retest settings under Qt 6.12/CachyOS and genuine Wayland rendering.
+
+Local result: all nine CTest entries pass with Qt 6.8.2. The QML suite includes
+12 checks including setup/cleanup, Apply/discard behavior and right-click opening.
+The native launcher fixture exercises identity/list/order APIs, not visible task
+rows: the offscreen window backend leaves the concatenated task model without
+usable display columns. Window replacement and visible ordering remain manual
+Wayland checks. The platform also reports unsupported popup keyboard grabs.

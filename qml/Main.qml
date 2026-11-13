@@ -8,8 +8,9 @@ Item {
     id: root
     readonly property bool vertical: dockOptions.edge >= 2
     readonly property real base: dockOptions.iconSize
+    readonly property real edgeSpacing: dockOptions.spacing === undefined ? 8 : dockOptions.spacing
     readonly property real maximum: base * dockOptions.zoom
-    readonly property real depth: maximum + 32
+    readonly property real depth: maximum + 24 + edgeSpacing
     readonly property real length: Math.min((vertical ? outputSize.height : outputSize.width) - 16,
         Math.max(200, repeater.count * (maximum + 12) + 32))
     width: vertical ? depth : length
@@ -60,8 +61,8 @@ Item {
     }
     Rectangle {
         id: bar
-        x: root.vertical ? (dockOptions.edge === 2 ? 8 : root.width - width - 8) : (root.width - width) / 2
-        y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? 8 : root.height - height - 8)
+        x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : (root.width - width) / 2
+        y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
         width: root.vertical ? root.barThickness : root.barLength
         height: root.vertical ? root.barLength : root.barThickness
         radius: Geometry.radius(width, height, true, dockOptions.radius)
@@ -129,7 +130,7 @@ Item {
                         width: slot.size; height: width
                         x: 0
                         // After a clockwise rotation, local bottom is the screen's left.
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? 18 : slot.height - height - 18
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 10 : slot.height - height - root.edgeSpacing - 10
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
                         roundToIconSize: false
@@ -155,7 +156,7 @@ Item {
                         visible: !!slot.model.IsWindow
                         width: 4; height: 4; radius: 2
                         x: (slot.width - width) / 2
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? 12 : slot.height - 16
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 : slot.height - root.edgeSpacing - 8
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
                 }
@@ -171,6 +172,41 @@ Item {
             }
         }
     }
+    TapHandler {
+        acceptedButtons: Qt.RightButton
+        onTapped: eventPoint => {
+            contextMenu.launcherUrl = "";
+            if (!dockOptions.demo) {
+                for (let i = 0; i < repeater.count; ++i) {
+                    const slot = repeater.itemAt(i);
+                    const p = slot.iconItem.mapFromItem(root, eventPoint.position.x, eventPoint.position.y);
+                    if (p.x >= 0 && p.y >= 0 && p.x < slot.iconItem.width && p.y < slot.iconItem.height) {
+                        contextMenu.launcherUrl = String(slot.model.LauncherUrlWithoutIcon || slot.model.LauncherUrl || "");
+                        break;
+                    }
+                }
+            }
+            contextMenu.pinned = contextMenu.launcherUrl.length > 0 && taskSource.item.pinned(contextMenu.launcherUrl);
+            contextMenu.popup(eventPoint.position.x, eventPoint.position.y);
+        }
+    }
+    Controls.Menu {
+        id: contextMenu
+        objectName: "dockMenu"
+        popupType: Controls.Popup.Window
+        property string launcherUrl: ""
+        property bool pinned: false
+        onVisibleChanged: dockController.setHovered(pointer.hovered || visible)
+        Controls.MenuItem {
+            text: contextMenu.pinned ? qsTr("Unpin from Dock") : qsTr("Pin to Dock")
+            visible: contextMenu.launcherUrl.length > 0
+            height: visible ? implicitHeight : 0
+            onTriggered: taskSource.item.togglePinned(contextMenu.launcherUrl)
+        }
+        Controls.MenuSeparator { visible: contextMenu.launcherUrl.length > 0; height: visible ? implicitHeight : 0 }
+        Controls.MenuItem { text: qsTr("Configure Plasma Next Dock…"); onTriggered: dockSettings.configure() }
+        Controls.MenuItem { text: qsTr("Quit Plasma Next Dock"); onTriggered: Qt.quit() }
+    }
     Controls.Label {
         anchors.centerIn: bar
         visible: repeater.count === 0
@@ -180,6 +216,6 @@ Item {
         id: pointer
         blocking: false
         onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: dockController.setHovered(hovered)
+        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visible)
     }
 }

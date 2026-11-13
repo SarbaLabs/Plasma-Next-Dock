@@ -44,6 +44,17 @@ TestCase {
         tryCompare(last, "size", 40);
         verify(!dock.item.hovering);
     }
+    function test_rightClickMenu() {
+        tryCompare(dock, "status", Loader.Ready);
+        const icon = findChild(dock.item, "icon0");
+        const menu = findChild(dock.item, "dockMenu");
+        mouseClick(icon, icon.width / 2, icon.height / 2, Qt.RightButton);
+        tryCompare(menu, "visible", true);
+        compare(menu.launcherUrl, ""); // Demo icons must never expose pin actions.
+        menu.close();
+        tryCompare(menu, "visible", false);
+        mouseMove(testCase, 700, 250);
+    }
     function test_transparentDrawingMargin() {
         tryCompare(dock, "status", Loader.Ready);
         mouseMove(testCase, 700, 250);

@@ -26,3 +26,9 @@
   live Wayland verification. Update docs/testing.md and docs/roadmap.md with evidence.
 - Consult docs/architecture.md before introducing settings, native menus or blur.
   Port complete coherent features instead of copying the old plasmoid wholesale.
+
+- Keep settings under the unique plasma-next-dock.ini path; demo/smoke tests must
+  never read/write the maintainer's configuration. Use native TasksModel pin APIs.
+- Select layer-shell per dock window, never process-wide: the settings window must
+  remain a keyboard-capable normal window. Retire old host/edge state before
+  recreating a surface on output or edge changes.
