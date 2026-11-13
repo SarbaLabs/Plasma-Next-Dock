@@ -32,3 +32,9 @@
 - Select layer-shell per dock window, never process-wide: the settings window must
   remain a keyboard-capable normal window. Retire old host/edge state before
   recreating a surface on output or edge changes.
+
+- Keep native popup positioner compatibility in PopupAnchor. Recent Qt derives
+  Wayland menu placement from the parent control rectangle; popup(x,y) alone is
+  insufficient. Recheck the internal property contract after Qt upgrades.
+- Installed desktop entries must use the installed executable's quoted absolute
+  path; the host portal's PATH may not include ~/.local/bin.

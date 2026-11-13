@@ -244,6 +244,11 @@ Item {
             const position = Interaction.menuPosition(dockOptions.edge,
                 Qt.rect(left, top, right - left, bottom - top), eventPoint.position,
                 Qt.size(contextMenu.implicitWidth, contextMenu.implicitHeight), 6);
+            // Use a parent-local native anchor: recent Qt ignores popup(x,y)
+            // on Wayland when it has a parent control rectangle.
+            const anchor = Interaction.menuAnchor(dockOptions.edge,
+                Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
+            dockMenuAnchor.prepare(root, Qt.point(anchor.x, anchor.y), dockOptions.edge);
             contextMenu.popup(root, position.x, position.y);
         }
     }

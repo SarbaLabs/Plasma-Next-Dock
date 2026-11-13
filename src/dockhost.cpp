@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "dockhost.h"
+#include "popupanchor.h"
 #include <LayerShellQt/Window>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -41,6 +42,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
         connect(m_screenEdge.get(), &ScreenEdge::availabilityChanged, &m_controller, &DockController::setEdgeAvailable);
         connect(&m_controller, &DockController::stateChanged, this, [this] { m_screenEdge->setHidden(m_controller.hideRequested()); });
     }
+    m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);
     m_view.rootContext()->setContextProperty("outputSize", screen->size());

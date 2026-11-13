@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "popupanchor.h"
 #include "icons.h"
 #include "settings.h"
 #include <QtQuickTest/quicktest.h>
@@ -16,6 +17,7 @@ class Setup : public QObject
 public Q_SLOTS:
     void qmlEngineAvailable(QQmlEngine *engine) {
         initializeIconPaths();
+        engine->rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(engine));
         QStringList urls;
         for (const auto &name : {"First", "Second"}) {
             const auto path = m_launchers.filePath(QString::fromLatin1(name) + ".desktop");

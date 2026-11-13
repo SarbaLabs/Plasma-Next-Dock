@@ -45,6 +45,16 @@ TestCase {
         tryCompare(last, "size", 40);
         verify(!dock.item.hovering);
     }
+    function test_nativeMenuAnchorAllEdges() {
+        const bar = Qt.rect(40, 50, 80, 200);
+        const click = Qt.point(65, 140);
+        compare(Interaction.menuAnchor(0, bar, click, 6).y, 44);
+        compare(Interaction.menuAnchor(1, bar, click, 6).y, 256);
+        compare(Interaction.menuAnchor(2, bar, click, 6).x, 126);
+        compare(Interaction.menuAnchor(3, bar, click, 6).x, 34);
+        compare(Interaction.menuAnchor(2, bar, click, 6).y, 140);
+        compare(Interaction.menuAnchor(0, bar, click, 6).x, 65);
+    }
     function test_menuPositionAllEdges() {
         const bar = Qt.rect(100, 100, 200, 60);
         const size = Qt.size(180, 120);

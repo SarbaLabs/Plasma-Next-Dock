@@ -64,3 +64,12 @@ behavior is preserved as a regression requirement.
 PR #2 now includes direct icon drag reordering, immediate settings-list order
 updates, and edge-aware context menu anchoring. Local nine-test suite passes;
 Wayland popup placement and native running-task drag behavior await desktop checks.
+
+### Settings-stage desktop follow-up
+
+- Maintainer validated immediate ordering and drag reordering.
+- Replace QML-only menu placement with explicit native Wayland anchor/gravity;
+  retain four-edge fallback geometry. Automated checks pass; KWin confirmation pending.
+- Generate the desktop entry with an absolute Exec path so host portal registration
+  does not depend on ~/.local/bin being in the portal's PATH. GLib loading verified;
+  maintainer portal confirmation pending.

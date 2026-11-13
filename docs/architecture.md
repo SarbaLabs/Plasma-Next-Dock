@@ -130,3 +130,39 @@ The root DragHandler outlives moving delegates, uses the system movement thresho
 and never starts applications. Dragging inhibits dodge and temporarily removes
 zoom; native TasksModel enforces pinned/unpinned barriers. A task-count change ends
 the current drag instead of retaining a stale row index.
+
+### Native popup positioner follow-up
+
+Desktop testing confirmed that explicit QML popup coordinates alone did not fix
+placement on the maintainer's Qt version. Recent Qt Quick sets
+`parentControlGeometry` from the Menu's parent Item, and Qt Wayland uses that
+rectangle instead of the requested window coordinates. A root-parented menu is
+therefore anchored at the root's bottom-left, independently of the click.
+
+`PopupAnchor` now supplies an explicit parent-local one-pixel anchor and inward
+xdg positioner gravity via Qt's `_q_waylandPopup*` compatibility properties.
+It applies before the popup role is created (SurfaceCreated), updates a reused
+popup before opening, and only targets Popup windows transient to the prepared
+dock window. QPointers handle window destruction; other settings-window popups
+are untouched. Anchors are clamped inside the host surface; KWin can slide the
+menu to fit the output. This does not resize the dock or change input/collision
+regions. The QML position remains a fallback for non-Wayland previews.
+
+The adapter uses no new dependency or private header, but the property names are
+an internal Qt compatibility contract and must be checked after Qt upgrades.
+Sources consulted (APIs used, no source copied):
+- [Qt Quick popup parent control geometry](https://github.com/qt/qtdeclarative/blob/dev/src/quicktemplates/qquickpopupwindow.cpp)
+- [Qt Wayland positioner overrides](https://github.com/qt/qtbase/blob/dev/src/plugins/platforms/wayland/plugins/shellintegration/xdg-shell/qwaylandxdgshell.cpp)
+- [Qt 6.8 positioner compatibility](https://github.com/qt/qtwayland/blob/6.8/src/plugins/shellintegration/xdg-shell/qwaylandxdgshell.cpp)
+
+### Desktop identity and host portal
+
+Qt registers `org.sarbalabs.PlasmaNextDock` with the host portal. The matching
+.desktop file existed, but its `Exec=plasma-next-dock` required the portal process
+PATH to contain the install directory. GLib desktop-entry loading checks the
+executable and can reject the whole entry if it cannot resolve it. Installation
+now generates a quoted absolute Exec path, honoring install-time --prefix and
+DESTDIR without embedding the staging root. This needs no portal restart,
+PATH modification or global desktop configuration change. A nonstandard prefix
+outside XDG application search directories still requires normal XDG discovery.
+Source: [GLib desktop app info loading](https://github.com/GNOME/glib/blob/main/gio/gdesktopappinfo.c).

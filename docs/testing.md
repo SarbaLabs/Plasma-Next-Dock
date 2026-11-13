@@ -173,3 +173,32 @@ Manual: test right-click near both ends of each dock edge, magnified icons, scre
 corners and HiDPI; test immediate Up/Down, drag running/stopped pinned apps, close/
 reopen apps, restart persistence, drag cancellation and long overflowing task lists.
 Actual KWin popup placement and native visible row movement require confirmation.
+
+## Native Wayland anchoring and desktop identity follow-up
+
+Maintainer confirmed the previous reorder/drag fixes work, but the menu still
+opened at a fixed bottom-left position. The previous placement calculation tests
+did not exercise Qt Wayland's parent-control positioner. They are retained as
+fallback geometry tests, not evidence of compositor placement.
+
+New checks: native QWindow surface creation applies parent-local anchor/gravity
+for all four edges; reuse updates the click; destroy/recreate retains the latest
+anchor; out-of-bounds anchors clamp inside the host; unrelated settings popups
+remain untouched. QML tests cover four-edge anchor points and existing menu
+opening, drag, settings and hover behavior. Qt 6.8.2 build and all nine CTest
+entries pass. No live KWin session is available here.
+
+The portal warning has a reproducible contributing mechanism: with PATH limited
+to /usr/bin:/bin, GLib rejects an entry with Exec=plasma-next-dock and accepts the
+same entry with a quoted absolute executable path (including a directory with
+spaces). Isolated installation verifies --prefix overrides, quoted Exec and no
+DESTDIR leakage. CI also checks the installed /usr/bin Exec. QML parsing, shell
+syntax and git diff whitespace checks pass.
+
+Manual acceptance on CachyOS: stop the dock, update this branch, run ./install.sh,
+and launch ~/.local/bin/plasma-next-dock. Check the portal warning is absent;
+right-click at different heights on the left/right and different horizontal
+positions on top/bottom. Check screen ends, HiDPI, closing outside/Escape,
+reopening, Pin/Unpin and Configure, output/edge changes and re-hide after closing.
+The two desktop outcomes remain pending maintainer confirmation. Do not describe
+synthetic positioner tests as successful visual Wayland testing.
