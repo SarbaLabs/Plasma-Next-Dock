@@ -12,6 +12,7 @@ public:
     ~DockHost() override;
     void update(bool settingsOpen);
     bool failed() const { return m_failed; }
+    bool hasWarnings() const { return m_warnings; }
     QQuickView *view() { return &m_view; }
 private:
     void position();
@@ -23,4 +24,5 @@ private:
     DockController m_controller;
     std::unique_ptr<ScreenEdge> m_screenEdge;
     bool m_failed = false;
+    bool m_warnings = false;
 };

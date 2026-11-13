@@ -48,11 +48,16 @@ Controls.ApplicationWindow {
                 Controls.Label { text: qsTr("Position and appearance"); font.bold: true; Kirigami.FormData.isSection: true }
                 Controls.ComboBox {
                     id: screen
+                    objectName: "screenControl"
+                    // Avoid style content-item/implicit-width feedback in Breeze.
+                    implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: qsTr("Screen:")
                     model: outputNames.map(name => name || qsTr("Primary screen"))
                 }
                 Controls.ComboBox {
                     id: edge
+                    objectName: "edgeControl"
+                    implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: qsTr("Edge:")
                     model: [qsTr("Bottom"), qsTr("Top"), qsTr("Left"), qsTr("Right")]
                 }

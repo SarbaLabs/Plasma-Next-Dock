@@ -10,6 +10,16 @@ TestCase {
         const window = component.createObject(this);
         verify(window !== null);
         window.openSettings();
+        const screen = findChild(window, "screenControl");
+        const edge = findChild(window, "edgeControl");
+        verify(screen.implicitWidth > 0 && edge.implicitWidth > 0);
+        const preferred = screen.implicitWidth;
+        window.width = 800;
+        wait(0);
+        compare(screen.implicitWidth, preferred);
+        window.width = 460;
+        wait(0);
+        compare(screen.implicitWidth, preferred);
         const spacing = findChild(window, "spacingControl");
         const buttons = findChild(window, "settingsButtons");
         verify(spacing !== null && buttons !== null);

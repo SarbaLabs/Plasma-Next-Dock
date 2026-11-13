@@ -50,7 +50,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     connect(screen, &QScreen::geometryChanged, this, [this] {
         m_view.rootContext()->setContextProperty("outputSize", m_screen->size()); position();
     });
-    connect(m_view.engine(), &QQmlEngine::warnings, this, [this](const QList<QQmlError> &) { m_failed = true; });
+    connect(m_view.engine(), &QQmlEngine::warnings, this, [this](const QList<QQmlError> &) { m_warnings = true; });
     connect(m_view.engine(), &QQmlEngine::quit, qApp, &QCoreApplication::quit);
     connect(m_view.engine(), &QQmlEngine::exit, qApp, &QCoreApplication::exit);
     m_view.setSource(QUrl(QStringLiteral("qrc:/qml/Main.qml")));

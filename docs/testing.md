@@ -135,3 +135,16 @@ Zero-spacing regression: the input strip retains one logical pixel across the
 full recall span even when the capsule touches the edge. Otherwise a recall
 beyond its shorter length could again miss pointer entry. All-edge tests now
 check the recall ends at zero gap as well. This does not enlarge dodge geometry.
+
+## Breeze settings startup follow-up
+
+CachyOS reported implicitWidth binding loops in the two Breeze ComboBoxes. The
+settings form now supplies an explicit font-scaled preferred width, independent
+of the style content item's available width. The UI test checks stable preferred
+widths at different window sizes. Local tests use Fusion; the maintainer's Breeze
+version still requires confirmation.
+
+QML warnings were also incorrectly treated as fatal startup errors. Normal runs
+now keep logging warnings without terminating a successfully loaded interface.
+Missing/invalid QML roots remain fatal. Smoke tests still fail on any QML warning,
+so this runtime robustness change does not hide warnings from validation.

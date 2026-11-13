@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     QObject::connect(&configEngine, &QQmlEngine::warnings, &app, [&] { configFailed = true; });
     QObject::connect(&configEngine, &QQmlEngine::quit, &app, &QCoreApplication::quit);
     configEngine.load(QUrl(QStringLiteral("qrc:/qml/Settings.qml")));
-    if (configEngine.rootObjects().isEmpty() || configFailed) return 1;
+    if (configEngine.rootObjects().isEmpty() || (smoke && configFailed)) return 1;
     auto *configWindow = qobject_cast<QQuickWindow *>(configEngine.rootObjects().first());
     std::unique_ptr<DockHost> host;
     QScreen *selected = nullptr;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
         app.quit();
     });
     const int result = app.exec();
-    const bool failed = configFailed || (host && host->failed());
+    const bool failed = configFailed || (host && (host->failed() || host->hasWarnings()));
     host.reset();
     return smoke && failed ? 1 : result;
 }
