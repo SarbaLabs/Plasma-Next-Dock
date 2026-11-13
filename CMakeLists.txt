@@ -29,7 +29,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
-    qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js)
+    qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js)
 qt_add_resources(plasma-next-dock dockqml PREFIX / FILES ${DOCK_QML_FILES})
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES data/org.sarbalabs.PlasmaNextDock.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)

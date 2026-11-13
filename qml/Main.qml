@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls as Controls
 import org.kde.kirigami as Kirigami
 import "code/CapsuleGeometry.js" as Geometry
+import "code/InteractionGeometry.js" as Interaction
 
 Item {
     id: root
@@ -15,6 +16,27 @@ Item {
         Math.max(200, repeater.count * (maximum + 12) + 32))
     width: vertical ? depth : length
     height: vertical ? length : depth
+    property int dragIndex: -1
+    readonly property bool dragging: dragIndex >= 0
+    function taskAt(position, nearest) {
+        let result = -1;
+        let distance = Infinity;
+        for (let i = 0; i < repeater.count; ++i) {
+            const slot = repeater.itemAt(i);
+            const p = slot.iconItem.mapFromItem(root, position.x, position.y);
+            if (!nearest && p.x >= 0 && p.y >= 0 && p.x < slot.iconItem.width && p.y < slot.iconItem.height) return i;
+            const center = slot.iconItem.mapToItem(root, slot.iconItem.width / 2, slot.iconItem.height / 2);
+            const delta = Math.abs(vertical ? position.y - center.y : position.x - center.x);
+            if (nearest && delta < distance) { distance = delta; result = i; }
+        }
+        return result;
+    }
+    function finishDrag() {
+        if (!dragging) return;
+        dragIndex = -1;
+        if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
+        dockController.setHovered(pointer.hovered || contextMenu.visible);
+    }
     property real pointerIndex: -10
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
@@ -56,6 +78,7 @@ Item {
 
     Loader {
         id: taskSource
+        objectName: "taskSourceLoader"
         source: dockOptions.demo ? "DemoTasks.qml" : "LiveTasks.qml"
         onStatusChanged: if (status === Loader.Error) Qt.exit(1)
     }
@@ -110,13 +133,13 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: root.queueGeometry()
+                onCountChanged: { root.finishDrag(); root.queueGeometry(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
                     required property int index
                     required property var model
-                    readonly property real factor: root.hovering ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
+                    readonly property real factor: root.hovering && !root.dragging ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
                     property real size: root.base + (root.maximum - root.base) * factor * factor
                     property alias iconItem: icon
                     width: size
@@ -133,9 +156,10 @@ Item {
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 10 : slot.height - height - root.edgeSpacing - 10
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
+                        opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
                         onYChanged: root.queueGeometry()
-                        TapHandler { onTapped: taskSource.item.activate(slot.index) }
+                        TapHandler { onTapped: if (!reorder.active) taskSource.item.activate(slot.index) }
                         HoverHandler {
                             id: iconHover
                             onHoveredChanged: if (hovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
@@ -172,6 +196,28 @@ Item {
             }
         }
     }
+    DragHandler {
+        id: reorder
+        objectName: "reorderHandler"
+        enabled: !dockOptions.demo
+        target: null
+        acceptedButtons: Qt.LeftButton
+        cursorShape: active ? Qt.ClosedHandCursor : Qt.ArrowCursor
+        onActiveChanged: {
+            if (active) {
+                const p = root.mapFromItem(null, centroid.scenePressPosition.x, centroid.scenePressPosition.y);
+                root.dragIndex = root.taskAt(p, false);
+                if (root.dragging) dockController.setHovered(true);
+            } else root.finishDrag();
+        }
+        onActiveTranslationChanged: {
+            if (!active || !root.dragging) return;
+            const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
+            const targetIndex = root.taskAt(p, true);
+            if (targetIndex >= 0 && targetIndex !== root.dragIndex && taskSource.item.moveTask(root.dragIndex, targetIndex))
+                root.dragIndex = targetIndex;
+        }
+    }
     TapHandler {
         acceptedButtons: Qt.RightButton
         onTapped: eventPoint => {
@@ -187,16 +233,30 @@ Item {
                 }
             }
             contextMenu.pinned = contextMenu.launcherUrl.length > 0 && taskSource.item.pinned(contextMenu.launcherUrl);
-            contextMenu.popup(eventPoint.position.x, eventPoint.position.y);
+            // Include magnified icons so the menu does not cover their inner edge.
+            let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
+            for (let i = 0; i < repeater.count; ++i) {
+                const icon = repeater.itemAt(i).iconItem;
+                const p = icon.mapToItem(root, 0, 0);
+                left = Math.min(left, p.x); top = Math.min(top, p.y);
+                right = Math.max(right, p.x + icon.width); bottom = Math.max(bottom, p.y + icon.height);
+            }
+            const position = Interaction.menuPosition(dockOptions.edge,
+                Qt.rect(left, top, right - left, bottom - top), eventPoint.position,
+                Qt.size(contextMenu.implicitWidth, contextMenu.implicitHeight), 6);
+            contextMenu.popup(root, position.x, position.y);
         }
     }
     Controls.Menu {
         id: contextMenu
         objectName: "dockMenu"
         popupType: Controls.Popup.Window
+        parent: root
+        // The menu must extend outside the narrow layer surface, not fit inside it.
+        margins: -1
         property string launcherUrl: ""
         property bool pinned: false
-        onVisibleChanged: dockController.setHovered(pointer.hovered || visible)
+        onVisibleChanged: dockController.setHovered(pointer.hovered || visible || root.dragging)
         Controls.MenuItem {
             text: contextMenu.pinned ? qsTr("Unpin from Dock") : qsTr("Pin to Dock")
             visible: contextMenu.launcherUrl.length > 0
@@ -216,6 +276,6 @@ Item {
         id: pointer
         blocking: false
         onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visible)
+        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visible || root.dragging)
     }
 }

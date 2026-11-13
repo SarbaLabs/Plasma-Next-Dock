@@ -116,3 +116,17 @@ No KDE global shortcuts backend is instantiated.
 Source reference: LayerShellQt `src/interfaces/window.cpp` (including v6.3.4) for
 per-window shell selection; KDE `libtaskmanager/tasksmodel.h` for launcher APIs.
 These APIs are used, not copied into this repository.
+
+### Context menu placement and reorder gestures
+
+Menu popup coordinates are explicitly relative to the dock root, using the click
+along the dock axis and the visible capsule/icon envelope on the cross axis.
+Negative margins prevent fitting a window popup inside the narrow host. Saved
+launcher lists are observed directly from DockSettings; external order changes
+reset the native manual sort map through SortDisabled -> SortManual. Native drag
+moves keep their current manual map and sync/persist only at release.
+
+The root DragHandler outlives moving delegates, uses the system movement threshold
+and never starts applications. Dragging inhibits dodge and temporarily removes
+zoom; native TasksModel enforces pinned/unpinned barriers. A task-count change ends
+the current drag instead of retaining a stale row index.

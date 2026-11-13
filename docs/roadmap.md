@@ -28,7 +28,7 @@ not feature parity with Plasma macOS Dock and not a replacement recommendation.
 1. Optional autostart (explicit opt-in), application chooser and further configuration polish.
 2. Native application context menus and Places/recents using
    the existing focused backend, without instantiating KDE's shortcut-registering backend.
-3. Grouped tasks, interactive previews, keyboard navigation, drag/drop and badges.
+3. Grouped tasks, interactive previews, keyboard navigation, external drops and badges.
 4. Port the optional blur component with its full lifecycle regression coverage,
    then System Blur/Liquid Glass and the established indicator/bounce features.
 5. Multiple dock instances, output reassignment and packaging.
@@ -58,3 +58,9 @@ surface; other settings update the live scene. Demo/smoke sessions never read or
 write normal settings. No autostart or migration from the old plasmoid is added.
 Desktop validation of these new interactions is pending; the foundation's accepted
 behavior is preserved as a regression requirement.
+
+### Interaction follow-up
+
+PR #2 now includes direct icon drag reordering, immediate settings-list order
+updates, and edge-aware context menu anchoring. Local nine-test suite passes;
+Wayland popup placement and native running-task drag behavior await desktop checks.

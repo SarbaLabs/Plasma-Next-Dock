@@ -22,14 +22,9 @@ TestCase {
         compare(live.tasks.launcherPosition(testLauncherUrls[0]), 0);
         compare(live.tasks.launcherPosition(testLauncherUrls[1]), 1);
         compare(dockSettings.values.launchers.length, 2);
-        // Reorder the saved list, then rebuild the native model as at restart.
+        // Reorder in settings without reconstructing the running model.
         verify(dockSettings.saveLaunchers([testLauncherUrls[1], testLauncherUrls[0]]));
-        live.destroy(); wait(0);
-        live = component.createObject(this);
-        live.tasks.filterByVirtualDesktop = false;
-        live.tasks.filterByActivity = false;
-        live.tasks.launcherList = dockSettings.values.launchers;
-        tryVerify(() => live.pinned(testLauncherUrls[0]) && live.pinned(testLauncherUrls[1]));
+        tryCompare(live.tasks, "launcherList", dockSettings.values.launchers);
         compare(live.tasks.launcherPosition(testLauncherUrls[1]), 0);
         compare(live.tasks.launcherPosition(testLauncherUrls[0]), 1);
         live.togglePinned(testLauncherUrls[1]);

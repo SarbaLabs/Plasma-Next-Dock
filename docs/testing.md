@@ -148,3 +148,28 @@ QML warnings were also incorrectly treated as fatal startup errors. Normal runs
 now keep logging warnings without terminating a successfully loaded interface.
 Missing/invalid QML roots remain fatal. Smoke tests still fail on any QML warning,
 so this runtime robustness change does not hide warnings from validation.
+
+## Menu anchoring and live reordering
+
+Maintainer desktop feedback: the context menu appeared away from the click and
+settings reordering did not immediately update the dock. Menus now have an
+explicit dock-root parent, negative margins (allowing the popup window outside
+the narrow host), and an edge-aware position beside the visible dock/icon bounds
+aligned to the click. KWin retains final popup constraint handling at screen edges.
+
+LiveTasks observes the settings QObject directly instead of waiting for host
+context-map replacement. External launcher-list changes also rebuild KDE's manual
+sort map; changing the saved list alone is not a visible-row move. The native test
+now changes order on the existing model rather than recreating it.
+
+Drag reordering uses a root DragHandler with the platform threshold, TasksModel.move
+and syncLaunchers on release. Zoom pauses during dragging to stabilize targets.
+A temporary inert model tests the full gesture, a changed row order, one save, and
+no activation; the test explicitly waits for Row layout after replacing its model.
+This is distinct from live KDE window/launcher testing. Placement calculations
+cover all four edges and different click positions.
+
+Manual: test right-click near both ends of each dock edge, magnified icons, screen
+corners and HiDPI; test immediate Up/Down, drag running/stopped pinned apps, close/
+reopen apps, restart persistence, drag cancellation and long overflowing task lists.
+Actual KWin popup placement and native visible row movement require confirmation.

@@ -31,7 +31,7 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
 This first stage intentionally does **not** port advanced context menus, Places,
-recents, window previews, grouping, drag-and-drop reordering,
+recents, window previews, grouping,
 System Blur/Liquid Glass, bounce, badges or the full indicator system. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
@@ -123,6 +123,10 @@ dock is already running, use its menu instead of starting a second process).
   pointer corridor follows it; window avoidance still uses only the visible capsule.
 - Right-click a running app to pin it; right-click a pinned app to unpin it.
   The native KDE model handles application identity and launcher matching.
+- Drag icons within the dock to reorder them. Moving starts after the standard
+  pointer threshold, suppresses activation and saves pinned order when released.
+  KDE keeps pinned and unpinned tasks in their respective groups; only pinned
+  application order persists after restart.
 - **Pinned applications** lists saved launchers in order. Use **Up**, **Down** or
   **Remove**; these actions save immediately. You can add an installed application's
   desktop entry ID (for example `org.kde.dolphin.desktop`) without opening it first.
