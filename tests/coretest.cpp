@@ -69,9 +69,9 @@ private Q_SLOTS:
                 QVERIFY(!input.contains(QPoint(200, 200)));
                 if (gap > 0) {
                     QVERIFY(!DockGeometry::overlaps(QRectF(outer, QSizeF(1, 1)), bar, 20));
-                    const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
-                    QVERIFY(input.contains(end));
                 }
+                const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
+                QVERIFY(input.contains(end)); // Recall span must work even at zero gap.
                 QCOMPARE(input.intersected(bounds), input);
             }
         }

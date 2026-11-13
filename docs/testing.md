@@ -130,3 +130,8 @@ The native launcher fixture exercises identity/list/order APIs, not visible task
 rows: the offscreen window backend leaves the concatenated task model without
 usable display columns. Window replacement and visible ordering remain manual
 Wayland checks. The platform also reports unsupported popup keyboard grabs.
+
+Zero-spacing regression: the input strip retains one logical pixel across the
+full recall span even when the capsule touches the edge. Otherwise a recall
+beyond its shorter length could again miss pointer entry. All-edge tests now
+check the recall ends at zero gap as well. This does not enlarge dodge geometry.

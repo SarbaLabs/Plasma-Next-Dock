@@ -28,20 +28,21 @@ QRegion inputRegion(const QRectF &rect, qreal radius, const QList<QRectF> &icons
     QRegion region(capsule(rect, radius).toFillPolygon().toPolygon());
     if (!rect.isEmpty()) {
         // The entire recall span must receive pointer entry, including empty ends.
-        // A connector fills the outward rounded corners without expanding dodge.
+        // Keep at least one edge pixel even at zero spacing. A connector fills
+        // the outward rounded corners without expanding dodge.
         QRectF strip(bounds), connector(rect);
         switch (edge) {
         case Bottom:
-            strip.setTop(rect.bottom()); connector.setTop(rect.center().y());
+            strip.setTop(std::min(rect.bottom(), qreal(bounds.y() + bounds.height() - 1))); connector.setTop(rect.center().y());
             connector.setBottom(bounds.y() + bounds.height()); break;
         case Top:
-            strip.setBottom(rect.top()); connector.setBottom(rect.center().y());
+            strip.setBottom(std::max(rect.top(), qreal(bounds.top() + 1))); connector.setBottom(rect.center().y());
             connector.setTop(bounds.top()); break;
         case Left:
-            strip.setRight(rect.left()); connector.setRight(rect.center().x());
+            strip.setRight(std::max(rect.left(), qreal(bounds.left() + 1))); connector.setRight(rect.center().x());
             connector.setLeft(bounds.left()); break;
         case Right:
-            strip.setLeft(rect.right()); connector.setLeft(rect.center().x());
+            strip.setLeft(std::min(rect.right(), qreal(bounds.x() + bounds.width() - 1))); connector.setLeft(rect.center().x());
             connector.setRight(bounds.x() + bounds.width()); break;
         }
         region += strip.toAlignedRect();
