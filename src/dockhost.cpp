@@ -81,6 +81,7 @@ void DockHost::update(bool settingsOpen)
 {
     auto options = m_settings->values(); options["demo"] = m_demo;
     m_view.rootContext()->setContextProperty("dockOptions", options);
+    if (m_screenEdge) m_screenEdge->setAnimated(options["revealAnimation"].toBool());
     m_controller.setDodgeEnabled(!m_demo && options["dodge"].toBool() && !settingsOpen);
 }
 void DockHost::position()

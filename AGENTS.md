@@ -61,3 +61,12 @@
   geometry; QWindow::setPosition alone is normalized by Qt Wayland. Keep its GUI
   private adapter per-window, event-driven and size-preserving. Never change Qt's
   global fixed-position policy or move the dock surface to position a tooltip.
+
+- Indicator geometry must not feed back into layout or dodge. Keep at most eight
+  segment delegates and event-driven bounded child state; share ImageColors with
+  glow and keep extraction lazy. Preserve independent native decoration controls.
+- Reveal animation uses KWindowEffects slide hints and KWin's system duration. The
+  Wayland protocol has no per-window timing; do not add a fake duration setting,
+  global compositor changes, or a competing QML hide/show animation.
+- Settings QML uses KI18n through its configuration engine context. Keep source
+  strings English, update Messages.sh inputs and maintain the French PO catalog.

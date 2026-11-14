@@ -381,3 +381,18 @@ surface size, updated origins and native surface recreation. The full 12-entry
 suite passes locally; compilation and isolated installation pass. No live KWin
 positioning is claimed. Recheck tooltips and previews near each icon, transitions,
 magnification, adaptive resize, menus, dragging and dodge on the actual desktop.
+
+## Advanced indicators and reveal stage — 2026-11-14
+
+The maintainer accepted corrected preview positioning and merged PR #5. New local
+checks retain all 12 CTest entries and expand the Quick suite to 47 passing cases.
+They cover all three modes, configuration controls/defaults, native SVG elements,
+all four custom edges, count/overflow folding, state dimensions, separate unfocused
+color, opacity/desaturation, bounded model reads and stable segment objects during
+hover/zoom. INI tests cover mode switching, custom values, invalid input and the
+reveal toggle. Settings tests cover Apply/discard and persistence of indicator edits.
+
+Compilation, QML parsing, PO catalog validation and isolated installation pass.
+Native reveal uses KDE's documented slide effect; no live KWin compositor is
+available here. Do not describe smooth recall, reversal, theme fidelity or GPU
+performance as visually validated. Use the checklist in indicators.md on CachyOS.

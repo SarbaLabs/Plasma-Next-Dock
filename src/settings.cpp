@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "settings.h"
 #include <QUrl>
+#include <QColor>
 #include <cmath>
 #include <algorithm>
 DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent)
@@ -13,7 +14,40 @@ DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}};
+        {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"indicatorUnfocusedColorEnabled", false},
+        {"indicatorUnfocusedColor", "#3daee9"},
+        {"indicatorMode", 0},
+        {"nativeGroupIndicator", 0},
+        {"taskDecorations", 0},
+        {"customIndicatorsEnabled", true},
+        {"indicatorAnimations", true},
+        {"indicatorStyle", 0},
+        {"indicatorOverride", false},
+        {"indicatorEdge", 0},
+        {"indicatorEdgeDistance", 2},
+        {"indicatorThickness", 4},
+        {"indicatorLength", 12},
+        {"indicatorRoundness", 100},
+        {"indicatorSpacing", 2},
+        {"indicatorAlignment", 1},
+        {"indicatorResizeActive", true},
+        {"indicatorActiveThickness", 5},
+        {"indicatorActiveLength", 20},
+        {"indicatorResizeHover", false},
+        {"indicatorHoverSeparate", true},
+        {"indicatorHoverThickness", 6},
+        {"indicatorHoverLength", 24},
+        {"indicatorGroupSeparate", false},
+        {"indicatorGroupThickness", 4},
+        {"indicatorGroupLength", 8},
+        {"indicatorMaxSegments", 4},
+        {"indicatorHighlightActive", true},
+        {"indicatorDimInactive", true},
+        {"indicatorInactiveOpacity", 55},
+        {"indicatorDesaturate", false},
+        {"indicatorColorSource", 0},
+        {"indicatorCustomColor", "#3daee9"}};
 }
 QVariantMap DockSettings::normalized(const QVariantMap &input)
 {
@@ -27,6 +61,41 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     };
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
+    result["indicatorUnfocusedColorEnabled"] = result["indicatorUnfocusedColorEnabled"].toBool();
+    result["indicatorUnfocusedColor"] = QColor::isValidColorName(result["indicatorUnfocusedColor"].toString()) ? result["indicatorUnfocusedColor"].toString() : defaults()["indicatorUnfocusedColor"];
+    if (result["indicatorMode"].toInt() < 0 || result["indicatorMode"].toInt() > 2) result["indicatorMode"] = 0;
+    number("indicatorMode", 0, 2, true);
+    number("nativeGroupIndicator", 0, 2, true);
+    number("taskDecorations", 0, 2, true);
+    result["customIndicatorsEnabled"] = result["customIndicatorsEnabled"].toBool();
+    result["indicatorAnimations"] = result["indicatorAnimations"].toBool();
+    number("indicatorStyle", 0, 2, true);
+    result["indicatorOverride"] = result["indicatorOverride"].toBool();
+    number("indicatorEdge", 0, 3, true);
+    number("indicatorEdgeDistance", 0, 32, true);
+    number("indicatorThickness", 1, 24, true);
+    number("indicatorLength", 1, 160, true);
+    number("indicatorRoundness", 0, 100, true);
+    number("indicatorSpacing", 0, 16, true);
+    number("indicatorAlignment", 0, 2, true);
+    result["indicatorResizeActive"] = result["indicatorResizeActive"].toBool();
+    number("indicatorActiveThickness", 1, 24, true);
+    number("indicatorActiveLength", 1, 160, true);
+    result["indicatorResizeHover"] = result["indicatorResizeHover"].toBool();
+    result["indicatorHoverSeparate"] = result["indicatorHoverSeparate"].toBool();
+    number("indicatorHoverThickness", 1, 24, true);
+    number("indicatorHoverLength", 1, 160, true);
+    result["indicatorGroupSeparate"] = result["indicatorGroupSeparate"].toBool();
+    number("indicatorGroupThickness", 1, 24, true);
+    number("indicatorGroupLength", 1, 160, true);
+    number("indicatorMaxSegments", 1, 8, true);
+    result["indicatorHighlightActive"] = result["indicatorHighlightActive"].toBool();
+    result["indicatorDimInactive"] = result["indicatorDimInactive"].toBool();
+    number("indicatorInactiveOpacity", 0, 100, true);
+    result["indicatorDesaturate"] = result["indicatorDesaturate"].toBool();
+    number("indicatorColorSource", 0, 2, true);
+    result["indicatorCustomColor"] = QColor::isValidColorName(result["indicatorCustomColor"].toString()) ? result["indicatorCustomColor"].toString() : defaults()["indicatorCustomColor"];
+    result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool(); result["dodge"] = result["dodge"].toBool();
     QStringList launchers;

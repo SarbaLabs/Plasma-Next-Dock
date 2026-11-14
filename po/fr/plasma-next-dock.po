@@ -20,3 +20,258 @@ msgstr "Configurer Plasma Next Dock…"
 
 msgid "Quit Plasma Next Dock"
 msgstr "Quitter Plasma Next Dock"
+
+msgid "Configure Plasma Next Dock"
+msgstr "Configurer Plasma Next Dock"
+
+msgid "Appearance and launchers"
+msgstr "Apparence et lanceurs"
+
+msgid "Indicators"
+msgstr "Indicateurs"
+
+msgid "Position and appearance"
+msgstr "Position et apparence"
+
+msgid "Screen:"
+msgstr "Écran :"
+
+msgid "Primary screen"
+msgstr "Écran principal"
+
+msgid "Edge:"
+msgstr "Bord :"
+
+msgid "Bottom"
+msgstr "Bas"
+
+msgid "Top"
+msgstr "Haut"
+
+msgid "Left"
+msgstr "Gauche"
+
+msgid "Right"
+msgstr "Droite"
+
+msgid "Distance from edge (px):"
+msgstr "Distance du bord (px) :"
+
+msgid "Icon size (px):"
+msgstr "Taille des icônes (px) :"
+
+msgid "Magnification (%):"
+msgstr "Grossissement (%) :"
+
+msgid "Corner radius (px):"
+msgstr "Rayon des coins (px) :"
+
+msgid "Enable hover glow"
+msgstr "Activer le halo au survol"
+
+msgid "Animate dock appearance and disappearance"
+msgstr "Animer l’apparition et la disparition du dock"
+
+msgid "Uses KWin's Sliding Popups effect and system animation speed. No system setting is changed."
+msgstr "Utilise l’effet de glissement de KWin et la vitesse d’animation du système. Aucun réglage système n’est modifié."
+
+msgid "Hide when a window overlaps the capsule"
+msgstr "Masquer lorsqu’une fenêtre chevauche la capsule"
+
+msgid "Apply saves these settings. Changing the screen or edge briefly recreates the dock window."
+msgstr "Appliquer enregistre ces réglages. Changer d’écran ou de bord recrée brièvement la fenêtre du dock."
+
+msgid "Pinned applications"
+msgstr "Applications épinglées"
+
+msgid "Pin running applications from the dock's right-click menu. Changes to this list are saved immediately."
+msgstr "Épinglez les applications ouvertes depuis le menu contextuel du dock. Les modifications de cette liste sont enregistrées immédiatement."
+
+msgid "Up"
+msgstr "Monter"
+
+msgid "Down"
+msgstr "Descendre"
+
+msgid "Remove"
+msgstr "Retirer"
+
+msgid "Desktop entry ID, e.g. org.kde.dolphin.desktop"
+msgstr "Identifiant du fichier desktop, par exemple org.kde.dolphin.desktop"
+
+msgid "Application desktop entry"
+msgstr "Fichier desktop de l’application"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Enter an installed application's desktop entry ID ending in .desktop."
+msgstr "Saisissez l’identifiant du fichier d’une application installée, se terminant par .desktop."
+
+msgid "Mode default keeps macOS unchanged. Plasma enables native task frames and the group symbol. Overrides apply only to this dock."
+msgstr "Le réglage par défaut du mode conserve l’apparence macOS. Plasma active les décorations natives et le symbole de groupe. Ces options s’appliquent uniquement à ce dock."
+
+msgid "Indicator mode:"
+msgstr "Mode des indicateurs :"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "Plasma"
+msgstr "Plasma"
+
+msgid "Custom"
+msgstr "Personnalisé"
+
+msgid "Native group symbol:"
+msgstr "Symbole de groupe natif :"
+
+msgid "Mode default"
+msgstr "Selon le mode"
+
+msgid "Enabled"
+msgstr "Activé"
+
+msgid "Disabled"
+msgstr "Désactivé"
+
+msgid "Plasma task decorations:"
+msgstr "Décorations des tâches Plasma :"
+
+msgid "Custom indicators"
+msgstr "Indicateurs personnalisés"
+
+msgid "Show running indicators"
+msgstr "Afficher les indicateurs des applications ouvertes"
+
+msgid "Animate state changes"
+msgstr "Animer les changements d’état"
+
+msgid "Style:"
+msgstr "Style :"
+
+msgid "Dots"
+msgstr "Points"
+
+msgid "Line"
+msgstr "Ligne"
+
+msgid "Dashes"
+msgstr "Tirets"
+
+msgid "Override indicator position"
+msgstr "Choisir la position des indicateurs"
+
+msgid "Position:"
+msgstr "Position :"
+
+msgid "Distance from capsule edge (px):"
+msgstr "Distance du bord de la capsule (px) :"
+
+msgid "Inactive thickness (px):"
+msgstr "Épaisseur inactive (px) :"
+
+msgid "Inactive length (px):"
+msgstr "Longueur inactive (px) :"
+
+msgid "Corner roundness (%):"
+msgstr "Arrondi des coins (%) :"
+
+msgid "Segment spacing (px):"
+msgstr "Espacement des segments (px) :"
+
+msgid "Thickness alignment:"
+msgstr "Alignement des épaisseurs :"
+
+msgid "Toward capsule edge"
+msgstr "Vers le bord de la capsule"
+
+msgid "Centered"
+msgstr "Centré"
+
+msgid "Toward icon"
+msgstr "Vers l’icône"
+
+msgid "State dimensions"
+msgstr "Dimensions selon l’état"
+
+msgid "Resize on activation"
+msgstr "Redimensionner à l’activation"
+
+msgid "Active thickness (px):"
+msgstr "Épaisseur active (px) :"
+
+msgid "Active length (px):"
+msgstr "Longueur active (px) :"
+
+msgid "Resize on hover"
+msgstr "Redimensionner au survol"
+
+msgid "Use separate hover dimensions"
+msgstr "Utiliser des dimensions distinctes au survol"
+
+msgid "Hover thickness (px):"
+msgstr "Épaisseur au survol (px) :"
+
+msgid "Hover length (px):"
+msgstr "Longueur au survol (px) :"
+
+msgid "Use separate grouped dimensions"
+msgstr "Utiliser des dimensions distinctes pour les groupes"
+
+msgid "Grouped thickness (px):"
+msgstr "Épaisseur des groupes (px) :"
+
+msgid "Grouped length (px):"
+msgstr "Longueur des groupes (px) :"
+
+msgid "Multiple windows"
+msgstr "Fenêtres multiples"
+
+msgid "Maximum window segments:"
+msgstr "Nombre maximal de segments :"
+
+msgid "Highlight the active window in a group"
+msgstr "Mettre en évidence la fenêtre active du groupe"
+
+msgid "Dim inactive segments"
+msgstr "Atténuer les segments inactifs"
+
+msgid "Inactive opacity (%):"
+msgstr "Opacité inactive (%) :"
+
+msgid "Desaturate minimized windows"
+msgstr "Désaturer les fenêtres réduites"
+
+msgid "Colors"
+msgstr "Couleurs"
+
+msgid "Indicator color:"
+msgstr "Couleur des indicateurs :"
+
+msgid "Plasma accent"
+msgstr "Couleur d’accentuation Plasma"
+
+msgid "Application icon"
+msgstr "Icône de l’application"
+
+msgid "Custom color"
+msgstr "Couleur personnalisée"
+
+msgid "Custom color:"
+msgstr "Couleur personnalisée :"
+
+msgid "Use a separate unfocused indicator color"
+msgstr "Utiliser une couleur distincte pour les indicateurs inactifs"
+
+msgid "Unfocused color:"
+msgstr "Couleur inactive :"
+
+msgid "Indicators fit within the task slot and capsule padding. Lines use a shared length; dashes use a length per window. Hover dimensions take precedence over active and grouped dimensions. Icon colors fall back to the Plasma accent."
+msgstr "Les indicateurs restent dans l’espace de la tâche et les marges de la capsule. Les lignes partagent une longueur ; les tirets ont une longueur par fenêtre. Les dimensions au survol priment sur celles des états actifs et groupés. Si la couleur de l’icône est indisponible, la couleur d’accentuation Plasma est utilisée."
+
+msgid "Preview (hover to test):"
+msgstr "Aperçu (survolez pour tester) :"
+
+msgid "6 windows"
+msgstr "6 fenêtres"

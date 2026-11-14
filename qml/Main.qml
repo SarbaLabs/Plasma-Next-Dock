@@ -198,6 +198,18 @@ Item {
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
                         onYChanged: root.queueGeometry()
+                        DockIndicators {
+                            anchors.fill: parent
+                            z: -1
+                            configuration: dockOptions
+                            task: slot.model
+                            taskIndex: slot.index
+                            tasksModel: dockOptions.demo ? null : taskSource.item.tasks
+                            edge: dockOptions.edge
+                            padding: root.taskPadding
+                            hovered: iconHover.hovered
+                            dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
+                        }
                         TapHandler {
                             onTapped: {
                                 if (reorder.active) return;
@@ -228,24 +240,16 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: dockOptions.glow
+                        active: dockOptions.glow || (dockOptions.indicatorMode === 2
+                            && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
+                            && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {
                             source: slot.model.decoration
                             onPaletteChanged: if (iconHover.hovered) root.applicationColor = dominant
                         }
                     }
-                    Controls.Label {
-                        objectName: "groupCount" + slot.index
-                        visible: !!slot.model.IsGroupParent && slot.model.ChildCount > 1
-                        text: slot.model.ChildCount || ""
-                        font.pixelSize: Math.max(9, 11 * root.fitScale)
-                        x: slot.width - width
-                        y: icon.y
-                        rotation: root.vertical ? -90 : 0
-                        Accessible.name: visible ? text : ""
-                    }
                     Rectangle {
-                        visible: !!slot.model.IsWindow || !!slot.model.IsGroupParent
+                        visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
                         width: 4 * root.fitScale; height: width; radius: width / 2
                         x: (slot.width - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale

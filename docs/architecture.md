@@ -227,3 +227,20 @@ edge-centered surface origin to Qt's coordinate mapping without moving/resizing
 the compositor surface. Native Plasma tooltip placement then has a valid parent
 origin. Keep this per-window adapter separate from PopupAnchor (xdg menus), and
 never change Qt's process-wide fixed-position flag. See window-previews.md.
+
+## Indicator composition and compositor animation
+
+DockIndicators is attached in the upright icon coordinate system and never changes
+layout dimensions. It composes KSvg native frames/strips and group elements with
+CustomIndicators. The existing macOS dot remains in its original slot geometry.
+IndicatorTaskState observes model events and reads at most eight children; icon
+colors share the existing lazy ImageColors loader with the glow.
+
+IndicatorsSettings adapts the prior plasmoid's configuration page to this host's
+settings map and Apply/Close transaction. No KConfig/Plasmoid dependency is added.
+The configuration engine has its own KLocalizedQmlContext using plasma-next-dock.
+
+ScreenEdge registers a KWindowEffects slide hint for its edge and preserves native
+hide/recall ownership. Registration is cached and restored after surface lifecycle
+changes; KWindowEffects handles effect-manager availability. There is no client
+position/opacity animation, polling or global KWin configuration mutation.

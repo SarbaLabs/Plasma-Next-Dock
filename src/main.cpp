@@ -4,6 +4,7 @@
 #include <QCommandLineParser>
 #include <QApplication>
 #include <KLocalizedString>
+#include <KLocalizedQmlContext>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QScreen>
@@ -73,6 +74,10 @@ int main(int argc, char **argv)
     QLockFile lock(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) + "/plasma-next-dock.lock");
     if (!demo && !smoke && !lock.tryLock(0)) { qCritical("Dock already running. Use its right-click Configure menu."); return 1; }
     QQmlApplicationEngine configEngine;
+    auto *configTranslations = new KLocalizedQmlContext(&configEngine);
+    configTranslations->setTranslationDomain(QStringLiteral("plasma-next-dock"));
+    configEngine.rootContext()->setContextObject(configTranslations);
+    QQmlEngine::setContextForObject(configTranslations, configEngine.rootContext());
     configEngine.rootContext()->setContextProperty("dockSettings", &settings);
     auto outputs = [&] {
         QStringList names{QString()};
