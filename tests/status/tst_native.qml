@@ -17,7 +17,10 @@ TestCase {
         tryCompare(status.smart, "countVisible", true);
         tryCompare(status.smart, "progress", 42);
         tryCompare(status.smart, "progressVisible", true);
+        const previous = status.smart;
         status.launcherUrl = testLauncherUrls[1];
+        // Replacement is queued; do not retain the destroyed object in tryCompare.
+        tryVerify(() => status.smart !== null && status.smart !== previous);
         tryCompare(status.smart, "count", 0);
         tryCompare(status.smart, "countVisible", false);
         status.launcherEnabled = false;

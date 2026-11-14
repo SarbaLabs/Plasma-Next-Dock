@@ -474,3 +474,13 @@ KWin screenshot or actual user media player has been validated here.
 
 Staged installation, shell syntax, translation compilation and git diff whitespace
 checks pass. See application-status.md for the CachyOS manual acceptance checklist.
+
+### CI follow-up
+
+GitHub's isolated bus confirmed delivery of the real native launcher count (7),
+visibility and progress (42%). The first run then exposed a test lifetime error:
+tryCompare captured the old SmartLauncherItem before the queued launcher change
+replaced it. Wait for replacement before observing the new item's zero/hidden
+state. Also cover explicit group selection while a title tooltip is already open,
+and retain compact tooltips for tasks without media. Full CI is rerun after this
+correction; real desktop acceptance remains required.

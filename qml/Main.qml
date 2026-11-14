@@ -252,7 +252,7 @@ Item {
                             enabled: !overlays.audioHovered
                             onTapped: {
                                 if (reorder.active) return;
-                                if (slot.model.IsGroupParent) { taskTip.forceWindows = true; taskTip.showToolTip(); }
+                                if (slot.model.IsGroupParent) taskTip.showGroupWindows();
                                 else { previewPanel.dismiss(); taskSource.item.activate(slot.index); }
                             }
                         }
@@ -263,6 +263,15 @@ Item {
                         PlasmaCore.ToolTipArea {
                             id: taskTip
                             property bool forceWindows: false
+                            function showGroupWindows() {
+                                forceWindows = true;
+                                // An already visible title tooltip may not emit aboutToShow again.
+                                if (previewPanel.toolTip === taskTip) previewPanel.windowsEnabled = true;
+                                showToolTip();
+                            }
+                            onToolTipVisibleChanged: toolTipVisible => {
+                                if (!toolTipVisible) forceWindows = false;
+                            }
                             objectName: "taskTip" + slot.index
                             anchors.fill: parent
                             location: root.tooltipLocation

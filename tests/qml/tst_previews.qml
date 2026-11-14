@@ -55,7 +55,10 @@ TestCase {
         compare(windowPreviews.count, 2);
         panel.windowsEnabled = false;
         compare(panel.visibleWindows, 0);
-        panel.windowsEnabled = true;
+        owner.showGroupWindows();
+        verify(panel.windowsEnabled);
+        // Showing the tooltip can reselect the demo owner; restore grouped fixture.
+        windowPreviews.select(testPreviewModel, 0);
         compare(panel.visibleWindows, 2);
         tryVerify(() => findChild(panel, "previewClose1") !== null);
         const closeButton = findChild(panel, "previewClose1");
