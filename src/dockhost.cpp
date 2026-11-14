@@ -22,8 +22,9 @@ template<typename T> static void selectOutput(T *window, QScreen *screen)
 }
 DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland)
     : m_settings(settings), m_screen(screen), m_demo(demo),
-      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_controller(&m_view)
+      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_controller(&m_view), m_backgroundEffects(&m_view)
 {
+    connect(&m_controller, &DockController::capsuleChanged, &m_backgroundEffects, &BackgroundEffects::setGeometry);
     m_view.setTitle(QStringLiteral("Plasma Next Dock"));
     m_view.setScreen(screen);
     m_view.setColor(Qt::transparent);
@@ -81,6 +82,7 @@ void DockHost::update(bool settingsOpen)
 {
     auto options = m_settings->values(); options["demo"] = m_demo;
     m_view.rootContext()->setContextProperty("dockOptions", options);
+    m_backgroundEffects.configure(options);
     if (m_screenEdge) m_screenEdge->setAnimated(options["revealAnimation"].toBool());
     m_controller.setDodgeEnabled(!m_demo && options["dodge"].toBool() && !settingsOpen);
 }

@@ -60,6 +60,27 @@ private Q_SLOTS:
         QCOMPARE(clean["indicatorCustomColor"], DockSettings::defaults()["indicatorCustomColor"]);
         QVERIFY(!clean.contains("indicatorOverflow"));
     }
+    void backgroundPersistence() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["backgroundType"].toInt(), 0);
+        QCOMPARE(settings.values()["radius"].toInt(), 10);
+        QVERIFY(settings.apply({{"radius", 0}, {"backgroundType", 4}, {"backgroundOpacity", 0.25},
+            {"blurSaturation", 1.8}, {"blurContrast", 1.2}, {"blurBrightness", 0.9}}));
+        QVERIFY(settings.apply({{"backgroundType", 0}}));
+        DockSettings restored(file);
+        QCOMPARE(restored.values()["radius"].toInt(), 0);
+        QCOMPARE(restored.values()["backgroundOpacity"].toDouble(), 0.25);
+        QCOMPARE(restored.values()["blurSaturation"].toDouble(), 1.8);
+        QCOMPARE(restored.values()["blurContrast"].toDouble(), 1.2);
+        QCOMPARE(restored.values()["blurBrightness"].toDouble(), 0.9);
+        const auto clean = DockSettings::normalized({{"backgroundType", 900}, {"backgroundOpacity", -1},
+            {"blurSaturation", 99}, {"blurBrightness", std::numeric_limits<double>::quiet_NaN()}});
+        QCOMPARE(clean["backgroundType"].toInt(), 0);
+        QCOMPARE(clean["backgroundOpacity"].toDouble(), 0.0);
+        QCOMPARE(clean["blurSaturation"].toDouble(), 3.0);
+        QCOMPARE(clean["blurBrightness"].toDouble(), 1.0);
+    }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file, false);

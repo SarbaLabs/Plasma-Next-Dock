@@ -246,3 +246,23 @@ ScreenEdge registers a KWindowEffects slide hint for its edge and preserves nati
 hide/recall ownership. Registration is cached and restored after surface lifecycle
 changes; KWindowEffects handles effect-manager availability. There is no client
 position/opacity animation, polling or global KWin configuration mutation.
+
+## Capsule effects ownership
+
+The standalone host owns one BackgroundEffects instance for its QQuickWindow.
+DockController emits capsuleChanged only for capsule geometry/radius changes,
+separately from animated icon input regions. This supplies the same effective
+radius used by CapsuleBackground, its border, gloss, glow and collision path.
+
+BackgroundEffects coalesces GUI-thread updates, caches the rasterized region and
+contrast parameters, and never observes render-thread/per-frame signals. It
+restores after show/exposure, native surface creation and application palette
+changes, clears requests before surface destruction, and defers application until
+visible/exposed. KWindowSystem independently restores remembered requests when its
+Wayland effect managers return. Native compositor hiding preserves the mapped
+surface and its requests; it does not require a QWindow hide event.
+
+There is no PanelView in this process to overwrite the dock's effects. The old
+plasmoid's panel mask/floating and delayed Plasma theme hooks would solve shared
+panel ownership issues that do not exist here and are intentionally not imported.
+See backgrounds.md for fallback, visual limits and desktop acceptance.

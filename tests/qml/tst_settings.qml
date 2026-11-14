@@ -32,6 +32,10 @@ TestCase {
         verify(indicators !== null);
         indicators.cfg_indicatorMode = 2;
         indicators.cfg_indicatorMaxSegments = 7;
+        findChild(window, "backgroundTypeControl").currentIndex = 4;
+        findChild(window, "backgroundOpacityControl").value = 27;
+        findChild(window, "blurSaturationControl").value = 170;
+        findChild(window, "radiusControl").value = 0;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
@@ -40,8 +44,12 @@ TestCase {
         window.close();
         window.openSettings();
         compare(spacing.value, 40);
+        compare(findChild(window, "backgroundTypeControl").currentIndex, 4);
+        compare(findChild(window, "backgroundOpacityControl").value, 27);
+        compare(findChild(window, "blurSaturationControl").value, 170);
+        compare(findChild(window, "radiusControl").value, 0);
         window.close();
-        dockSettings.apply({spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({backgroundType: 0, backgroundOpacity: 0.35, blurSaturation: 1.3, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

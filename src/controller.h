@@ -27,6 +27,7 @@ public:
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void evaluate();
 Q_SIGNALS:
+    void capsuleChanged(QRectF capsule, qreal radius);
     void modelChanged();
     void stateChanged();
 private:

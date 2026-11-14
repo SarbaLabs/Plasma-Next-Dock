@@ -20,6 +20,11 @@ Controls.ApplicationWindow {
         spacing.value = v.spacing; radius.value = v.radius;
         glow.checked = v.glow; dodge.checked = v.dodge;
         revealAnimation.checked = v.revealAnimation;
+        backgroundType.currentIndex = v.backgroundType;
+        backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
+        blurSaturation.value = Math.round(v.blurSaturation * 100);
+        blurContrast.value = Math.round(v.blurContrast * 100);
+        blurBrightness.value = Math.round(v.blurBrightness * 100);
         indicators.load(v);
         visible = true;
     }
@@ -35,6 +40,8 @@ Controls.ApplicationWindow {
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
         onApplied: dockSettings.apply(Object.assign({}, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
+            backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
+            blurSaturation: blurSaturation.value / 100, blurContrast: blurContrast.value / 100, blurBrightness: blurBrightness.value / 100,
             radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
         onRejected: window.close()
     }
@@ -73,6 +80,43 @@ Controls.ApplicationWindow {
                 Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
                 Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
                 Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
+                Controls.Label { text: i18n("Capsule and style"); font.bold: true; Kirigami.FormData.isSection: true }
+                Controls.ComboBox {
+                    id: backgroundType; objectName: "backgroundTypeControl"
+                    implicitWidth: Kirigami.Units.gridUnit * 16
+                    Kirigami.FormData.label: i18n("Background:")
+                    model: [i18n("Solid"), i18n("Transparent"), i18n("Translucent"), i18n("System Blur"), i18n("Liquid Glass")]
+                }
+                Controls.SpinBox {
+                    id: backgroundOpacity; objectName: "backgroundOpacityControl"
+                    visible: backgroundType.currentIndex >= 2
+                    Kirigami.FormData.label: i18n("Background tint opacity (%):")
+                    from: 0; to: 100; editable: true
+                }
+                Controls.SpinBox {
+                    id: blurSaturation; objectName: "blurSaturationControl"
+                    visible: backgroundType.currentIndex >= 3
+                    Kirigami.FormData.label: i18n("Blur saturation (%):")
+                    from: 0; to: 300; stepSize: 5; editable: true
+                }
+                Controls.SpinBox {
+                    id: blurContrast; objectName: "blurContrastControl"
+                    visible: backgroundType.currentIndex >= 3
+                    Kirigami.FormData.label: i18n("Blur contrast (%):")
+                    from: 0; to: 200; stepSize: 5; editable: true
+                }
+                Controls.SpinBox {
+                    id: blurBrightness; objectName: "blurBrightnessControl"
+                    visible: backgroundType.currentIndex >= 3
+                    Kirigami.FormData.label: i18n("Blur brightness (%):")
+                    from: 0; to: 200; stepSize: 5; editable: true
+                }
+                Controls.Label {
+                    visible: backgroundType.currentIndex >= 3
+                    Layout.fillWidth: true
+                    text: i18n("Requires an enabled KWin blur effect. Liquid Glass adds tint and gloss, not optical refraction.")
+                    wrapMode: Text.WordWrap
+                }
                 Controls.SpinBox { id: radius; objectName: "radiusControl"; Kirigami.FormData.label: i18n("Corner radius (px):"); from: 0; to: 96; editable: true }
                 Controls.CheckBox { id: glow; text: i18n("Enable hover glow") }
                 Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }

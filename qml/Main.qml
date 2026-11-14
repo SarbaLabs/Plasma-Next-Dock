@@ -94,7 +94,7 @@ Item {
             const p = slot.iconItem.mapToItem(root, 0, 0);
             icons.push(Qt.rect(p.x, p.y, slot.iconItem.width, slot.iconItem.height));
         }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.radius, icons, dockOptions.edge);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.effectiveRadius, icons, dockOptions.edge);
     }
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
@@ -107,32 +107,27 @@ Item {
         source: dockOptions.demo ? "DemoTasks.qml" : "LiveTasks.qml"
         onStatusChanged: if (status === Loader.Error) Qt.exit(1)
     }
-    Rectangle {
+    CapsuleBackground {
         id: bar
+        objectName: "capsuleBackground"
         x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : (root.width - width) / 2
         y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
         width: root.vertical ? root.barThickness : root.barLength
         height: root.vertical ? root.barLength : root.barThickness
         radius: Geometry.radius(width, height, true, dockOptions.radius)
-        color: Kirigami.Theme.backgroundColor
-        border.color: Kirigami.Theme.disabledTextColor
-        border.width: 1
+        backgroundType: dockOptions.backgroundType === undefined ? 0 : dockOptions.backgroundType
+        blurOpacity: dockOptions.backgroundOpacity === undefined ? 0.35 : dockOptions.backgroundOpacity
+        isVertical: root.vertical
+        glowEnabled: dockOptions.glow
+        glowPosition: Qt.point(pointer.point.position.x - bar.x, pointer.point.position.y - bar.y)
+        glowHovering: pointer.hovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
+        glowColor: root.applicationColor
+        glowRadius: root.maximum
+        onRadiusChanged: root.queueGeometry()
         onXChanged: root.queueGeometry()
         onYChanged: root.queueGeometry()
         onWidthChanged: root.queueGeometry()
         onHeightChanged: root.queueGeometry()
-        Loader {
-            anchors.fill: parent
-            active: dockOptions.glow
-            sourceComponent: CapsuleGlow {
-                cornerRadius: bar.radius
-                pointerX: pointer.point.position.x - bar.x
-                pointerY: pointer.point.position.y - bar.y
-                hovering: pointer.hovered && Geometry.containsPoint(width, height, cornerRadius, pointerX, pointerY)
-                glowColor: root.applicationColor
-                glowRadius: root.maximum
-            }
-        }
     }
     // Rotate the layout axis only; icons counter-rotate to stay upright.
     Flickable {
@@ -254,7 +249,7 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: dockOptions.glow || (dockOptions.indicatorMode === 2
+                        active: (dockOptions.glow && bar.backgroundType !== 1) || (dockOptions.indicatorMode === 2
                             && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {

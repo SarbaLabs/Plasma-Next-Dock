@@ -411,3 +411,21 @@ Compilation, QML parsing, shell syntax, whitespace and staged installation pass.
 These offscreen tests verify animated geometry, not live KWin rendering. Confirm
 bottom/right magnification visually on CachyOS before merging. No settings were
 removed; cleanup remains deferred.
+
+## Capsule backgrounds — 2026-11-14
+
+All 13 CTest entries pass locally, including 64 Qt Quick cases. The new native
+background-effects test records production effect requests on real offscreen
+QQuickWindows: rounded/fractional bounds, radius-only edits including zero and
+clamping, parameter updates, no writes for changing icon input geometry, empty
+regions, repeated palette/visibility cycles, deferred work during surface teardown,
+recreation and destruction with pending work. Calls are checked on the GUI thread.
+QML cases cover all five modes, shared glow/background radius and Transparent
+suppression; settings tests cover Apply/reopen, persistence, defaults and invalid
+values. Existing indicator anchoring, menus, previews and adaptive-layout tests pass.
+
+Build, QML parser, French gettext catalog, shell syntax, whitespace and staged
+installation checks pass. No new package dependency or installer changes are needed.
+There is no live KWin compositor here. These results do not validate actual blur,
+contrast, slide animation, wallpaper transitions or GPU appearance. Follow the
+CachyOS checklist in backgrounds.md before merging.
