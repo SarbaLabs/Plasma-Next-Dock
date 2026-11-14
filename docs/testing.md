@@ -202,3 +202,61 @@ positions on top/bottom. Check screen ends, HiDPI, closing outside/Escape,
 reopening, Pin/Unpin and Configure, output/edge changes and re-hide after closing.
 The two desktop outcomes remain pending maintainer confirmation. Do not describe
 synthetic positioner tests as successful visual Wayland testing.
+
+## Adaptive sizing — 2026-11-14
+
+Maintainer accepted the final PR #2 menu/portal fixes and merged them. This is the
+baseline for the new sizing branch; earlier pending notes above are historical.
+
+Added tests sweep 0–100 tasks, preferred sizes 24/40/96 and zoom 1/1.5/2.5,
+checking monotonic reduction, minimum/preferred limits, canvas bounds and the
+local-zoom width budget before overflow. Tiny output geometry and scroll clamping
+are included. A rendered offscreen QML fixture grows from 5 to 22 to 80 tasks,
+checks reduced capsule thickness and magnification, wheels the overflowing strip,
+reaches the last icon, removes extra tasks, and verifies recovery and unchanged
+preferred size. Existing hover, drag, menu, settings, collision and four-edge
+smoke coverage remains enabled. All nine local CTest entries pass (Qt 6.8.2).
+
+Manual CachyOS acceptance: on each edge, add/remove enough pinned/running apps to
+trigger reduction; try 40 px / 1.5x and 96 px / 2.5x, rapid hover across the strip,
+then enough apps to reach minimum size and scroll to both ends. Check native
+reordering and popup alignment after scrolling; change output/resolution/scaling,
+check restoration after closing apps and unchanged settings after restart. Verify
+capsule-only dodge and edge recall. Fractional scaling, actual KWin resizing and
+GPU animation smoothness are not proven by offscreen tests. No visual Wayland
+success is claimed for this new stage.
+
+### Premature shrinking correction
+
+Maintainer reported that the initial implementation shrank the dock immediately
+and appeared unable to shrink further. Reserving full zoom for every slot inflated
+the width budget and reached the minimum prematurely. Replace it with resting
+width plus at most two zoom equivalents. Regression: 18 icons at 40 px/1.5x on
+984 px keep 40 px; 22 reduce but remain above 24 px; 80 use minimum-size overflow.
+The animation-tail test explicitly exceeds the aggregate budget and checks its
+bounded rendered weight. All nine CTest entries pass after the correction; staged
+installation and QML checks pass. Live CachyOS confirmation remains pending.
+
+### Wheel input follow-up
+
+The maintainer accepted adaptive shrinking/growing but reported no wheel scrolling.
+The prior QtTest mouseWheel coverage used unsynthesized vertical events only.
+A new test sending QWheelEvent with MouseEventSynthesizedBySystem failed before
+this fix: WheelHandler's default device filter rejects synthesized wheel events.
+This is a verified input-path defect, not proof of the maintainer's exact device
+source (no live input trace is available). Pure horizontal gestures were also
+filtered by the default vertical orientation before reaching our callback.
+
+Two fixed-root handlers explicitly accept Mouse and TouchPad, route vertical or
+horizontal input once per event, prefer pixel deltas, and disable while a menu is
+open or no content overflows. Tests now cover synthesized angle/pixel input,
+horizontal/vertical/diagonal deltas and reversal on all four edges, plus ordinary
+wheel events before and after scrolling beyond a viewport. All nine CTest entries
+pass after the fix, including the previously failing synthesized event. Build,
+QML parsing and staged installation pass. No sizing formula was changed.
+
+Manual: with enough tasks to overflow at minimum size, wheel over an icon and in
+the screen-edge corridor; reach both ends on each dock edge. Check mouse and
+trackpad, reverse direction, menu-open behavior, hover and drag. At maximum dock
+length but with every icon still fitting, there is intentionally nothing to scroll.
+Actual CachyOS input behavior remains pending maintainer confirmation.

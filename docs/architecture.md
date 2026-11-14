@@ -166,3 +166,41 @@ DESTDIR without embedding the staging root. This needs no portal restart,
 PATH modification or global desktop configuration change. A nonstandard prefix
 outside XDG application search directories still requires normal XDG discovery.
 Source: [GLib desktop app info loading](https://github.com/GNOME/glib/blob/main/gio/gdesktopappinfo.c).
+
+## Adaptive task sizing
+
+`AdaptiveLayout.js` derives effective dimensions solely from task count, preferred
+icon size, zoom, selected output dimensions and edge gap. The width budget is the
+resting row (count * preferred size + gaps + end padding) plus at most two full
+zoom equivalents for the local squared falloff. It is scaled when exceeding the
+output axis minus 16 logical pixels. Hover/animated Row width never feeds back
+into the base-size decision, preventing oscillation.
+
+Each delegate reports changes of its animated zoom weight to a shared total and
+subtracts its contribution on destruction. If animation tails overlap enough to
+exceed two equivalents, only their zoom increments are proportionally capped.
+Normal local magnification remains below that limit. This requires no scan or
+polling and preserves the existing 90 ms per-icon animation. The base scale does
+not depend on the aggregate; shrinking is solely count/settings/output driven.
+
+The scale normally stops at 24 logical pixels per icon. Cross-axis fitting can
+override that floor on pathological tiny outputs, and clamps an impossible edge
+gap. Icon spacing, end padding and capsule thickness scale together; the saved
+radius and edge gap retain their normal meanings. Preferred settings are read-only
+inputs. Magnification animates its factor rather than absolute pixels, so count
+or output changes immediately respect the new bounds without stale larger icons.
+
+Overflow at the floor uses the existing Flickable content, with wheel/trackpad
+input and clamped offsets on content/output changes. Left dragging belongs only
+to native task reorder, avoiding competing Flickable grabs. The popup envelope
+ignores offscreen icons. Input remains clipped to the drawing surface and dodge
+continues to follow the capsule only. No timers or compositor changes are added.
+
+Wheel input is received by unrotated root-level handlers rather than the
+Flickable's content. Explicit Mouse|TouchPad acceptance also enables synthesized
+system wheel events (Qt rejects them with the default Mouse-only filter).
+Separate axis handlers feed one routing function; diagonal input is consumed once,
+pixel deltas take precedence and the current event position updates hover mapping.
+The handlers are enabled only for actual overflow with the context menu closed.
+Source reference: Qt `src/quick/handlers/qquickwheelhandler.cpp`,
+`wantsPointerEvent()` device/source and orientation checks (Qt 6.8).

@@ -10,12 +10,30 @@
 #include <QTemporaryDir>
 #include <QFile>
 #include <QUrl>
+#include <QWheelEvent>
+#include <QQuickItem>
 class Setup : public QObject
 {
     Q_OBJECT
     QTemporaryDir m_launchers;
+    QQmlEngine *m_engine = nullptr;
+public:
+    Q_INVOKABLE void wheel(QQuickItem *item, QPointF position, QPoint delta, bool synthesized, bool pixels) {
+        const QPointF scene = item->mapToScene(position);
+        QWheelEvent event(scene, item->window()->mapToGlobal(scene), pixels ? delta : QPoint(),
+                          pixels ? QPoint() : delta, Qt::NoButton, Qt::NoModifier,
+                          Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
+        QCoreApplication::sendEvent(item->window(), &event);
+    }
+    Q_INVOKABLE void setEdge(int edge) {
+        auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
+        options["edge"] = edge;
+        m_engine->rootContext()->setContextProperty("dockOptions", options);
+    }
 public Q_SLOTS:
     void qmlEngineAvailable(QQmlEngine *engine) {
+        m_engine = engine;
+        engine->rootContext()->setContextProperty("testEnvironment", this);
         initializeIconPaths();
         engine->rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(engine));
         QStringList urls;

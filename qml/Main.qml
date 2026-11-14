@@ -4,16 +4,23 @@ import QtQuick.Controls as Controls
 import org.kde.kirigami as Kirigami
 import "code/CapsuleGeometry.js" as Geometry
 import "code/InteractionGeometry.js" as Interaction
+import "code/AdaptiveLayout.js" as Adaptive
 
 Item {
     id: root
     readonly property bool vertical: dockOptions.edge >= 2
-    readonly property real base: dockOptions.iconSize
-    readonly property real edgeSpacing: dockOptions.spacing === undefined ? 8 : dockOptions.spacing
+    readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
+        dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
+        vertical ? outputSize.width : outputSize.height,
+        dockOptions.spacing === undefined ? 8 : dockOptions.spacing)
+    readonly property real fitScale: layoutMetrics.scale
+    readonly property real base: layoutMetrics.base
+    readonly property real edgeSpacing: layoutMetrics.gap
     readonly property real maximum: base * dockOptions.zoom
-    readonly property real depth: maximum + 24 + edgeSpacing
-    readonly property real length: Math.min((vertical ? outputSize.height : outputSize.width) - 16,
-        Math.max(200, repeater.count * (maximum + 12) + 32))
+    readonly property real depth: layoutMetrics.depth
+    readonly property real length: layoutMetrics.length
+    readonly property real taskPadding: 10 * fitScale
+    readonly property real endPadding: 12 * fitScale
     width: vertical ? depth : length
     height: vertical ? length : depth
     property int dragIndex: -1
@@ -37,11 +44,14 @@ Item {
         if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
         dockController.setHovered(pointer.hovered || contextMenu.visible);
     }
+    // Bound only overlapping zoom animation tails, not preferred icon sizes.
+    property real animatedWeight: 0
+    readonly property real zoomBudgetScale: Math.min(1, 2 / Math.max(2, animatedWeight))
     property real pointerIndex: -10
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
-    readonly property real barThickness: base + 20
-    readonly property real barLength: Math.min(length, Math.max(160, taskRow.width + 24))
+    readonly property real barThickness: base + 2 * taskPadding
+    readonly property real barLength: Math.min(length, Math.max(160 * fitScale, taskRow.width + 2 * endPadding))
 
     function updatePointer(position) {
         const coordinate = vertical ? position.y : position.x;
@@ -112,22 +122,29 @@ Item {
     // Rotate the layout axis only; icons counter-rotate to stay upright.
     Flickable {
         id: viewport
+        objectName: "taskViewport"
         width: root.length
         height: root.depth
         x: root.vertical ? (root.width - width) / 2 : 0
         y: root.vertical ? (root.height - height) / 2 : 0
         rotation: root.vertical ? 90 : 0
         clip: true
-        contentWidth: Math.max(width, taskRow.width + 24)
+        contentWidth: Math.max(width, taskRow.width + 2 * root.endPadding)
         contentHeight: height
         boundsBehavior: Flickable.StopAtBounds
-        interactive: contentWidth > width
+        // Left-button gestures belong to reorder, not competing flick grabs.
+        interactive: false
+        function clampScroll() {
+            contentX = Adaptive.scrollPosition(contentX, 0, contentWidth, width);
+        }
+        onContentWidthChanged: Qt.callLater(clampScroll)
+        onWidthChanged: Qt.callLater(clampScroll)
         onContentXChanged: root.queueGeometry()
         Row {
             id: taskRow
-            x: Math.max(12, (viewport.width - width) / 2)
+            x: Math.max(root.endPadding, (viewport.width - width) / 2)
             height: viewport.height
-            spacing: 10
+            spacing: root.taskPadding
             onXChanged: root.queueGeometry()
             onWidthChanged: root.queueGeometry()
             Repeater {
@@ -140,11 +157,18 @@ Item {
                     required property int index
                     required property var model
                     readonly property real factor: root.hovering && !root.dragging ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
-                    property real size: root.base + (root.maximum - root.base) * factor * factor
+                    property real animatedFactor: factor * factor
+                    property real reportedFactor: 0
+                    onAnimatedFactorChanged: {
+                        root.animatedWeight += animatedFactor - reportedFactor;
+                        reportedFactor = animatedFactor;
+                    }
+                    Component.onDestruction: root.animatedWeight -= reportedFactor
+                    readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias iconItem: icon
                     width: size
                     height: viewport.height
-                    Behavior on size { NumberAnimation { duration: 90 } }
+                    Behavior on animatedFactor { NumberAnimation { duration: 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     Kirigami.Icon {
@@ -153,7 +177,7 @@ Item {
                         width: slot.size; height: width
                         x: 0
                         // After a clockwise rotation, local bottom is the screen's left.
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 10 : slot.height - height - root.edgeSpacing - 10
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + root.taskPadding : slot.height - height - root.edgeSpacing - root.taskPadding
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
@@ -178,24 +202,41 @@ Item {
                     }
                     Rectangle {
                         visible: !!slot.model.IsWindow
-                        width: 4; height: 4; radius: 2
+                        width: 4 * root.fitScale; height: width; radius: width / 2
                         x: (slot.width - width) / 2
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 : slot.height - root.edgeSpacing - 8
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
                 }
             }
         }
-        WheelHandler {
-            onWheel: event => {
-                if (viewport.contentWidth > viewport.width) {
-                    viewport.contentX = Math.max(0, Math.min(viewport.contentWidth - viewport.width,
-                        viewport.contentX - event.angleDelta.y / 2));
-                    event.accepted = true;
-                }
-            }
-        }
     }
+    function scrollWheel(event, axis) {
+        const pixel = event.pixelDelta;
+        const angle = event.angleDelta;
+        // A diagonal gesture belongs to one handler only. Honour pixel scrolling
+        // when supplied, otherwise use traditional wheel-angle increments.
+        const delta = (pixel.x || pixel.y) ? pixel : Qt.point(angle.x / 2, angle.y / 2);
+        const selectedAxis = delta.y ? Qt.Vertical : Qt.Horizontal;
+        if (selectedAxis !== axis || (!delta.x && !delta.y)) {
+            event.accepted = false;
+            return;
+        }
+        viewport.contentX = Adaptive.scrollPosition(viewport.contentX,
+            -(axis === Qt.Vertical ? delta.y : delta.x), viewport.contentWidth, viewport.width);
+        root.updatePointer(Qt.point(event.x, event.y));
+        event.accepted = true;
+    }
+    component DockWheelHandler: WheelHandler {
+        target: null
+        enabled: viewport.contentWidth > viewport.width && !contextMenu.visible
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => root.scrollWheel(event, orientation)
+    }
+    // Receive wheel events in fixed, unrotated coordinates, including the edge
+    // corridor. Never attach scrolling input to the moving task content.
+    DockWheelHandler { orientation: Qt.Vertical }
+    DockWheelHandler { orientation: Qt.Horizontal }
     DragHandler {
         id: reorder
         objectName: "reorderHandler"
@@ -238,8 +279,9 @@ Item {
             for (let i = 0; i < repeater.count; ++i) {
                 const icon = repeater.itemAt(i).iconItem;
                 const p = icon.mapToItem(root, 0, 0);
-                left = Math.min(left, p.x); top = Math.min(top, p.y);
-                right = Math.max(right, p.x + icon.width); bottom = Math.max(bottom, p.y + icon.height);
+                if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
+                left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
+                right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
             }
             const position = Interaction.menuPosition(dockOptions.edge,
                 Qt.rect(left, top, right - left, bottom - top), eventPoint.position,
