@@ -14,6 +14,8 @@ Item {
     property var applicationIcon: ""
     property bool vertical: false
     property var status: null
+    readonly property bool mediaAvailable: dockOptions.showMediaControls !== false
+        && !!(status?.player?.canControl || status?.streams?.length)
     property bool windowsEnabled: true
     readonly property int visibleWindows: windowsEnabled ? windowPreviews.count : 0
     property bool thumbnailsEnabled: !dockOptions.demo
@@ -22,7 +24,7 @@ Item {
     // Release the model only after that synchronous reparenting has finished.
     onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) windowPreviews.clear(); })
     visible: false
-    implicitWidth: visibleWindows ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(visibleWindows, 3) * 240) : Math.min(outputSize.width - 32, Math.max(media.active ? 260 : 80, heading.implicitWidth + 24))
+    implicitWidth: visibleWindows ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(visibleWindows, 3) * 240) : Math.min(outputSize.width - 32, Math.max(mediaAvailable ? 260 : 80, heading.implicitWidth + 24))
     implicitHeight: Math.min(outputSize.height - 32, (visibleWindows ? 32 + (vertical ? Math.min(visibleWindows, 3) : 1) * 180 : 36) + (media.item && media.item.visible ? media.item.implicitHeight + 12 : 0))
     width: Math.max(32, implicitWidth)
     height: Math.max(32, implicitHeight)
@@ -118,7 +120,7 @@ Item {
         id: media
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 6 }
         height: item && item.visible ? item.implicitHeight : 0
-        active: panel.displayed && dockOptions.showMediaControls !== false && panel.status !== null
+        active: panel.displayed && panel.mediaAvailable
         sourceComponent: MediaControls { status: panel.status }
     }
 

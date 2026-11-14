@@ -32,6 +32,11 @@ TestCase {
         first.showToolTip();
         tryCompare(panel, "displayed", true);
         compare(panel.applicationName, "Files");
+        verify(!panel.mediaAvailable);
+        verify(panel.implicitWidth < 260);
+        panel.status = {player: {canControl: true}, streams: []};
+        verify(panel.mediaAvailable);
+        verify(panel.implicitWidth >= 260);
         compare(panel.toolTip, first);
         last.showToolTip();
         tryCompare(panel, "displayed", true);
