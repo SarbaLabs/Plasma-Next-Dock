@@ -456,3 +456,21 @@ Settings tests cover defaults, persistence, clamping and Apply/reopen for both
 controls. Fixture creation now checks QFile::open instead of ignoring its return.
 QML parsing, gettext, whitespace and staged installation pass. Live Wayland
 appearance, pointer travel and previews still require desktop confirmation.
+
+## Application status stage
+
+Local build: Qt 6.8.2, Plasma 6.3 installed QML modules. Thirteen regular CTest
+entries pass offscreen. Added coverage includes grouped child PID matching, portal
+ID priority, mute toggling across streams, relative volume, speaker clicks,
+MPRIS capability/button routing, disabled preview cards, and persistence of all
+six settings through the settings UI and file reload.
+
+The fourteenth entry, native-application-status, runs a real installed KDE
+SmartLauncherItem with a temporary desktop-entry cache and an isolated D-Bus bus.
+This runner forbids socket creation, so dbus-run-session fails before the test;
+CI is responsible for that round trip. Direct loading of native SmartLauncherItem
+and the plasma-pa model succeeds locally. No live audio operation, PipeWire server,
+KWin screenshot or actual user media player has been validated here.
+
+Staged installation, shell syntax, translation compilation and git diff whitespace
+checks pass. See application-status.md for the CachyOS manual acceptance checklist.

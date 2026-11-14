@@ -15,6 +15,8 @@ QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"showWindowPreviews", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
+        {"showMediaControls", true}, {"showBadges", true}, {"showProgress", true},
         {"backgroundType", 0}, {"backgroundOpacity", 0.35},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
@@ -105,6 +107,8 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["indicatorDesaturate"] = result["indicatorDesaturate"].toBool();
     number("indicatorColorSource", 0, 2, true);
     result["indicatorCustomColor"] = QColor::isValidColorName(result["indicatorCustomColor"].toString()) ? result["indicatorCustomColor"].toString() : defaults()["indicatorCustomColor"];
+    for (const auto &key : {"showWindowPreviews", "showAudioIndicator", "muteOnClick", "showMediaControls", "showBadges", "showProgress"})
+        result[key] = result[key].toBool();
     result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool(); result["dodge"] = result["dodge"].toBool();

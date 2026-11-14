@@ -48,6 +48,10 @@ TestCase {
         tryCompare(panel, "displayed", true);
         windowPreviews.select(testPreviewModel, 0);
         compare(windowPreviews.count, 2);
+        panel.windowsEnabled = false;
+        compare(panel.visibleWindows, 0);
+        panel.windowsEnabled = true;
+        compare(panel.visibleWindows, 2);
         tryVerify(() => findChild(panel, "previewClose1") !== null);
         const closeButton = findChild(panel, "previewClose1");
         closeButton.clicked();

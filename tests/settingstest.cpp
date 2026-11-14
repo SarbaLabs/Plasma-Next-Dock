@@ -106,6 +106,21 @@ private Q_SLOTS:
         QCOMPARE(clean["blastRadius"].toInt(), 0);
         QCOMPARE(clean["hoverLift"].toInt(), 64);
     }
+    void applicationStatusPersistence() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QVariantMap disabled;
+        for (const auto *key : {"showWindowPreviews", "showAudioIndicator", "muteOnClick",
+                               "showMediaControls", "showBadges", "showProgress"}) {
+            QVERIFY(settings.values()[key].toBool());
+            disabled[key] = false;
+        }
+        QVERIFY(settings.apply(disabled));
+        DockSettings restored(file);
+        for (auto it = disabled.cbegin(); it != disabled.cend(); ++it)
+            QVERIFY(!restored.values()[it.key()].toBool());
+    }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file, false);

@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "statussupport.h"
+#include <QDBusConnection>
+#include <QDBusMessage>
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
@@ -57,6 +60,11 @@ class Setup : public QObject
     PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE bool publishLauncher(const QVariantMap &properties) {
+        auto message = QDBusMessage::createSignal("/test/launcher", "com.canonical.Unity.LauncherEntry", "Update");
+        message << QStringLiteral("application://First.desktop") << properties;
+        return QDBusConnection::sessionBus().send(message);
+    }
     Q_INVOKABLE QString activatedPreview() const { return m_previewModel.activated; }
     Q_INVOKABLE QString closedPreview() const { return m_previewModel.closed; }
     Q_INVOKABLE QStringList menuTexts() const {
@@ -144,6 +152,7 @@ public Q_SLOTS:
         localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
         engine->rootContext()->setContextObject(localized);
         QQmlEngine::setContextForObject(localized, engine->rootContext());
+        engine->rootContext()->setContextProperty("statusSupport", new StatusSupport(engine));
         engine->rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(engine));
         engine->rootContext()->setContextProperty("menuTarget", new MenuTarget(engine));
         engine->rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(engine));
