@@ -44,9 +44,20 @@ bool PopupAnchor::eventFilter(QObject *object, QEvent *event)
     auto *surface = static_cast<QPlatformSurfaceEvent *>(event);
     auto *window = qobject_cast<QWindow *>(object);
     if (surface->surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated && window
-        && window->type() == Qt::Popup && window->transientParent() == m_parentWindow) {
-        m_popup = window;
-        apply(window); // Before Qt creates the xdg_popup role on first show.
+        && window->type() == Qt::Popup) {
+        // PlasmaExtras creates the widget QWindow with winId() before assigning
+        // its transient parent. Apply before first mapping, not only creation.
+        const auto attach = [this, window] {
+            if (m_parentWindow && window->transientParent() == m_parentWindow) {
+                m_popup = window;
+                apply(window);
+            }
+        };
+        attach();
+        if (!window->property("_pnd_anchor_watched").toBool()) {
+            window->setProperty("_pnd_anchor_watched", true);
+            connect(window, &QWindow::transientParentChanged, this, attach);
+        }
     }
     return false;
 }

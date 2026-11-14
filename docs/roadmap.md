@@ -26,8 +26,7 @@ not feature parity with Plasma macOS Dock and not a replacement recommendation.
 ## Subsequent stages, not implemented yet
 
 1. Optional autostart (explicit opt-in), application chooser and further configuration polish.
-2. Native application context menus and Places/recents using
-   the existing focused backend, without instantiating KDE's shortcut-registering backend.
+2. Extend native context menus as future grouping/audio-stream features are added.
 3. Grouped tasks, interactive previews, keyboard navigation, external drops and badges.
 4. Port the optional blur component with its full lifecycle regression coverage,
    then System Blur/Liquid Glass and the established indicator/bounce features.
@@ -93,3 +92,20 @@ crowded list that still fits at its preferred size. Awaiting desktop confirmatio
 Maintainer validated adaptive shrink/recovery. Wheel scrolling remains under
 validation: synthesized and horizontal events now have explicit coverage and
 fixed-root handlers; all nine local tests pass. No further sizing change.
+
+## 2026-11-14 — Adaptive sizing accepted; native context menus
+
+The maintainer confirmed adaptive shrinking, size recovery and wheel scrolling.
+PR #3 was merged into main at `075e62607d81ae37c64ce3f17be5bf65076bf258`.
+
+Branch `feature/native-context-menus` adds native PlasmaExtras menus, desktop
+application actions, Places, recent documents with KDE privacy/activity filtering,
+window operations, desktops/activities and MPRIS playback controls. It retains
+Pin/Unpin, Configure and Quit. A persistent model index prevents a popup from
+acting on a replacement task. No global shortcut backend is instantiated.
+
+Standard menu labels use KDE's translation domain and original contexts; a project
+catalog includes French for dock-specific commands. Appearance follows the native
+widget style, with no custom opacity or background. See docs/context-menus.md.
+Wayland positioning, theme matching, live recent documents and actual window/media
+operations remain maintainer desktop acceptance items. Do not merge automatically.

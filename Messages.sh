@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
+# KDE extraction convention; standard KDE strings use their installed catalogs.
+"${XGETTEXT:-xgettext}" --package-name=plasma-next-dock --from-code=UTF-8 --language=JavaScript --keyword=i18n \
+    qml/ContextMenu.qml -o "${podir:-po}/plasma-next-dock.pot"

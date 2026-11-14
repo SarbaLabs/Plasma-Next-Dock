@@ -260,3 +260,70 @@ the screen-edge corridor; reach both ends on each dock edge. Check mouse and
 trackpad, reverse direction, menu-open behavior, hover and drag. At maximum dock
 length but with every icon still fitting, there is intentionally nothing to scroll.
 Actual CachyOS input behavior remains pending maintainer confirmation.
+
+## Native context menus — 2026-11-14
+
+Maintainer acceptance: PR #3 adaptive size recovery and overflow wheel scrolling
+confirmed working and merged. These remain regression requirements.
+
+Local environment: Qt 6.8.2 / Frameworks 6.13 / Plasma 6.3.6 extracted libraries,
+offscreen Qt with software Qt Quick rendering, no KWin compositor. Ten CTest
+entries pass, including the original nine checks and native-application-menus.
+The Quick suite also includes actual PlasmaExtras/QMenu construction and activation.
+
+Completed checks:
+
+- KService resolves real fixture desktop files and applications: URLs, excludes
+  hidden desktop actions and preserves labels/icons; no KDE backend shortcuts.
+- KIO actually launches a harmless argument-recording executable: private action,
+  profile argument containing spaces, a local Place containing spaces, and a remote
+  sftp URL arrive as the expected individual arguments. No network contact occurs.
+- KFilePlacesModel custom/hidden bookmarks, group submenu, and More Places action.
+- KDE privacy disabled/blocked applications yield no recent section. A populated
+  live activity history is not available here, so recent retrieval/Forget remains manual.
+- Actual native QMenu labels and Pin/Unpin callbacks, missing-action empty sections,
+  background Configure/Quit, window menu structure, disappearing model targets.
+- Persistent target survives removal of an earlier row and never targets its
+  replacement. Widget popup late transient-parent assignment retains native anchor.
+- Project French menu labels and installed KDE French heading lookup. GNU gettext
+  needs a non-C locale; this check explicitly skips on machines lacking one. The
+  KDE-catalog check skips if its French catalog is absent. Both ran locally.
+- Existing sizing, synthetic wheel/trackpad, dragging, zoom, hover, settings,
+  launcher persistence, geometry/dodge, four-edge QML and live-model smoke checks.
+- QML parser checks, shell syntax, git diff whitespace check; staged installation
+  installs executable, absolute-Exec desktop entry and French MO catalog under the
+  requested prefix. No installation into system directories or Plasma restart.
+
+Expected headless warnings: no KWin/Activity Manager/UDisks service, no real recent
+history, offscreen keyboard grabs/raise unsupported, no Kirigami Fusion platform
+plugin. Tests do not claim native popup grabs, translucency or Wayland placement.
+
+### CachyOS acceptance checklist
+
+Quit the previous Plasma Next Dock instance through its menu before starting the
+new installed executable. Use ./install.sh; no Plasma Shell restart is required.
+
+1. On a French session compare Firefox's menu with Icons-Only Task Manager:
+   section headings, application-provided actions, private/profile launch actions
+   when supplied by the actual desktop entry, and absence of empty headings.
+2. Compare the native menu style, shadows/corners and theme-provided translucency.
+   Do not add forced opacity as a workaround. Record widget style/platform theme
+   if the two menus differ; the old plasmoid already used PlasmaExtras too.
+3. Dolphin: actual custom Places, hidden bookmarks, other groups/submenus, More
+   Places, a local folder containing spaces, and a usable remote URL.
+4. Recent files: only current application/activity history; open a recent file,
+   Forget, and KDE's no-history/blocked-application settings. Empty history is valid.
+5. Running window: close, move/resize, minimize/maximize, fullscreen, above/below,
+   shade if supported; multiple desktops/activities and output movement if offered.
+6. Supported media player: previous, play/pause, next, stop, restore/quit. Exit the
+   app while its menu is open; a removed task must close without affecting another.
+7. Pin/unpin running or closed applications, restart the dock, check saved order;
+   Configure and Quit from both an application and the empty capsule.
+8. Bottom/top/left/right: menu near the click and facing inward, nested menus,
+   keyboard arrows/Escape, click outside, screen corners and fractional scaling.
+9. After closing a menu, hover/zoom/glow, drag reorder, wheel scrolling, adaptive
+   shrink/recovery, capsule-only dodge and edge recall still work normally.
+
+This stage is not yet complete feature parity with a grouped Plasma task manager:
+window grouping/previews, per-stream volume controls, bounce and blur remain future
+stages, as documented in the roadmap.

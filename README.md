@@ -8,8 +8,8 @@ Its goal is to let icons grow beyond the visible capsule without a larger invisi
 Plasma panel causing premature window avoidance.
 
 **Status: early standalone dock with persistent settings, not yet feature-complete.**
-The foundation and edge recall were tested by the maintainer on CachyOS. New
-settings, screen switching and launcher interactions still need desktop validation. It does not modify Plasma or KWin, install a
+The foundation, settings, launcher reordering, adaptive sizing and scrolling were
+validated by the maintainer on CachyOS. Native context menus now need desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -26,12 +26,15 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
 - Solid capsule, configurable corner radius and optional bounded application-color glow.
-- A normal configuration window, saved launcher order, and right-click Pin/Unpin,
-  Configure and Quit actions.
+- A normal configuration window, saved launcher order, and native Plasma context menus:
+  desktop-entry actions, KDE Places, activity-filtered recent files, window operations,
+  desktops/activities, supported media controls, Pin/Unpin, Configure and Quit.
+- Standard menu translations from KDE, plus a project catalog (French included).
+  Native Plasma menus use the system widget style; no forced transparency or colors.
+- Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This first stage intentionally does **not** port advanced context menus, Places,
-recents, window previews, grouping,
+This first stage intentionally does **not** yet port window previews, grouping,
 System Blur/Liquid Glass, bounce, badges or the full indicator system. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
@@ -41,24 +44,25 @@ Dependencies (the KDE runtime packages are usually already installed):
 
 ```bash
 paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
-    layer-shell-qt plasma-wayland-protocols plasma-workspace kirigami breeze-icons
+    layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
+    ki18n kio kservice knotifications plasma-activities-stats plasma-integration gettext
 ```
 
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the settings development branch:
+For the native context menu development branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/adaptive-dock-sizing https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/native-context-menus https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
 
 The script builds, runs the available tests, and installs the executable and its
-own application launcher under **`~/.local`**. It requires no `sudo`, creates no
+own application launcher and translation catalog under **`~/.local`**. It requires no `sudo`, creates no
 autostart entry and does not restart Plasma Shell. Change the destination only
 when needed with `PLASMA_NEXT_DOCK_PREFIX=/your/prefix ./install.sh`.
 
@@ -195,3 +199,22 @@ Project-owned code is licensed under **GNU GPL version 2 or any later version**
 (`GPL-2.0-or-later`). See [LICENSE](LICENSE). Preserve component-specific licenses
 and copyright notices. This repository is developed with AI assistance and tested
 by its maintainer; test limitations are recorded explicitly.
+
+## Native context menus and language
+
+The dock uses `PlasmaExtras.Menu` / `MenuItem`, the same components as Plasma's
+Icons-Only Task Manager. These wrap Qt Widgets menus, so appearance comes from
+KDE platform integration and the selected application widget style/color scheme.
+They are not a custom copy of the Plasma SVG background. Opacity, shadows and
+corners are not forced by this project; a screenshot alone cannot establish which
+menu implementation another widget uses. Compare the two in the same session.
+
+KDE section headings and window commands explicitly use the task-manager
+translation catalog. Application action names come from the installed desktop
+entries; Places come from your KDE bookmarks. Project-specific menu commands use
+our own catalog, with French included and English fallback. This stage does not
+translate the entire existing settings window.
+
+See [menu architecture and limitations](docs/context-menus.md) and
+[manual validation](docs/testing.md). No Plasma Shell restart is needed: quit and
+restart **Plasma Next Dock** after running `./install.sh`.

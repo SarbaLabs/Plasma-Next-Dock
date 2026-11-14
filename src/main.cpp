@@ -2,7 +2,8 @@
 #include "dockhost.h"
 #include "icons.h"
 #include <QCommandLineParser>
-#include <QGuiApplication>
+#include <QApplication>
+#include <KLocalizedString>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QScreen>
@@ -14,7 +15,8 @@
 
 int main(int argc, char **argv)
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
+    KLocalizedString::setApplicationDomain("plasma-next-dock");
     app.setQuitOnLastWindowClosed(false);
     initializeIconPaths();
     app.setApplicationName(QStringLiteral("plasma-next-dock"));

@@ -21,7 +21,10 @@ jobs:
             qml6-module-qtquick qml6-module-qtqml-workerscript qml6-module-qtqml-models \
             qml6-module-qtquick-window qml6-module-qtquick-controls qml6-module-qtquick-templates \
             qml6-module-qtquick-layouts qml6-module-qtquick-shapes qml6-module-qttest \
-            qml6-module-org-kde-kirigami breeze-icon-theme
+            qml6-module-org-kde-kirigami breeze-icon-theme \
+            libkf6i18n-dev libkf6kio-dev libkf6service-dev libkf6notifications-dev \
+            libplasmaactivitiesstats-dev gettext locales plasma-desktop-data
+          localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
       - uses: actions/checkout@v4
       - name: Build
         run: |
@@ -35,5 +38,6 @@ jobs:
           test -x stage/usr/bin/plasma-next-dock
           test -f stage/usr/share/applications/org.sarbalabs.PlasmaNextDock.desktop
           grep -Fx 'Exec="/usr/bin/plasma-next-dock"' stage/usr/share/applications/org.sarbalabs.PlasmaNextDock.desktop
+          test -s stage/usr/share/locale/fr/LC_MESSAGES/plasma-next-dock.mo
           test ! -d stage/usr/share/plasma/plasmoids
-          bash -n install.sh uninstall.sh
+          bash -n install.sh uninstall.sh Messages.sh

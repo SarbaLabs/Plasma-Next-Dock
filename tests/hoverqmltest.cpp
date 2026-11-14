@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
 #include "popupanchor.h"
+#include "applicationmenubackend.h"
+#include "menutarget.h"
+#include <QApplication>
+#include <QMenu>
+#include <clocale>
+#include <QStandardItemModel>
+#include <QStandardPaths>
+#include <QProcess>
+#include <QDir>
+#include <KLocalizedQmlContext>
+#include <KLocalizedString>
 #include "icons.h"
 #include "settings.h"
 #include <QtQuickTest/quicktest.h>
@@ -15,9 +26,53 @@
 class Setup : public QObject
 {
     Q_OBJECT
-    QTemporaryDir m_launchers;
+    QStandardItemModel m_menuModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE QStringList menuTexts() const {
+        QStringList result;
+        for (auto *widget : QApplication::topLevelWidgets()) {
+            auto *menu = qobject_cast<QMenu *>(widget);
+            if (!menu || !menu->isVisible()) continue;
+            for (auto *action : menu->actions()) result << QString(action->text()).remove(QLatin1Char('&'));
+        }
+        return result;
+    }
+    Q_INVOKABLE bool clickMenu(const QString &label) {
+        for (auto *widget : QApplication::topLevelWidgets()) {
+            auto *menu = qobject_cast<QMenu *>(widget);
+            if (!menu || !menu->isVisible()) continue;
+            for (auto *action : menu->actions()) if (QString(action->text()).remove(QLatin1Char('&')) == label) {
+                action->trigger();
+                menu->close();
+                return true;
+            }
+        }
+        return false;
+    }
+    Q_INVOKABLE bool translationLocaleAvailable() {
+        // GNU gettext deliberately disables translation in the C locale.
+        const QByteArray current = std::setlocale(LC_MESSAGES, nullptr);
+        if (!current.startsWith("C") && current != "POSIX") return true;
+        for (const char *candidate : {"fr_FR.UTF-8", "en_US.UTF-8"})
+            if (std::setlocale(LC_MESSAGES, candidate)) return true;
+        return false;
+    }
+    Q_INVOKABLE bool kdeFrenchAvailable() const {
+        return KLocalizedString::availableDomainTranslations("plasma_applet_org.kde.plasma.taskmanager").contains("fr");
+    }
+    Q_INVOKABLE void language(const QString &language) { KLocalizedString::setLanguages({language}); m_engine->setUiLanguage(language); }
+    Q_INVOKABLE void menuFixture(const QUrl &launcher, bool window = false) {
+        m_menuModel.clear();
+        m_menuModel.setItemRoleNames({{Qt::UserRole, "LauncherUrlWithoutIcon"},
+            {Qt::UserRole + 1, "IsWindow"}, {Qt::UserRole + 2, "IsClosable"}});
+        auto *item = new QStandardItem("Test application");
+        item->setData(launcher, Qt::UserRole);
+        item->setData(window, Qt::UserRole + 1);
+        item->setData(window, Qt::UserRole + 2);
+        m_menuModel.appendRow(item);
+    }
+    Q_INVOKABLE void removeMenuTask() { m_menuModel.removeRow(0); }
     Q_INVOKABLE void wheel(QQuickItem *item, QPointF position, QPoint delta, bool synthesized, bool pixels) {
         const QPointF scene = item->mapToScene(position);
         QWheelEvent event(scene, item->window()->mapToGlobal(scene), pixels ? delta : QPoint(),
@@ -33,16 +88,35 @@ public:
 public Q_SLOTS:
     void qmlEngineAvailable(QQmlEngine *engine) {
         m_engine = engine;
+        KLocalizedString::setApplicationDomain("plasma-next-dock");
+        KLocalizedString::addDomainLocaleDir("plasma-next-dock", QStringLiteral(DOCK_TEST_LOCALE));
+        engine->rootContext()->setContextProperty("testMenuModel", &m_menuModel);
+        auto *localized = new KLocalizedQmlContext(engine);
+        localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
+        engine->rootContext()->setContextObject(localized);
+        QQmlEngine::setContextForObject(localized, engine->rootContext());
+        engine->rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(engine));
+        engine->rootContext()->setContextProperty("menuTarget", new MenuTarget(engine));
         engine->rootContext()->setContextProperty("testEnvironment", this);
         initializeIconPaths();
         engine->rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(engine));
+        const auto apps = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
+        const auto menus = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/menus";
+        QDir().mkpath(apps);
+        QDir().mkpath(menus);
+        QFile applicationsMenu(menus + "/applications.menu");
+        if (!applicationsMenu.open(QIODevice::WriteOnly)) qFatal("Cannot write test menu fixture");
+        applicationsMenu.write("<Menu><Name>Applications</Name><DefaultAppDirs/><Include><All/></Include></Menu>");
+        applicationsMenu.close();
         QStringList urls;
         for (const auto &name : {"First", "Second"}) {
-            const auto path = m_launchers.filePath(QString::fromLatin1(name) + ".desktop");
+            const auto path = apps + "/" + QString::fromLatin1(name) + ".desktop";
             QFile file(path); file.open(QIODevice::WriteOnly);
-            file.write((QString("[Desktop Entry]\nType=Application\nName=%1\nExec=/bin/true\nIcon=folder\n").arg(name)).toUtf8());
+            file.write((QString("[Desktop Entry]\nType=Application\nName=%1\nExec=/bin/true\nIcon=folder\nActions=Private;\n\n[Desktop Action Private]\nName=New Private Window\nExec=/bin/true --private\n").arg(name)).toUtf8());
             file.close(); urls << QUrl::fromLocalFile(path).toString();
         }
+        if (QProcess::execute(QStringLiteral(DOCK_KBUILDSYCOCA), {QStringLiteral("--noincremental")}) != 0)
+            qFatal("Could not build isolated test service cache");
         engine->rootContext()->setContextProperty("testLauncherUrls", urls);
         engine->rootContext()->setContextProperty("dockSettings", new DockSettings("/unused", false, engine));
         engine->rootContext()->setContextProperty("outputNames", QStringList{QString(), "DP-1"});
@@ -52,5 +126,13 @@ public Q_SLOTS:
             {"demo", true}, {"edge", 0}, {"iconSize", 40}, {"zoom", 1.5}, {"radius", 10}, {"glow", true}, {"launchers", QStringList{}}});
     }
 };
-QUICK_TEST_MAIN_WITH_SETUP(hover, Setup)
+int main(int argc, char **argv) {
+    QTemporaryDir environment;
+    qputenv("XDG_DATA_HOME", (environment.path() + "/data").toUtf8());
+    qputenv("XDG_CONFIG_HOME", (environment.path() + "/config").toUtf8());
+    qputenv("XDG_CACHE_HOME", (environment.path() + "/cache").toUtf8());
+    QApplication app(argc, argv);
+    Setup setup;
+    return quick_test_main_with_setup(argc, argv, "hover", nullptr, &setup);
+}
 #include "hoverqmltest.moc"
