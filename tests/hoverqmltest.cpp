@@ -110,6 +110,11 @@ public:
                           Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
         QCoreApplication::sendEvent(item->window(), &event);
     }
+    Q_INVOKABLE void layoutOptions(int spacing, int ends, int thickness) {
+        auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
+        options["iconSpacing"] = spacing; options["horizontalPadding"] = ends; options["verticalPadding"] = thickness;
+        m_engine->rootContext()->setContextProperty("dockOptions", options);
+    }
     Q_INVOKABLE void indicatorOptions(int mode) {
         auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
         options["indicatorMode"] = mode;

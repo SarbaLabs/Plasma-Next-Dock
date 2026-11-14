@@ -181,3 +181,11 @@ single-window effects ownership, shared rounded geometry and theme-based paint.
 Reuse the existing radius setting; do not duplicate or migrate it. Solid remains
 the default. Settings cleanup, bounce, badges and other parity items remain deferred.
 The headless validation does not replace CachyOS/KWin desktop acceptance.
+
+### PR #7 desktop refinements — 2026-11-15
+
+Background rendering is accepted by the maintainer. Remove the three ineffective
+blur tuning controls, add theme/custom border color and thickness (zero disables),
+and expose independent icon spacing plus long-axis/short-axis padding. Preserve
+the existing radius and screen-edge gap controls. Validate adaptive fit and all
+four orientations. This is focused feedback; general settings cleanup stays deferred.

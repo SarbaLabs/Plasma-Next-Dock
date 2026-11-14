@@ -254,8 +254,7 @@ DockController emits capsuleChanged only for capsule geometry/radius changes,
 separately from animated icon input regions. This supplies the same effective
 radius used by CapsuleBackground, its border, gloss, glow and collision path.
 
-BackgroundEffects coalesces GUI-thread updates, caches the rasterized region and
-contrast parameters, and never observes render-thread/per-frame signals. It
+BackgroundEffects coalesces GUI-thread updates, caches the rasterized region, and never observes render-thread/per-frame signals. It
 restores after show/exposure, native surface creation and application palette
 changes, clears requests before surface destruction, and defers application until
 visible/exposed. KWindowSystem independently restores remembered requests when its
@@ -266,3 +265,16 @@ There is no PanelView in this process to overwrite the dock's effects. The old
 plasmoid's panel mask/floating and delayed Plasma theme hooks would solve shared
 panel ownership issues that do not exist here and are intentionally not imported.
 See backgrounds.md for fallback, visual limits and desktop acceptance.
+
+### Border and independent spacing refinement
+
+User feedback removed ineffective blur saturation/contrast/brightness controls
+and native contrast registration. The old INI keys are ignored. BackgroundEffects
+now owns blur alone. CapsuleBackground exposes its existing border width/color;
+theme color stays the default, with an explicit custom override and zero-width off.
+
+Separate iconSpacing, horizontalPadding (long-axis ends) and verticalPadding
+(short-axis thickness) replace the shared/hardcoded 10/12/10 values. AdaptiveLayout
+budgets all three before zoom and output fitting; all scale with icon shrinkage.
+Short capsules use actual content plus end padding rather than a minimum 160 px.
+The canvas retains magnification headroom, and input/dodge use the updated capsule.

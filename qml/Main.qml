@@ -14,15 +14,18 @@ Item {
     readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
         vertical ? outputSize.width : outputSize.height,
-        dockOptions.spacing === undefined ? 8 : dockOptions.spacing)
+        dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
+        dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
+        dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
+        dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
     readonly property real maximum: base * dockOptions.zoom
     readonly property real depth: layoutMetrics.depth
     readonly property real length: layoutMetrics.length
-    readonly property real taskPadding: 10 * fitScale
-    readonly property real endPadding: 12 * fitScale
+    readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
+    readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
     width: vertical ? depth : length
     height: vertical ? length : depth
     property int dragIndex: -1
@@ -66,7 +69,7 @@ Item {
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
-    readonly property real barLength: Math.min(length, Math.max(160 * fitScale, taskRow.width + 2 * endPadding))
+    readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
 
     function updatePointer(position) {
         const coordinate = vertical ? position.y : position.x;
@@ -117,6 +120,8 @@ Item {
         radius: Geometry.radius(width, height, true, dockOptions.radius)
         backgroundType: dockOptions.backgroundType === undefined ? 0 : dockOptions.backgroundType
         blurOpacity: dockOptions.backgroundOpacity === undefined ? 0.35 : dockOptions.backgroundOpacity
+        customBorderWidth: dockOptions.borderWidth === undefined ? 1 : dockOptions.borderWidth
+        customBorderColor: dockOptions.borderUseTheme !== false ? Kirigami.Theme.disabledTextColor : dockOptions.borderColor
         isVertical: root.vertical
         glowEnabled: dockOptions.glow
         glowPosition: Qt.point(pointer.point.position.x - bar.x, pointer.point.position.y - bar.y)
@@ -154,7 +159,7 @@ Item {
             id: taskRow
             x: Math.max(root.endPadding, (viewport.width - width) / 2)
             height: viewport.height
-            spacing: root.taskPadding
+            spacing: (dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing) * root.fitScale
             onXChanged: root.queueGeometry()
             onWidthChanged: root.queueGeometry()
             Repeater {

@@ -51,9 +51,10 @@ available in Plasma macOS Dock while this new host is validated. See the [roadma
 Open Configure → Appearance and launchers → Capsule and style. Solid remains the
 default; updating does not change the existing appearance or saved corner radius.
 System Blur and Liquid Glass require an enabled KWin blur effect. Liquid Glass adds
-tint, saturation and internal gloss; it does not refract desktop pixels. The theme
-supplies the base/border colors. Tint opacity and blur saturation/contrast/brightness
-are saved independently of the selected mode.
+tint and internal gloss; it does not refract desktop pixels. The theme
+supplies the base/border colors. Tint opacity, border thickness/color and independent icon/end/thickness spacing
+are saved independently of the selected mode. A zero-width border is invisible.
+Spacing follows the dock orientation and participates in adaptive sizing.
 
 The native effects are built into this executable, not a plasmoid plugin. No new
 dependency, system configuration change or Plasma Shell restart is required.

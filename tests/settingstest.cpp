@@ -66,20 +66,31 @@ private Q_SLOTS:
         QCOMPARE(settings.values()["backgroundType"].toInt(), 0);
         QCOMPARE(settings.values()["radius"].toInt(), 10);
         QVERIFY(settings.apply({{"radius", 0}, {"backgroundType", 4}, {"backgroundOpacity", 0.25},
-            {"blurSaturation", 1.8}, {"blurContrast", 1.2}, {"blurBrightness", 0.9}}));
+            {"borderWidth", 0}, {"borderUseTheme", false}, {"borderColor", "#ff0000"},
+            {"iconSpacing", 18}, {"horizontalPadding", 30}, {"verticalPadding", 20}}));
         QVERIFY(settings.apply({{"backgroundType", 0}}));
         DockSettings restored(file);
         QCOMPARE(restored.values()["radius"].toInt(), 0);
         QCOMPARE(restored.values()["backgroundOpacity"].toDouble(), 0.25);
-        QCOMPARE(restored.values()["blurSaturation"].toDouble(), 1.8);
-        QCOMPARE(restored.values()["blurContrast"].toDouble(), 1.2);
-        QCOMPARE(restored.values()["blurBrightness"].toDouble(), 0.9);
+        QCOMPARE(restored.values()["borderWidth"].toInt(), 0);
+        QCOMPARE(restored.values()["borderColor"].toString(), "#ff0000");
+        QVERIFY(!restored.values()["borderUseTheme"].toBool());
+        QCOMPARE(restored.values()["iconSpacing"].toInt(), 18);
+        QCOMPARE(restored.values()["horizontalPadding"].toInt(), 30);
+        QCOMPARE(restored.values()["verticalPadding"].toInt(), 20);
         const auto clean = DockSettings::normalized({{"backgroundType", 900}, {"backgroundOpacity", -1},
-            {"blurSaturation", 99}, {"blurBrightness", std::numeric_limits<double>::quiet_NaN()}});
+            {"borderWidth", 99}, {"borderColor", "bad"}, {"iconSpacing", -9}, {"horizontalPadding", 999},
+            {"verticalPadding", std::numeric_limits<double>::quiet_NaN()}, {"blurSaturation", 2.0}});
         QCOMPARE(clean["backgroundType"].toInt(), 0);
         QCOMPARE(clean["backgroundOpacity"].toDouble(), 0.0);
-        QCOMPARE(clean["blurSaturation"].toDouble(), 3.0);
-        QCOMPARE(clean["blurBrightness"].toDouble(), 1.0);
+        QCOMPARE(clean["borderWidth"].toInt(), 12);
+        QCOMPARE(clean["borderColor"].toString(), "#808080");
+        QCOMPARE(clean["iconSpacing"].toInt(), 0);
+        QCOMPARE(clean["horizontalPadding"].toInt(), 128);
+        QCOMPARE(clean["verticalPadding"].toInt(), 10);
+        QVERIFY(!clean.contains("blurSaturation"));
+        QVERIFY(!clean.contains("blurContrast"));
+        QVERIFY(!clean.contains("blurBrightness"));
     }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");

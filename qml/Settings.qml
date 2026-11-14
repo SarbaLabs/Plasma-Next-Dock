@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs as QtDialogs
 import org.kde.kirigami as Kirigami
 
 Controls.ApplicationWindow {
@@ -11,6 +12,11 @@ Controls.ApplicationWindow {
     width: 620; height: 720
     minimumWidth: 460; minimumHeight: 400
     visible: false
+    property color borderColorValue: "#808080"
+    QtDialogs.ColorDialog {
+        id: borderDialog; title: i18n("Border color"); selectedColor: window.borderColorValue
+        onAccepted: window.borderColorValue = selectedColor
+    }
     property string launcherError: ""
     function openSettings() {
         const v = dockSettings.values;
@@ -22,9 +28,9 @@ Controls.ApplicationWindow {
         revealAnimation.checked = v.revealAnimation;
         backgroundType.currentIndex = v.backgroundType;
         backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
-        blurSaturation.value = Math.round(v.blurSaturation * 100);
-        blurContrast.value = Math.round(v.blurContrast * 100);
-        blurBrightness.value = Math.round(v.blurBrightness * 100);
+        borderWidth.value = v.borderWidth;
+        borderUseTheme.checked = v.borderUseTheme; borderColorValue = v.borderColor;
+        iconSpacing.value = v.iconSpacing; horizontalPadding.value = v.horizontalPadding; verticalPadding.value = v.verticalPadding;
         indicators.load(v);
         visible = true;
     }
@@ -41,7 +47,8 @@ Controls.ApplicationWindow {
         onApplied: dockSettings.apply(Object.assign({}, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
-            blurSaturation: blurSaturation.value / 100, blurContrast: blurContrast.value / 100, blurBrightness: blurBrightness.value / 100,
+            borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
+            iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
             radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
         onRejected: window.close()
     }
@@ -93,24 +100,6 @@ Controls.ApplicationWindow {
                     Kirigami.FormData.label: i18n("Background tint opacity (%):")
                     from: 0; to: 100; editable: true
                 }
-                Controls.SpinBox {
-                    id: blurSaturation; objectName: "blurSaturationControl"
-                    visible: backgroundType.currentIndex >= 3
-                    Kirigami.FormData.label: i18n("Blur saturation (%):")
-                    from: 0; to: 300; stepSize: 5; editable: true
-                }
-                Controls.SpinBox {
-                    id: blurContrast; objectName: "blurContrastControl"
-                    visible: backgroundType.currentIndex >= 3
-                    Kirigami.FormData.label: i18n("Blur contrast (%):")
-                    from: 0; to: 200; stepSize: 5; editable: true
-                }
-                Controls.SpinBox {
-                    id: blurBrightness; objectName: "blurBrightnessControl"
-                    visible: backgroundType.currentIndex >= 3
-                    Kirigami.FormData.label: i18n("Blur brightness (%):")
-                    from: 0; to: 200; stepSize: 5; editable: true
-                }
                 Controls.Label {
                     visible: backgroundType.currentIndex >= 3
                     Layout.fillWidth: true
@@ -118,6 +107,23 @@ Controls.ApplicationWindow {
                     wrapMode: Text.WordWrap
                 }
                 Controls.SpinBox { id: radius; objectName: "radiusControl"; Kirigami.FormData.label: i18n("Corner radius (px):"); from: 0; to: 96; editable: true }
+                Controls.SpinBox { id: borderWidth; objectName: "borderWidthControl"; Kirigami.FormData.label: i18n("Border thickness (px):"); from: 0; to: 12; editable: true }
+                Controls.CheckBox { id: borderUseTheme; objectName: "borderUseThemeControl"; text: i18n("Use theme border color"); enabled: borderWidth.value > 0 }
+                Controls.Button {
+                    objectName: "borderColorControl"
+                    Kirigami.FormData.label: i18n("Border color:")
+                    text: window.borderColorValue.toString()
+                    enabled: borderWidth.value > 0 && !borderUseTheme.checked
+                    icon.name: "color-picker"
+                    onClicked: { borderDialog.selectedColor = window.borderColorValue; borderDialog.open(); }
+                }
+                Controls.SpinBox { id: iconSpacing; objectName: "iconSpacingControl"; Kirigami.FormData.label: i18n("Space between icons (px):"); from: 0; to: 64; editable: true }
+                Controls.SpinBox { id: horizontalPadding; objectName: "horizontalPaddingControl"; Kirigami.FormData.label: i18n("Padding at both ends (px):"); from: 0; to: 128; editable: true }
+                Controls.SpinBox { id: verticalPadding; objectName: "verticalPaddingControl"; Kirigami.FormData.label: i18n("Padding across thickness (px):"); from: 0; to: 64; editable: true }
+                Controls.Label {
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    text: i18n("End padding follows the dock's length; thickness padding follows its short axis, on every screen edge. Spacing and padding scale down with icons when space is limited.")
+                }
                 Controls.CheckBox { id: glow; text: i18n("Enable hover glow") }
                 Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }
                 Controls.Label {

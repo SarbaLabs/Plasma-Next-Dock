@@ -22,13 +22,8 @@ void BackgroundEffects::configure(const QVariantMap &options)
 {
     const int mode = options.value("backgroundType", 0).toInt();
     const bool enabled = mode == 3 || mode == 4;
-    const qreal contrast = options.value("blurContrast", 1.0).toDouble();
-    const qreal brightness = options.value("blurBrightness", 1.0).toDouble();
-    const qreal saturation = options.value("blurSaturation", 1.3).toDouble();
-    if (enabled == m_enabled && contrast == m_contrast && brightness == m_brightness && saturation == m_saturation) return;
+    if (enabled == m_enabled) return;
     m_enabled = enabled;
-    m_contrast = contrast; m_brightness = brightness; m_saturation = saturation;
-    m_parametersChanged = true;
     schedule();
 }
 void BackgroundEffects::setGeometry(QRectF capsule, qreal radius)
@@ -73,7 +68,7 @@ bool BackgroundEffects::eventFilter(QObject *object, QEvent *event)
 }
 void BackgroundEffects::clear()
 {
-    if (m_window && m_applied && !m_surfaceDestroyed) writeEffects(false, {}, 1, 1, 1);
+    if (m_window && m_applied && !m_surfaceDestroyed) writeEffects(false, {});
     m_applied = false;
     m_lastRegion = {};
 }
@@ -85,16 +80,15 @@ void BackgroundEffects::apply()
         .intersected(QRect(QPoint(), m_window->size()));
     if (!m_enabled || region.isEmpty()) { clear(); return; }
     if (!m_window->isVisible() || !m_window->isExposed()) return;
-    if (!m_restore && m_applied && !m_parametersChanged && region == m_lastRegion) return;
+    if (!m_restore && m_applied && region == m_lastRegion) return;
     // Lifecycle restoration must also bypass KWindowSystem's region cache.
     if (m_restore) clear();
-    writeEffects(true, region, m_contrast, m_brightness, m_saturation);
+    writeEffects(true, region);
     m_lastRegion = region;
-    m_applied = true; m_restore = false; m_parametersChanged = false;
+    m_applied = true; m_restore = false;
     m_window->update(); // Commit changed Wayland state even while stationary.
 }
-void BackgroundEffects::writeEffects(bool enabled, const QRegion &region, qreal contrast, qreal brightness, qreal saturation)
+void BackgroundEffects::writeEffects(bool enabled, const QRegion &region)
 {
     KWindowEffects::enableBlurBehind(m_window, enabled, region);
-    KWindowEffects::enableBackgroundContrast(m_window, enabled, contrast, brightness, saturation, region);
 }

@@ -34,7 +34,12 @@ TestCase {
         indicators.cfg_indicatorMaxSegments = 7;
         findChild(window, "backgroundTypeControl").currentIndex = 4;
         findChild(window, "backgroundOpacityControl").value = 27;
-        findChild(window, "blurSaturationControl").value = 170;
+        findChild(window, "borderWidthControl").value = 0;
+        findChild(window, "iconSpacingControl").value = 18;
+        findChild(window, "horizontalPaddingControl").value = 25;
+        findChild(window, "verticalPaddingControl").value = 16;
+        window.borderColorValue = "#ff0000";
+        findChild(window, "borderUseThemeControl").checked = false;
         findChild(window, "radiusControl").value = 0;
         spacing.value = 40;
         buttons.applied();
@@ -46,10 +51,16 @@ TestCase {
         compare(spacing.value, 40);
         compare(findChild(window, "backgroundTypeControl").currentIndex, 4);
         compare(findChild(window, "backgroundOpacityControl").value, 27);
-        compare(findChild(window, "blurSaturationControl").value, 170);
+        compare(findChild(window, "borderWidthControl").value, 0);
+        compare(findChild(window, "iconSpacingControl").value, 18);
+        compare(findChild(window, "horizontalPaddingControl").value, 25);
+        compare(findChild(window, "verticalPaddingControl").value, 16);
+        compare(window.borderColorValue, "#ff0000");
+        compare(findChild(window, "borderColorControl").enabled, false);
+        compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "radiusControl").value, 0);
         window.close();
-        dockSettings.apply({backgroundType: 0, backgroundOpacity: 0.35, blurSaturation: 1.3, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

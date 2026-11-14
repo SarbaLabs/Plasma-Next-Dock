@@ -16,7 +16,8 @@ QVariantMap DockSettings::defaults()
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"backgroundType", 0}, {"backgroundOpacity", 0.35},
-        {"blurSaturation", 1.3}, {"blurContrast", 1.0}, {"blurBrightness", 1.0},
+        {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
+        {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
         {"indicatorUnfocusedColorEnabled", false},
         {"indicatorUnfocusedColor", "#3daee9"},
         {"indicatorMode", 0},
@@ -65,7 +66,10 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
     if (result["backgroundType"].toInt() < 0 || result["backgroundType"].toInt() > 4) result["backgroundType"] = 0;
     number("backgroundType", 0, 4, true); number("backgroundOpacity", 0, 1, false);
-    number("blurSaturation", 0, 3, false); number("blurContrast", 0, 2, false); number("blurBrightness", 0, 2, false);
+    number("borderWidth", 0, 12, true);
+    number("iconSpacing", 0, 64, true); number("horizontalPadding", 0, 128, true); number("verticalPadding", 0, 64, true);
+    result["borderUseTheme"] = result["borderUseTheme"].toBool();
+    result["borderColor"] = QColor::isValidColorName(result["borderColor"].toString()) ? result["borderColor"].toString() : defaults()["borderColor"];
     result["indicatorUnfocusedColorEnabled"] = result["indicatorUnfocusedColorEnabled"].toBool();
     result["indicatorUnfocusedColor"] = QColor::isValidColorName(result["indicatorUnfocusedColor"].toString()) ? result["indicatorUnfocusedColor"].toString() : defaults()["indicatorUnfocusedColor"];
     if (result["indicatorMode"].toInt() < 0 || result["indicatorMode"].toInt() > 2) result["indicatorMode"] = 0;

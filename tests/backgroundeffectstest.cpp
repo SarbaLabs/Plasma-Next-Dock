@@ -14,13 +14,12 @@ public:
     int writes = 0, clears = 0;
     bool enabled = false, guiThread = true;
     QRegion region;
-    qreal contrast = 0, brightness = 0, saturation = 0;
 protected:
-    void writeEffects(bool on, const QRegion &r, qreal c, qreal b, qreal s) override {
+    void writeEffects(bool on, const QRegion &r) override {
         guiThread &= QThread::currentThread() == qApp->thread();
         enabled = on;
         if (!on) { ++clears; return; }
-        ++writes; region = r; contrast = c; brightness = b; saturation = s;
+        ++writes; region = r;
     }
 };
 class BackgroundEffectsTest : public QObject
@@ -35,10 +34,9 @@ private Q_SLOTS:
         connect(&controller, &DockController::capsuleChanged, &effects, &BackgroundEffects::setGeometry);
         const QRectF capsule(30.5, 80.5, 300, 50);
         controller.setGeometry(capsule, 10, {}, 0);
-        effects.configure({{"backgroundType", 3}, {"blurContrast", 1.2}, {"blurBrightness", 0.9}, {"blurSaturation", 1.7}});
+        effects.configure({{"backgroundType", 3}});
         QTRY_VERIFY(effects.enabled);
         QCOMPARE(effects.region, QRegion(DockGeometry::capsule(capsule, 10).toFillPolygon().toPolygon()));
-        QCOMPARE(effects.contrast, 1.2); QCOMPARE(effects.brightness, 0.9); QCOMPARE(effects.saturation, 1.7);
         QVERIFY(!effects.region.contains(QPoint(31, 81)));
         const int writes = effects.writes;
         for (int i = 0; i < 20; ++i) {
@@ -53,8 +51,9 @@ private Q_SLOTS:
         controller.setGeometry(capsule, 999, {}, 0);
         QTRY_COMPARE(effects.writes, writes + 2);
         QCOMPARE(effects.region, QRegion(DockGeometry::capsule(capsule, 25).toFillPolygon().toPolygon()));
-        effects.configure({{"backgroundType", 4}, {"blurContrast", 0.8}});
-        QTRY_COMPARE(effects.contrast, 0.8);
+        effects.configure({{"backgroundType", 4}});
+        QTest::qWait(20);
+        QCOMPARE(effects.writes, writes + 2); // Same blur in both modes.
         for (int mode : {0, 1, 2}) {
             effects.configure({{"backgroundType", mode}});
             QTRY_VERIFY(!effects.enabled);

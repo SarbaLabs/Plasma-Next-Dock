@@ -429,3 +429,18 @@ installation checks pass. No new package dependency or installer changes are nee
 There is no live KWin compositor here. These results do not validate actual blur,
 contrast, slide animation, wallpaper transitions or GPU appearance. Follow the
 CachyOS checklist in backgrounds.md before merging.
+
+## Border and layout refinement — 2026-11-15
+
+The full 13-entry CTest suite passes, including 65 Qt Quick cases. New coverage
+checks independent (unequal) icon/end/thickness spacing and zero values on all four
+edges using actual Main.qml icon/capsule coordinates. Adaptive budget checks cover
+large padding/spacing combinations; previous shrink/recovery, overflow scroll and
+indicator anchoring tests remain green. Border checks cover zero width and custom
+color; settings tests cover persistence, Apply/reopen, ranges and ignored obsolete
+blur-tuning keys. The native blur lifecycle suite still passes after removing
+contrast registration.
+
+Compilation, QML parsing, gettext validation, whitespace and staged installation
+pass. Confirm contour appearance, large/zero padding, hover and dodge on CachyOS;
+these offscreen checks do not establish compositor pixel rendering.
