@@ -80,3 +80,10 @@ Desktop acceptance on CachyOS / KWin Wayland:
 The next planned branch covers behavior settings and the pinned/unpinned separator.
 Bounce follows later. Preview-triggered hiding of other windows requires separate
 investigation and is not implemented or represented as a working toggle here.
+
+### CachyOS installation follow-up
+
+See [testing.md](testing.md#cachyos-resource-loading-follow-up) for the Qt 6.12
+missing-resource report, isolated test resource bundle and tooltip lifetime fix.
+Failed tests stop installation; new audio controls cannot be assessed using the
+previous installed executable. Actual Qt 6.12/Plasma 6.8 acceptance remains pending.

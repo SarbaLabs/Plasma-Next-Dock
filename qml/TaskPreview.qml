@@ -4,11 +4,12 @@ import QtQuick.Window
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.core as PlasmaCore
 
 Item {
     id: panel
     // Plasma's tooltip sets this to its current owner before displaying us.
-    property var toolTip: null
+    property PlasmaCore.ToolTipArea toolTip: null
     property var dockWindow: null
     property string applicationName: ""
     property var applicationIcon: ""
@@ -28,7 +29,10 @@ Item {
     implicitHeight: Math.min(outputSize.height - 32, (visibleWindows ? 32 + (vertical ? Math.min(visibleWindows, 3) : 1) * 180 : 36) + (media.item && media.item.visible ? media.item.implicitHeight + 12 : 0))
     width: Math.max(32, implicitWidth)
     height: Math.max(32, implicitHeight)
-    function dismiss() { if (toolTip) toolTip.hideImmediately(); }
+    function dismiss() {
+        const owner = toolTip;
+        if (owner && typeof owner.hideImmediately === "function") owner.hideImmediately();
+    }
     Connections {
         target: windowPreviews
         function onTargetGone() { if (panel.displayed) panel.dismiss(); }

@@ -70,6 +70,18 @@ TestCase {
         tryCompare(panel, "displayed", false);
         tryCompare(windowPreviews, "count", 0);
     }
+    Component { id: temporaryOwner; PlasmaCore.ToolTipArea {} }
+    function test_destroyedTooltipOwnerIsCleared() {
+        const component = Qt.createComponent("qrc:/qml/TaskPreview.qml");
+        compare(component.status, Component.Ready, component.errorString());
+        const panel = component.createObject(test);
+        const owner = temporaryOwner.createObject(test);
+        panel.toolTip = owner;
+        owner.destroy();
+        tryCompare(panel, "toolTip", null);
+        panel.dismiss();
+        panel.destroy();
+    }
     function test_nativeThumbnailComponentLoads() {
         const component = Qt.createComponent("qrc:/qml/WindowThumbnail.qml");
         compare(component.status, Component.Ready, component.errorString());

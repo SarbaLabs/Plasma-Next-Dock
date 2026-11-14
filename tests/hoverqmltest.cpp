@@ -187,6 +187,21 @@ public Q_SLOTS:
     }
 };
 int main(int argc, char **argv) {
+    Q_INIT_RESOURCE(docktestqml);
+    // Fail once, before running dozens of QML cases against missing resources.
+    QFile manifest(QStringLiteral(DOCK_RESOURCE_MANIFEST));
+    if (!manifest.open(QIODevice::ReadOnly)) {
+        qCritical("Cannot read dock resource manifest");
+        return 1;
+    }
+    for (const auto &line : manifest.readAll().split('\n')) {
+        if (line.isEmpty()) continue;
+        QFile resource(QStringLiteral(":/") + QString::fromUtf8(line));
+        if (!resource.open(QIODevice::ReadOnly) || resource.size() == 0) {
+            qCritical("Missing or empty embedded test resource: %s", qPrintable(resource.fileName()));
+            return 1;
+        }
+    }
     QTemporaryDir environment;
     qputenv("XDG_DATA_HOME", (environment.path() + "/data").toUtf8());
     qputenv("XDG_CONFIG_HOME", (environment.path() + "/config").toUtf8());

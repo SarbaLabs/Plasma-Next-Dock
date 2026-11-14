@@ -484,3 +484,25 @@ replaced it. Wait for replacement before observing the new item's zero/hidden
 state. Also cover explicit group selection while a title tooltip is already open,
 and retain compact tooltips for tasks without media. Full CI is rerun after this
 correction; real desktop acceptance remains required.
+
+### CachyOS resource-loading follow-up
+
+The maintainer's Qt 6.12 run could not load any embedded QML in hoverqmltest,
+while the executable's smoke tests passed. Both targets previously generated
+resources with the same `dockqml` name/output paths. Give the test bundle its own
+`docktestqml` name, explicit source base, and explicit Q_INIT_RESOURCE reference.
+Validate every packaged QML/JS file before entering QuickTest so packaging failures
+produce one actionable error rather than a cascade of null-component failures.
+The exact Qt 6.12 failure is not reproduced on the local Qt 6.8 runner; confirmation
+on CachyOS is required. Do not claim all Qt versions have been tested.
+
+A typed Plasma ToolTipArea reference now clears when its owner is destroyed;
+dismissal checks the method before calling it. A regression test destroys an owner
+and dismisses the remaining preview. This protects the separate stale-tooltip
+error observed in the existing installed executable.
+
+The installer intentionally stops on failed tests, before cmake --install. Missing
+new audio UI after this failure can therefore be the previous installed binary.
+Update the branch and rerun ./install.sh; do not bypass tests. Quit/restart only
+Plasma Next Dock after successful installation. Audio matching still needs actual
+desktop validation once the new binary is installed.

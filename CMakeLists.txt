@@ -41,7 +41,7 @@ set(DOCK_QML_FILES
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml
     qml/CapsuleBackground.qml qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
     qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
-qt_add_resources(plasma-next-dock dockqml PREFIX / FILES ${DOCK_QML_FILES})
+qt_add_resources(plasma-next-dock dockqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.
@@ -63,7 +63,13 @@ if(BUILD_TESTING)
     target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest Qt6::DBus)
     target_compile_definitions(hoverqmltest PRIVATE DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
     add_dependencies(hoverqmltest pofiles)
-    qt_add_resources(hoverqmltest dockqml PREFIX / FILES ${DOCK_QML_FILES})
+    # Resource names determine generated paths, not only linker symbols. Never
+    # reuse the application's name for another target in this build directory.
+    qt_add_resources(hoverqmltest docktestqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
+    string(JOIN "\n" dock_resource_manifest ${DOCK_QML_FILES})
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dock-resource-manifest.txt" "${dock_resource_manifest}\n")
+    target_compile_definitions(hoverqmltest PRIVATE
+        DOCK_RESOURCE_MANIFEST="${CMAKE_CURRENT_BINARY_DIR}/dock-resource-manifest.txt")
     add_test(NAME hover-and-render COMMAND hoverqmltest -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml)
     set_tests_properties(hover-and-render PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
     find_program(DOCK_DBUS_RUN_SESSION dbus-run-session REQUIRED)
