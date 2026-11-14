@@ -100,10 +100,10 @@ TestCase {
         const icon = findChild(dock.item, "icon0");
         const menu = findChild(dock.item, "dockMenu");
         mouseClick(icon, icon.width / 2, icon.height / 2, Qt.RightButton);
-        tryCompare(menu, "visible", true);
+        tryCompare(menu, "visibleMenu", true);
         compare(menu.launcherUrl, ""); // Demo icons must never expose pin actions.
         menu.close();
-        tryCompare(menu, "visible", false);
+        tryCompare(menu, "visibleMenu", false);
         mouseMove(testCase, 700, 250);
     }
     function test_transparentDrawingMargin() {

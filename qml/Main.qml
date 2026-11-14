@@ -42,7 +42,7 @@ Item {
         if (!dragging) return;
         dragIndex = -1;
         if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
-        dockController.setHovered(pointer.hovered || contextMenu.visible);
+        dockController.setHovered(pointer.hovered || contextMenu.visibleMenu);
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
@@ -229,7 +229,7 @@ Item {
     }
     component DockWheelHandler: WheelHandler {
         target: null
-        enabled: viewport.contentWidth > viewport.width && !contextMenu.visible
+        enabled: viewport.contentWidth > viewport.width && !contextMenu.visibleMenu
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: event => root.scrollWheel(event, orientation)
     }
@@ -262,18 +262,7 @@ Item {
     TapHandler {
         acceptedButtons: Qt.RightButton
         onTapped: eventPoint => {
-            contextMenu.launcherUrl = "";
-            if (!dockOptions.demo) {
-                for (let i = 0; i < repeater.count; ++i) {
-                    const slot = repeater.itemAt(i);
-                    const p = slot.iconItem.mapFromItem(root, eventPoint.position.x, eventPoint.position.y);
-                    if (p.x >= 0 && p.y >= 0 && p.x < slot.iconItem.width && p.y < slot.iconItem.height) {
-                        contextMenu.launcherUrl = String(slot.model.LauncherUrlWithoutIcon || slot.model.LauncherUrl || "");
-                        break;
-                    }
-                }
-            }
-            contextMenu.pinned = contextMenu.launcherUrl.length > 0 && taskSource.item.pinned(contextMenu.launcherUrl);
+            const row = dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false);
             // Include magnified icons so the menu does not cover their inner edge.
             let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
             for (let i = 0; i < repeater.count; ++i) {
@@ -283,36 +272,15 @@ Item {
                 left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
                 right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
             }
-            const position = Interaction.menuPosition(dockOptions.edge,
-                Qt.rect(left, top, right - left, bottom - top), eventPoint.position,
-                Qt.size(contextMenu.implicitWidth, contextMenu.implicitHeight), 6);
-            // Use a parent-local native anchor: recent Qt ignores popup(x,y)
-            // on Wayland when it has a parent control rectangle.
             const anchor = Interaction.menuAnchor(dockOptions.edge,
                 Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
-            dockMenuAnchor.prepare(root, Qt.point(anchor.x, anchor.y), dockOptions.edge);
-            contextMenu.popup(root, position.x, position.y);
+            contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row);
         }
     }
-    Controls.Menu {
+    ContextMenu {
         id: contextMenu
         objectName: "dockMenu"
-        popupType: Controls.Popup.Window
-        parent: root
-        // The menu must extend outside the narrow layer surface, not fit inside it.
-        margins: -1
-        property string launcherUrl: ""
-        property bool pinned: false
-        onVisibleChanged: dockController.setHovered(pointer.hovered || visible || root.dragging)
-        Controls.MenuItem {
-            text: contextMenu.pinned ? qsTr("Unpin from Dock") : qsTr("Pin to Dock")
-            visible: contextMenu.launcherUrl.length > 0
-            height: visible ? implicitHeight : 0
-            onTriggered: taskSource.item.togglePinned(contextMenu.launcherUrl)
-        }
-        Controls.MenuSeparator { visible: contextMenu.launcherUrl.length > 0; height: visible ? implicitHeight : 0 }
-        Controls.MenuItem { text: qsTr("Configure Plasma Next Dock…"); onTriggered: dockSettings.configure() }
-        Controls.MenuItem { text: qsTr("Quit Plasma Next Dock"); onTriggered: Qt.quit() }
+        onOpenedChanged: opened => dockController.setHovered(pointer.hovered || opened || root.dragging)
     }
     Controls.Label {
         anchors.centerIn: bar
@@ -323,6 +291,6 @@ Item {
         id: pointer
         blocking: false
         onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visible || root.dragging)
+        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visibleMenu || root.dragging)
     }
 }

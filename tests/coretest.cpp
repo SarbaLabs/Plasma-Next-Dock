@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
 #include "popupanchor.h"
+#include "menutarget.h"
+#include <QStandardItemModel>
 #include <QTest>
 #include <QSignalSpy>
 
@@ -25,6 +27,38 @@ class CoreTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void persistentMenuTarget() {
+        QStandardItemModel model;
+        model.setItemRoleNames({{Qt::DisplayRole, "display"}});
+        model.appendRow(new QStandardItem("First"));
+        model.appendRow(new QStandardItem("Second"));
+        MenuTarget target;
+        target.bind(&model, 1);
+        QCOMPARE(target.data("display").toString(), QString("Second"));
+        model.removeRow(0);
+        QCOMPARE(target.index().row(), 0);
+        QCOMPARE(target.data("display").toString(), QString("Second"));
+        QSignalSpy removed(&target, &MenuTarget::invalidated);
+        model.removeRow(0);
+        QVERIFY(!target.valid());
+        QCOMPARE(removed.count(), 1);
+        model.appendRow(new QStandardItem("Replacement"));
+        QVERIFY(!target.valid());
+        QVERIFY(!target.data("display").isValid());
+    }
+    void widgetPopupLateTransientParent() {
+        QQuickWindow dock;
+        dock.resize(300, 400);
+        PopupAnchor anchor;
+        anchor.prepare(dock.contentItem(), QPointF(50, 70), 2);
+        QWindow popup;
+        popup.setFlags(Qt::Popup);
+        popup.create(); // PlasmaExtras/QMenu calls winId before setting the parent.
+        QVERIFY(!popup.property("_q_waylandPopupAnchorRect").isValid());
+        popup.setTransientParent(&dock);
+        QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(50,70,1,1));
+    }
+
     void nativePopupAnchorLifecycle() {
         QQuickWindow dock;
         dock.resize(300, 400);

@@ -37,3 +37,23 @@ need to be conveyed under GPLv3 when using LGPLv3-only dependencies; do not desc
 the complete dependency combination as GPLv2-only. Audit the actual dependency and
 asset licenses before distributing binary packages. Keep corresponding source and
 build/install scripts available under the applicable terms.
+
+## Native context menus
+
+- `src/applicationmenubackend.{h,cpp}`: imported from the same donor commit
+  `cd5fa9d9efc31a08bbe4c6d346b46771dec4acca`, corresponding paths under `src/`.
+  Focused KDE taskmanager backend adaptation, GPL-2.0-or-later, Eike Hein notices
+  preserved. No shortcut-registration or plasmoid backend is instantiated.
+- `qml/ContextMenu.qml`: standalone adaptation of KDE plasma-desktop
+  `applets/taskmanager/qml/ContextMenu.qml` (commit `f1d3689715c0d65376b78d4b649b437dee092d98`, consulted 2026-11-14).
+  Eike Hein and Kai Uwe Broulik notices preserved, GPL-2.0-or-later. Uses installed
+  PlasmaExtras.Menu/MenuItem rather than copying their Qt Widgets implementation.
+- Standard labels reuse installed `plasma_applet_org.kde.plasma.taskmanager`
+  translations with their original contexts. Project-specific labels use the
+  `plasma-next-dock` KI18n catalog; its French PO is included.
+
+The native integration tests `tests/applicationmenutest.cpp` and
+`tests/menulaunchprobe.cpp` are also adapted from the same donor commit and paths,
+GPL-2.0-or-later. The optional-plasmoid bridge test was removed because this host
+links its own backend directly. No upstream translation catalog is bundled;
+standard translations are provided by the installed KDE packages.

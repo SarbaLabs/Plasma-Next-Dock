@@ -38,3 +38,11 @@
   insufficient. Recheck the internal property contract after Qt upgrades.
 - Installed desktop entries must use the installed executable's quoted absolute
   path; the host portal's PATH may not include ~/.local/bin.
+
+- Native context menus use PlasmaExtras.Menu/MenuItem under QApplication. Do not
+  replace them with painted Qt Quick menus or force opacity/style/palette. KDE
+  standard labels need the explicit task-manager catalog and original context;
+  dock-specific labels belong to plasma-next-dock and po/. Keep English fallback.
+- Keep application launching in KIO with structured QUrls. Never concatenate shell
+  commands. Preserve KDE history privacy and activity filtering. Target window
+  actions through MenuTarget's persistent model index, never a saved row number.

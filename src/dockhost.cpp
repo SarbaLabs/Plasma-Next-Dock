@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "dockhost.h"
 #include "popupanchor.h"
+#include "applicationmenubackend.h"
+#include "menutarget.h"
+#include <KLocalizedQmlContext>
 #include <LayerShellQt/Window>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -42,6 +45,12 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
         connect(m_screenEdge.get(), &ScreenEdge::availabilityChanged, &m_controller, &DockController::setEdgeAvailable);
         connect(&m_controller, &DockController::stateChanged, this, [this] { m_screenEdge->setHidden(m_controller.hideRequested()); });
     }
+    auto *localized = new KLocalizedQmlContext(m_view.engine());
+    localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
+    m_view.engine()->rootContext()->setContextObject(localized);
+    QQmlEngine::setContextForObject(localized, m_view.engine()->rootContext());
+    m_view.rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(this));
+    m_view.rootContext()->setContextProperty("menuTarget", new MenuTarget(this));
     m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);

@@ -1,0 +1,22 @@
+# French translations for Plasma Next Dock.
+# SPDX-License-Identifier: GPL-2.0-or-later
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma-next-dock\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Pin to Dock"
+msgstr "Épingler au dock"
+
+msgid "Unpin from Dock"
+msgstr "Détacher du dock"
+
+msgid "Configure Plasma Next Dock…"
+msgstr "Configurer Plasma Next Dock…"
+
+msgid "Quit Plasma Next Dock"
+msgstr "Quitter Plasma Next Dock"
