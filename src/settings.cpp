@@ -14,7 +14,7 @@ DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"backgroundType", 0}, {"backgroundOpacity", 0.35},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
@@ -63,6 +63,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
             : QVariant(integer ? std::round(std::clamp(value, low, high)) : std::clamp(value, low, high));
     };
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
+    number("blastRadius", 0, 8, true); number("hoverLift", 0, 64, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
     if (result["backgroundType"].toInt() < 0 || result["backgroundType"].toInt() > 4) result["backgroundType"] = 0;
     number("backgroundType", 0, 4, true); number("backgroundOpacity", 0, 1, false);

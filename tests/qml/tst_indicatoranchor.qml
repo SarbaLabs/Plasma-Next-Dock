@@ -13,6 +13,7 @@ TestCase {
         dock.item.hovering = false;
         testEnvironment.setEdge(0);
         testEnvironment.indicatorOptions(0);
+        testEnvironment.hoverOptions(2, 0);
     }
     function test_crossAxisStaysFixedDuringZoom_data() {
         const rows = [];
@@ -24,6 +25,7 @@ TestCase {
         tryCompare(dock, "status", Loader.Ready);
         testEnvironment.setEdge(data.edge);
         testEnvironment.indicatorOptions(data.mode);
+        testEnvironment.hoverOptions(2, 24);
         const source = findChild(dock.item, "taskSourceLoader");
         source.item.tasks.setProperty(2, "IsWindow", true);
         const slot = findChild(dock.item, "task2");
@@ -34,6 +36,8 @@ TestCase {
         tryVerify(() => findChild(indicator, name) !== null);
         const segment = findChild(indicator, name);
         wait(150); // Settle the intentional indicator state animation first.
+        const icon = findChild(dock.item, "icon2");
+        const iconBefore = icon.mapToItem(dock.item, 0, 0);
         const before = segment.mapToItem(dock.item, 0, 0);
         const cross = data.edge < 2 ? before.y : before.x;
         dock.item.pointerIndex = 2;
@@ -45,6 +49,12 @@ TestCase {
             const point = segment.mapToItem(dock.item, 0, 0);
             fuzzyCompare(data.edge < 2 ? point.y : point.x, cross, 0.01);
         }
+        const iconAfter = icon.mapToItem(dock.item, 0, 0);
+        verify(iconAfter.x >= -0.01 && iconAfter.y >= -0.01);
+        verify(iconAfter.x + icon.width <= dock.item.width + 0.01);
+        verify(iconAfter.y + icon.height <= dock.item.height + 0.01);
+        const delta = data.edge < 2 ? iconAfter.y - iconBefore.y : iconAfter.x - iconBefore.x;
+        verify(data.edge === 0 || data.edge === 3 ? delta < -20 : delta > 20, "Lift points inward");
         verify(slot.size > 55, "Icon actually magnified during this check");
         dock.item.hovering = false;
         for (let i = 0; i < 12; ++i) {

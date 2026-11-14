@@ -278,3 +278,21 @@ Separate iconSpacing, horizontalPadding (long-axis ends) and verticalPadding
 budgets all three before zoom and output fitting; all scale with icon shrinkage.
 Short capsules use actual content plus end padding rather than a minimum 160 px.
 The canvas retains magnification headroom, and input/dodge use the updated capsule.
+
+### Configurable magnification reach and lift
+
+blastRadius (0–8, default 2) controls the number of neighboring icon centers within
+the squared falloff. The existing 2.4-icon denominator is preserved at the default
+(radius + 0.4); radius zero uses a half-icon interval and affects only the nearest
+icon. Fractional pointer positions retain continuous interpolation.
+
+AdaptiveLayout computes a bounded sum of falloff weights for the selected radius.
+The same budget caps overlapping animation tails and reserves canvas length before
+hover, preventing clipping or a wide radius being flattened by the old fixed budget.
+The default keeps the former two-icon-equivalent reserve.
+
+hoverLift (0–64 logical px, default 0) adds an inward offset using the same animated
+weight, independent of zoom amplitude. It works even at 100% magnification. Extra
+headroom is reserved before hovering, participates in adaptive fitting, and never
+changes the resting capsule or dodge region. Input and preview anchors follow the
+actual lifted icon. Indicators remain in their separate resting lane.

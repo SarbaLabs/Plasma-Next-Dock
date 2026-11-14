@@ -92,6 +92,20 @@ private Q_SLOTS:
         QVERIFY(!clean.contains("blurContrast"));
         QVERIFY(!clean.contains("blurBrightness"));
     }
+    void hoverSettings() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["blastRadius"].toInt(), 2);
+        QCOMPARE(settings.values()["hoverLift"].toInt(), 0);
+        QVERIFY(settings.apply({{"blastRadius", 4}, {"hoverLift", 6}}));
+        DockSettings restored(file);
+        QCOMPARE(restored.values()["blastRadius"].toInt(), 4);
+        QCOMPARE(restored.values()["hoverLift"].toInt(), 6);
+        const auto clean = DockSettings::normalized({{"blastRadius", -1}, {"hoverLift", 999}});
+        QCOMPARE(clean["blastRadius"].toInt(), 0);
+        QCOMPARE(clean["hoverLift"].toInt(), 64);
+    }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file, false);

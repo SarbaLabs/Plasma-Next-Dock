@@ -329,3 +329,9 @@ msgstr "Marges dans l’épaisseur (px) :"
 
 msgid "End padding follows the dock's length; thickness padding follows its short axis, on every screen edge. Spacing and padding scale down with icons when space is limited."
 msgstr "Les marges aux extrémités suivent la longueur du dock ; celles dans l’épaisseur suivent son axe court, quel que soit le bord de l’écran. Les espacements et les marges diminuent avec les icônes lorsque la place manque."
+
+msgid "Blast radius (neighbor icons):"
+msgstr "Portée du grossissement (icônes voisines) :"
+
+msgid "Hover lift (px):"
+msgstr "Soulèvement au survol (px) :"

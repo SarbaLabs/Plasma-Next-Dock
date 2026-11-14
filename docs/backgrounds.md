@@ -129,3 +129,14 @@ than promising effects the tested compositor does not provide. Tint opacity rema
 Check border 0/1/3 px, custom/theme colors, and independent 0/default/large spacing
 and padding on all four edges. Repeat adaptive shrink/recovery and overflow scroll,
 magnification, indicator alignment, glow clipping, previews and dodge.
+
+## Hover controls
+
+Position and appearance now exposes Blast radius (neighbor icons), 0–8, and
+Hover lift (px), 0–64. Defaults are 2 and 0, preserving the previous appearance.
+Try radius 2 and lift 6 for the requested example. Lift points into the desktop
+on every edge, scales down with adaptive icons, and leaves the capsule/indicators
+stationary across its thickness. Larger radii reserve more length for neighboring
+zoom, so a crowded dock may shrink sooner. Check 100% magnification with lift,
+zero radius/lift, large radii, four edges, scrolling, previews and rapid pointer
+movement. These remain desktop acceptance items.

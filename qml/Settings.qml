@@ -23,6 +23,7 @@ Controls.ApplicationWindow {
         edge.currentIndex = v.edge;
         screen.currentIndex = Math.max(0, outputNames.indexOf(v.screen));
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
+        blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing; radius.value = v.radius;
         glow.checked = v.glow; dodge.checked = v.dodge;
         revealAnimation.checked = v.revealAnimation;
@@ -49,6 +50,7 @@ Controls.ApplicationWindow {
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
             iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
+            blastRadius: blastRadius.value, hoverLift: hoverLift.value,
             radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
         onRejected: window.close()
     }
@@ -87,6 +89,8 @@ Controls.ApplicationWindow {
                 Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
                 Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
                 Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
+                Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
+                Controls.SpinBox { id: hoverLift; objectName: "hoverLiftControl"; Kirigami.FormData.label: i18n("Hover lift (px):"); from: 0; to: 64; editable: true }
                 Controls.Label { text: i18n("Capsule and style"); font.bold: true; Kirigami.FormData.isSection: true }
                 Controls.ComboBox {
                     id: backgroundType; objectName: "backgroundTypeControl"

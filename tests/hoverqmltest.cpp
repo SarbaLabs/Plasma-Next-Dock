@@ -110,6 +110,11 @@ public:
                           Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
         QCoreApplication::sendEvent(item->window(), &event);
     }
+    Q_INVOKABLE void hoverOptions(int radius, int lift) {
+        auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
+        options["blastRadius"] = radius; options["hoverLift"] = lift;
+        m_engine->rootContext()->setContextProperty("dockOptions", options);
+    }
     Q_INVOKABLE void layoutOptions(int spacing, int ends, int thickness) {
         auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
         options["iconSpacing"] = spacing; options["horizontalPadding"] = ends; options["verticalPadding"] = thickness;
@@ -156,7 +161,8 @@ public Q_SLOTS:
         QStringList urls;
         for (const auto &name : {"First", "Second"}) {
             const auto path = apps + "/" + QString::fromLatin1(name) + ".desktop";
-            QFile file(path); file.open(QIODevice::WriteOnly);
+            QFile file(path);
+            if (!file.open(QIODevice::WriteOnly)) qFatal("Could not create isolated desktop-entry fixture");
             file.write((QString("[Desktop Entry]\nType=Application\nName=%1\nExec=/bin/true\nIcon=folder\nActions=Private;\n\n[Desktop Action Private]\nName=New Private Window\nExec=/bin/true --private\n").arg(name)).toUtf8());
             file.close(); urls << QUrl::fromLocalFile(path).toString();
         }

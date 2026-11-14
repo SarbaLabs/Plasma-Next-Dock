@@ -444,3 +444,15 @@ contrast registration.
 Compilation, QML parsing, gettext validation, whitespace and staged installation
 pass. Confirm contour appearance, large/zero padding, hover and dodge on CachyOS;
 these offscreen checks do not establish compositor pixel rendering.
+
+## Magnification reach and hover lift — 2026-11-15
+
+All 13 CTest suites pass, including 66 Qt Quick cases. Falloff tests sample fractional
+pointer positions at every radius 0–8 and check the shared maximum-weight budget.
+Large lift/radius combinations stay inside output budgets. Actual Main.qml zoom
+tests now use 24 px lift, checking inward displacement, canvas containment and
+stationary Plasma/Custom indicators on all four edges throughout animation.
+Settings tests cover defaults, persistence, clamping and Apply/reopen for both
+controls. Fixture creation now checks QFile::open instead of ignoring its return.
+QML parsing, gettext, whitespace and staged installation pass. Live Wayland
+appearance, pointer travel and previews still require desktop confirmation.

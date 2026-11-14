@@ -189,3 +189,11 @@ blur tuning controls, add theme/custom border color and thickness (zero disables
 and expose independent icon spacing plus long-axis/short-axis padding. Preserve
 the existing radius and screen-edge gap controls. Validate adaptive fit and all
 four orientations. This is focused feedback; general settings cleanup stays deferred.
+
+### Hover controls — 2026-11-15
+
+Add blast radius and hover lift to PR #7. Preserve the existing falloff at radius 2
+and default lift to zero; both settings persist. Reserve the variable zoom budget
+and lift headroom in adaptive layout, keep resting indicators fixed, and validate
+all four inward directions. Also check fixture file opening instead of ignoring
+QFile::open's nodiscard result on newer Qt.

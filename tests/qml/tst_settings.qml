@@ -41,6 +41,8 @@ TestCase {
         window.borderColorValue = "#ff0000";
         findChild(window, "borderUseThemeControl").checked = false;
         findChild(window, "radiusControl").value = 0;
+        findChild(window, "blastRadiusControl").value = 4;
+        findChild(window, "hoverLiftControl").value = 6;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
@@ -49,6 +51,8 @@ TestCase {
         window.close();
         window.openSettings();
         compare(spacing.value, 40);
+        compare(findChild(window, "blastRadiusControl").value, 4);
+        compare(findChild(window, "hoverLiftControl").value, 6);
         compare(findChild(window, "backgroundTypeControl").currentIndex, 4);
         compare(findChild(window, "backgroundOpacityControl").value, 27);
         compare(findChild(window, "borderWidthControl").value, 0);
@@ -60,7 +64,7 @@ TestCase {
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "radiusControl").value, 0);
         window.close();
-        dockSettings.apply({backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

@@ -9,6 +9,20 @@ TestCase {
     visible: true
     when: windowShown
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
+    function test_radiusBudgetAndLift() {
+        for (let r = 0; r <= 8; ++r) {
+            for (let p = 0; p < 1; p += 0.05) {
+                let total = 0;
+                for (let i = -10; i <= 10; ++i) total += Adaptive.hoverWeight(p - i, r);
+                verify(total <= Adaptive.zoomBudget(r) + 0.00001);
+            }
+            compare(Adaptive.hoverWeight(r + 1, r), 0);
+            if (r > 0) verify(Adaptive.hoverWeight(r, r) > 0);
+            const m = Adaptive.metrics(40, 40, 1.5, 984, 120, 8, 10, 12, 10, r, 64);
+            verify(m.depth <= 120 && m.length <= 984);
+        }
+        fuzzyCompare(Adaptive.hoverWeight(1, 2), Math.pow(1 - 1 / 2.4, 2), 0.00001);
+    }
     function test_limitsAndMonotonicity() {
         for (const preferred of [24, 40, 96]) {
             for (const zoom of [1, 1.5, 2.5]) {

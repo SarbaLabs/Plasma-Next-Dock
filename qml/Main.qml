@@ -17,7 +17,8 @@ Item {
         dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
-        dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding)
+        dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -64,7 +65,9 @@ Item {
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
-    readonly property real zoomBudgetScale: Math.min(1, 2 / Math.max(2, animatedWeight))
+    readonly property int blastRadius: dockOptions.blastRadius === undefined ? 2 : dockOptions.blastRadius
+    readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
+    readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
     property real pointerIndex: -10
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
@@ -171,8 +174,8 @@ Item {
                     objectName: "task" + index
                     required property int index
                     required property var model
-                    readonly property real factor: root.hovering && !root.dragging ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
-                    property real animatedFactor: factor * factor
+                    readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
+                    property real animatedFactor: factor
                     property real reportedFactor: 0
                     onAnimatedFactorChanged: {
                         root.animatedWeight += animatedFactor - reportedFactor;
@@ -218,7 +221,10 @@ Item {
                         width: slot.size; height: width
                         x: 0
                         // After a clockwise rotation, local bottom is the screen's left.
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + root.taskPadding : slot.height - height - root.edgeSpacing - root.taskPadding
+                        readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
+                            ? root.edgeSpacing + root.taskPadding + lift
+                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
