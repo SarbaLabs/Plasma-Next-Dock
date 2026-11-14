@@ -3,6 +3,7 @@
 #include "screenedge.h"
 #include "qwayland-kde-screen-edge-v1.h"
 #include <QEvent>
+#include <KWindowEffects>
 #include <QPlatformSurfaceEvent>
 #include <QWaylandClientExtension>
 #include <qpa/qplatformwindow_p.h>
@@ -28,6 +29,8 @@ public:
     std::unique_ptr<EdgeObject> object;
     bool requested = false;
     bool armed = false;
+    bool animated = true;
+    bool animationApplied = false;
 };
 ScreenEdge::ScreenEdge(QWindow *window, DockGeometry::Edge edge) : QObject(window), d(std::make_unique<Private>())
 {
@@ -35,13 +38,18 @@ ScreenEdge::ScreenEdge(QWindow *window, DockGeometry::Edge edge) : QObject(windo
     d->edge = edge;
     window->installEventFilter(this);
     connect(&d->manager, &QWaylandClientExtension::activeChanged, this, [this] {
-        if (!available()) { d->object.reset(); d->armed = false; }
+        if (!available()) { d->object.reset(); d->armed = false; d->animationApplied = false; }
         synchronize();
         Q_EMIT availabilityChanged(available());
     });
 }
 ScreenEdge::~ScreenEdge() = default;
 bool ScreenEdge::available() const { return d->manager.isActive(); }
+void ScreenEdge::setAnimated(bool animated)
+{
+    if (d->animated != animated) { d->animated = animated; d->animationApplied = false; }
+    synchronize();
+}
 void ScreenEdge::setHidden(bool hidden)
 {
     d->requested = hidden;
@@ -55,6 +63,7 @@ bool ScreenEdge::eventFilter(QObject *object, QEvent *event)
             && static_cast<QPlatformSurfaceEvent *>(event)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)) {
         d->object.reset();
         d->armed = false;
+        d->animationApplied = false;
     }
     return QObject::eventFilter(object, event);
 }
@@ -74,6 +83,12 @@ void ScreenEdge::synchronize()
         }
         d->object = std::make_unique<EdgeObject>(d->manager.get_auto_hide_screen_edge(border, native->surface()));
         d->armed = false;
+    }
+    if (!d->animationApplied) {
+        const KWindowEffects::SlideFromLocation directions[] = {KWindowEffects::BottomEdge,
+            KWindowEffects::TopEdge, KWindowEffects::LeftEdge, KWindowEffects::RightEdge};
+        KWindowEffects::slideWindow(d->window, d->animated ? directions[d->edge] : KWindowEffects::NoEdge, 0);
+        d->animationApplied = true;
     }
     if (d->armed == d->requested) return;
     d->armed = d->requested;

@@ -110,6 +110,14 @@ public:
                           Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
         QCoreApplication::sendEvent(item->window(), &event);
     }
+    Q_INVOKABLE void indicatorOptions(int mode) {
+        auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
+        options["indicatorMode"] = mode;
+        options["taskDecorations"] = 2;
+        options["indicatorAnimations"] = true;
+        options["indicatorStyle"] = 2;
+        m_engine->rootContext()->setContextProperty("dockOptions", options);
+    }
     Q_INVOKABLE void setEdge(int edge) {
         auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
         options["edge"] = edge;

@@ -7,7 +7,7 @@ import org.kde.kirigami as Kirigami
 Controls.ApplicationWindow {
     id: window
     objectName: "settingsWindow"
-    title: qsTr("Configure Plasma Next Dock")
+    title: i18n("Configure Plasma Next Dock")
     width: 620; height: 720
     minimumWidth: 460; minimumHeight: 400
     visible: false
@@ -19,6 +19,8 @@ Controls.ApplicationWindow {
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         spacing.value = v.spacing; radius.value = v.radius;
         glow.checked = v.glow; dodge.checked = v.dodge;
+        revealAnimation.checked = v.revealAnimation;
+        indicators.load(v);
         visible = true;
     }
     function moveLauncher(index, delta) {
@@ -31,13 +33,20 @@ Controls.ApplicationWindow {
     footer: Controls.DialogButtonBox {
         objectName: "settingsButtons"
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
-        onApplied: dockSettings.apply({edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
+        onApplied: dockSettings.apply(Object.assign({}, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
-            radius: radius.value, glow: glow.checked, dodge: dodge.checked})
+            radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
         onRejected: window.close()
     }
-    Controls.ScrollView {
-        anchors.fill: parent
+    header: Controls.TabBar {
+        id: pages
+        Controls.TabButton { text: i18n("Appearance and launchers") }
+        Controls.TabButton { text: i18n("Indicators") }
+    }
+    StackLayout {
+      anchors.fill: parent
+      currentIndex: pages.currentIndex
+      Controls.ScrollView {
         contentWidth: availableWidth
         ColumnLayout {
             width: parent.width
@@ -45,38 +54,44 @@ Controls.ApplicationWindow {
             Kirigami.FormLayout {
                 Layout.fillWidth: true
                 Layout.margins: 16
-                Controls.Label { text: qsTr("Position and appearance"); font.bold: true; Kirigami.FormData.isSection: true }
+                Controls.Label { text: i18n("Position and appearance"); font.bold: true; Kirigami.FormData.isSection: true }
                 Controls.ComboBox {
                     id: screen
                     objectName: "screenControl"
                     // Avoid style content-item/implicit-width feedback in Breeze.
                     implicitWidth: Kirigami.Units.gridUnit * 16
-                    Kirigami.FormData.label: qsTr("Screen:")
-                    model: outputNames.map(name => name || qsTr("Primary screen"))
+                    Kirigami.FormData.label: i18n("Screen:")
+                    model: outputNames.map(name => name || i18n("Primary screen"))
                 }
                 Controls.ComboBox {
                     id: edge
                     objectName: "edgeControl"
                     implicitWidth: Kirigami.Units.gridUnit * 16
-                    Kirigami.FormData.label: qsTr("Edge:")
-                    model: [qsTr("Bottom"), qsTr("Top"), qsTr("Left"), qsTr("Right")]
+                    Kirigami.FormData.label: i18n("Edge:")
+                    model: [i18n("Bottom"), i18n("Top"), i18n("Left"), i18n("Right")]
                 }
-                Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: qsTr("Distance from edge (px):"); from: 0; to: 128; editable: true }
-                Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: qsTr("Icon size (px):"); from: 24; to: 96; editable: true }
-                Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: qsTr("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
-                Controls.SpinBox { id: radius; objectName: "radiusControl"; Kirigami.FormData.label: qsTr("Corner radius (px):"); from: 0; to: 96; editable: true }
-                Controls.CheckBox { id: glow; text: qsTr("Enable hover glow") }
-                Controls.CheckBox { id: dodge; text: qsTr("Hide when a window overlaps the capsule") }
+                Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
+                Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
+                Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
+                Controls.SpinBox { id: radius; objectName: "radiusControl"; Kirigami.FormData.label: i18n("Corner radius (px):"); from: 0; to: 96; editable: true }
+                Controls.CheckBox { id: glow; text: i18n("Enable hover glow") }
+                Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }
                 Controls.Label {
                     Layout.fillWidth: true
-                    text: qsTr("Apply saves these settings. Changing the screen or edge briefly recreates the dock window.")
+                    text: i18n("Uses KWin's Sliding Popups effect and system animation speed. No system setting is changed.")
+                    wrapMode: Text.WordWrap
+                }
+                Controls.CheckBox { id: dodge; text: i18n("Hide when a window overlaps the capsule") }
+                Controls.Label {
+                    Layout.fillWidth: true
+                    text: i18n("Apply saves these settings. Changing the screen or edge briefly recreates the dock window.")
                     wrapMode: Text.WordWrap
                 }
             }
-            Controls.Label { Layout.leftMargin: 16; text: qsTr("Pinned applications"); font.bold: true }
+            Controls.Label { Layout.leftMargin: 16; text: i18n("Pinned applications"); font.bold: true }
             Controls.Label {
                 Layout.fillWidth: true; Layout.leftMargin: 16; Layout.rightMargin: 16
-                text: qsTr("Pin running applications from the dock's right-click menu. Changes to this list are saved immediately.")
+                text: i18n("Pin running applications from the dock's right-click menu. Changes to this list are saved immediately.")
                 wrapMode: Text.WordWrap
             }
             Repeater {
@@ -86,10 +101,10 @@ Controls.ApplicationWindow {
                     required property string modelData
                     Layout.fillWidth: true; Layout.leftMargin: 16; Layout.rightMargin: 16
                     Controls.Label { text: modelData; elide: Text.ElideMiddle; Layout.fillWidth: true }
-                    Controls.ToolButton { text: qsTr("Up"); enabled: index > 0; onClicked: window.moveLauncher(index, -1) }
-                    Controls.ToolButton { text: qsTr("Down"); enabled: index + 1 < dockSettings.values.launchers.length; onClicked: window.moveLauncher(index, 1) }
+                    Controls.ToolButton { text: i18n("Up"); enabled: index > 0; onClicked: window.moveLauncher(index, -1) }
+                    Controls.ToolButton { text: i18n("Down"); enabled: index + 1 < dockSettings.values.launchers.length; onClicked: window.moveLauncher(index, 1) }
                     Controls.ToolButton {
-                        text: qsTr("Remove")
+                        text: i18n("Remove")
                         onClicked: {
                             const list = dockSettings.values.launchers.slice(); list.splice(index, 1);
                             dockSettings.saveLaunchers(list);
@@ -102,15 +117,15 @@ Controls.ApplicationWindow {
                 Controls.TextField {
                     id: launcher
                     Layout.fillWidth: true
-                    placeholderText: qsTr("Desktop entry ID, e.g. org.kde.dolphin.desktop")
-                    Accessible.name: qsTr("Application desktop entry")
+                    placeholderText: i18n("Desktop entry ID, e.g. org.kde.dolphin.desktop")
+                    Accessible.name: i18n("Application desktop entry")
                 }
                 Controls.Button {
-                    text: qsTr("Add")
+                    text: i18n("Add")
                     onClicked: {
                         const id = launcher.text.trim();
                         if (!/^[A-Za-z0-9_.-]+\.desktop$/.test(id)) {
-                            window.launcherError = qsTr("Enter an installed application's desktop entry ID ending in .desktop."); return;
+                            window.launcherError = i18n("Enter an installed application's desktop entry ID ending in .desktop."); return;
                         }
                         const list = dockSettings.values.launchers.slice();
                         const url = "applications:" + id;
@@ -127,5 +142,7 @@ Controls.ApplicationWindow {
                 wrapMode: Text.WordWrap
             }
         }
+    }
+      IndicatorsSettings { id: indicators }
     }
 }

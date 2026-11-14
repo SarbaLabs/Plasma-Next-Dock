@@ -66,3 +66,22 @@ LGPL-2.0-or-later; Aleix Pol Gonzalez's 2020 notice is preserved. It uses instal
 KPipeWire and TaskManager.ScreencastingRequest without copying their internals.
 PlasmaCore.ToolTipArea and its themed interactive dialog are used as dependencies;
 no tooltip implementation or theme artwork is copied.
+
+## Advanced indicators
+
+Donor: SarbaLabs/plasma-macos-dock commit
+`cd5fa9d9efc31a08bbe4c6d346b46771dec4acca`:
+
+- contents/ui/CustomIndicators.qml and IndicatorTaskState.qml: GPL-2.0-or-later;
+  Vitaliy Elin (2025–2026) and SushiTrash (2025) notices retained. These already
+  adapt the bounded-segment/state approaches of Fancy Tasks NG.
+- contents/ui/GroupExpanderOverlay.qml: GPL-2.0-or-later, Eike Hein (2012–2013)
+  notice retained. Theme artwork is loaded from installed KSvg/Plasma assets.
+- contents/ui/NativeTaskIndicator.qml, code/IndicatorLogic.js and
+  ConfigIndicators.qml (adapted as IndicatorsSettings.qml), plus
+  tests/indicators/tst_indicators.qml: GPL-2.0-or-later.
+
+No unrelated Fancy Tasks NG host/model code or theme artwork is imported. The
+new DockIndicators composition and standalone settings persistence remain project
+code. Native reveal animation uses KWindowEffects/KWin as installed dependencies,
+not copied compositor implementation. Original licensing texts remain preserved.

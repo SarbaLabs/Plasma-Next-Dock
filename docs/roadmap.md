@@ -146,3 +146,26 @@ edges. Native Plasma placement used Qt's normalized layer-window origin. A
 per-dock LayerSurfacePosition adapter now keeps Qt's client geometry consistent
 with the known layer-shell placement. Native tooltip appearance is unchanged.
 All 12 local tests pass; actual desktop placement requires follow-up validation.
+
+## 2026-11-14 — Advanced indicators and native reveal animation
+
+The maintainer accepted the corrected native preview placement and merged PR #5
+at e74bb141c02074e27e9e7e28b4f609b37f886162. Preserve that per-window coordinate fix.
+Branch feature/advanced-indicators ports macOS/Plasma/Custom indicator controls,
+independent native group/decorations, bounded child state and the dedicated settings
+tab. Settings now use the project's KI18n catalog, with French translations.
+
+The requested soft edge reveal uses KWin's native Sliding Popups effect, enabled
+per dock with a persistent toggle. Unlike the initial discussion's proposed local
+speed slider, duration follows KWin: the Wayland protocol has no per-window duration.
+No system setting is changed or second animation layered on top. See indicators.md.
+
+This stage does not implement blur, Liquid Glass, bounce, badges or every final
+parity feature. Those remain on the roadmap. Desktop validation of this branch is
+pending; do not merge or release automatically.
+
+The maintainer reports the indicator/reveal stage works, with cross-axis indicator
+drift during magnification on bottom/right docks. A focused resting-lane correction
+and frame-sampled regression tests address this feedback; desktop confirmation of
+the correction remains pending. Settings cleanup is explicitly deferred until the
+final development stage; do not remove controls in this iteration.

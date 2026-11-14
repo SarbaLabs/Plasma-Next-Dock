@@ -28,14 +28,20 @@ TestCase {
         compare(dockSettings.values.spacing, 8); // Close does not apply draft edits.
         window.openSettings();
         compare(spacing.value, 8);
+        const indicators = findChild(window, "indicatorsSettings");
+        verify(indicators !== null);
+        indicators.cfg_indicatorMode = 2;
+        indicators.cfg_indicatorMaxSegments = 7;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
+        compare(dockSettings.values.indicatorMode, 2);
+        compare(dockSettings.values.indicatorMaxSegments, 7);
         window.close();
         window.openSettings();
         compare(spacing.value, 40);
         window.close();
-        dockSettings.apply({spacing: 8});
+        dockSettings.apply({spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

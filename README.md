@@ -9,8 +9,8 @@ Plasma panel causing premature window avoidance.
 
 **Status: early standalone dock with persistent settings, not yet feature-complete.**
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
-validated by the maintainer on CachyOS, including native context menus. Grouping and
-interactive previews now need desktop validation. It does not modify Plasma or KWin, install a
+validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
+Advanced indicators and native reveal animation now need desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -38,8 +38,8 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This stage intentionally does **not** yet port System Blur/Liquid Glass, bounce,
-badges or the full indicator system. Those remain
+This stage intentionally does **not** yet port System Blur/Liquid Glass, bounce
+or badges. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
 ## Build and install on CachyOS / Arch
@@ -49,18 +49,18 @@ Dependencies (the KDE runtime packages are usually already installed):
 ```bash
 paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
     layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
-    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire gettext
+    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kwindowsystem gettext
 ```
 
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the grouped-window preview development branch:
+For the advanced indicators development branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/grouped-window-previews https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/advanced-indicators https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -216,8 +216,7 @@ menu implementation another widget uses. Compare the two in the same session.
 KDE section headings and window commands explicitly use the task-manager
 translation catalog. Application action names come from the installed desktop
 entries; Places come from your KDE bookmarks. Project-specific menu commands use
-our own catalog, with French included and English fallback. This stage does not
-translate the entire existing settings window.
+our own catalog, with French included and English fallback. The settings window also uses this catalog, including French translations.
 
 See [menu architecture and limitations](docs/context-menus.md) and
 [manual validation](docs/testing.md). No Plasma Shell restart is needed: quit and
@@ -228,7 +227,7 @@ restart **Plasma Next Dock** after running `./install.sh`.
 Hover an icon to show the native Plasma tooltip toward the interior of the screen.
 A pinned launcher without a window shows its name. Running windows show titles,
 activation and close controls; clicking a grouped application opens the selector
-immediately. A small count marks groups for now, not the final indicator system.
+immediately. The native group symbol can be enabled independently of the running-indicator mode.
 Previews scroll when the group exceeds the available area.
 
 Live thumbnails use KDE's `ScreencastingRequest` and KPipeWire under KWin Wayland.
@@ -239,5 +238,28 @@ configuration change is required. The installed desktop file declares the captur
 interface for older KWin permission checks.
 
 [Preview architecture and manual checks](docs/window-previews.md) describe the
-headless test limitations. Full three-mode indicator customization from our older
-dock remains a final-version requirement, tracked explicitly in the roadmap.
+headless test limitations. Three-mode indicator customization from our older dock is now available; remaining
+parity work stays tracked explicitly in the roadmap.
+
+## Advanced indicators and reveal animation
+
+The **Indicators** settings tab offers macOS (default), native Plasma theme and
+Custom modes. Custom indicators support dots, a shared line or individual dashes;
+state-specific sizes, up to eight window segments, alignment, roundness, spacing,
+accent/icon/custom colors, separate unfocused color, opacity and minimized-window
+desaturation. Settings persist when switching modes. A live configuration preview
+shows six example windows. No unsupported overflow + is included.
+
+The native group symbol and Plasma task decorations have independent Mode default /
+Enabled / Disabled controls. Mode default enables them in Plasma mode and keeps
+them off in macOS/Custom. The provisional numeric group label is replaced by this
+optional native symbol. Existing macOS running dots retain their geometry/colors.
+
+**Animate dock appearance and disappearance** enables KWin's native Sliding Popups
+hint (on by default). It uses the system effect and animation speed; no global
+settings are changed. If the effect is disabled/unavailable, edge recall still
+works immediately. Wayland's slide protocol exposes no per-window duration, so
+there is no misleading local duration slider and no competing QML animation.
+
+See [indicator and animation architecture](docs/indicators.md) for defaults,
+performance limits and desktop acceptance checks.

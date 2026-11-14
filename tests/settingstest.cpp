@@ -37,6 +37,29 @@ private Q_SLOTS:
         QCOMPARE(v["launchers"].toStringList().size(), 2);
         QCOMPARE(v["launchers"].toStringList().last(), "file:///tmp/My%20App.desktop");
     }
+    void indicatorPersistenceAndValidation() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["indicatorMode"].toInt(), 0);
+        QCOMPARE(settings.values()["nativeGroupIndicator"].toInt(), 0);
+        QVERIFY(!settings.values()["indicatorUnfocusedColorEnabled"].toBool());
+        QVERIFY(settings.values()["revealAnimation"].toBool());
+        QVERIFY(settings.apply({{"indicatorMode", 2}, {"indicatorCustomColor", "#ff0000"},
+            {"indicatorUnfocusedColor", "#0000ff"}, {"indicatorMaxSegments", 6}, {"revealAnimation", false}}));
+        QVERIFY(settings.apply({{"indicatorMode", 0}}));
+        DockSettings restored(file);
+        QCOMPARE(restored.values()["indicatorCustomColor"].toString(), "#ff0000");
+        QCOMPARE(restored.values()["indicatorUnfocusedColor"].toString(), "#0000ff");
+        QCOMPARE(restored.values()["indicatorMaxSegments"].toInt(), 6);
+        QVERIFY(!restored.values()["revealAnimation"].toBool());
+        const auto clean = DockSettings::normalized({{"indicatorMaxSegments", 999},
+            {"indicatorCustomColor", "bad-color"}, {"indicatorActiveThickness", -1}, {"indicatorOverflow", true}});
+        QCOMPARE(clean["indicatorMaxSegments"].toInt(), 8);
+        QCOMPARE(clean["indicatorActiveThickness"].toInt(), 1);
+        QCOMPARE(clean["indicatorCustomColor"], DockSettings::defaults()["indicatorCustomColor"]);
+        QVERIFY(!clean.contains("indicatorOverflow"));
+    }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file, false);

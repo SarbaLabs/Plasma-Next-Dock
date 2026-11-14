@@ -12,6 +12,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Quick Qml WaylandClien
 if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 endif()
+find_package(KF6WindowSystem REQUIRED)
 find_package(KF6I18n 6.8 REQUIRED)
 find_package(KF6KIO REQUIRED)
 find_package(KF6Service REQUIRED)
@@ -28,7 +29,7 @@ target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
 target_link_libraries(dockcore PRIVATE Qt6::GuiPrivate)
 add_executable(plasma-next-dock src/main.cpp src/screenedge.cpp src/dockhost.cpp)
-target_link_libraries(plasma-next-dock PRIVATE dockcore Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
+target_link_libraries(plasma-next-dock PRIVATE dockcore KF6::WindowSystem Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
 set(wayland_codegen_options)
 if(Qt6_VERSION VERSION_GREATER_EQUAL 6.12)
     # Preserve the public generator API used by the adapter, explicitly (QTP0006).
@@ -37,6 +38,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
+    qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
     qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
 qt_add_resources(plasma-next-dock dockqml PREFIX / FILES ${DOCK_QML_FILES})
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
