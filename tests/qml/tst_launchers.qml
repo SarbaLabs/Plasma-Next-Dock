@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import QtQuick
 import QtTest
+import org.kde.taskmanager as TaskManager
 TestCase {
     name: "NativeLaunchers"
     when: windowShown
@@ -9,6 +10,11 @@ TestCase {
         compare(component.status, Component.Ready, component.errorString());
         let live = component.createObject(this);
         verify(live !== null);
+        verify(live.tasks !== live.collisionTasks);
+        compare(live.tasks.groupMode, TaskManager.TasksModel.GroupApplications);
+        compare(live.tasks.groupInline, false);
+        compare(live.collisionTasks.groupMode, TaskManager.TasksModel.GroupDisabled);
+        compare(dockController.model, live.collisionTasks);
         // No compositor/current desktop/activity exists in this headless fixture.
         live.tasks.filterByVirtualDesktop = false;
         live.tasks.filterByActivity = false;

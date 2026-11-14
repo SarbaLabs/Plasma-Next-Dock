@@ -7,4 +7,4 @@ Icon=preferences-desktop-panel
 Terminal=false
 Categories=Utility;Qt;KDE;
 StartupNotify=false
-X-KDE-Wayland-Interfaces=org_kde_plasma_window_management,org_kde_plasma_activation_feedback
+X-KDE-Wayland-Interfaces=org_kde_plasma_window_management,org_kde_plasma_activation_feedback,zkde_screencast_unstable_v1

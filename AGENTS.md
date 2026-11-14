@@ -46,3 +46,13 @@
 - Keep application launching in KIO with structured QUrls. Never concatenate shell
   commands. Preserve KDE history privacy and activity filtering. Target window
   actions through MenuTarget's persistent model index, never a saved row number.
+
+- Group presentation and collision models are distinct: never enable grouping on
+  the collision model. Window previews must target persistent child indexes.
+- Use Plasma ToolTipArea with explicit edge location for inward native tooltips.
+  Its shared mainItem is temporarily reparented during owner changes: never clear
+  its newly selected model synchronously on that transient detach.
+- Capture only visible preview cards and release streams on dismissal. Preserve
+  icon/title fallback. Do not weaken compositor permissions to obtain thumbnails.
+- Preserve the final indicator parity checklist in docs/roadmap.md; the current
+  simple dot/count is not the final customization system.

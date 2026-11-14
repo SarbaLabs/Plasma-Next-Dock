@@ -3,6 +3,7 @@
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
+#include "windowpreviewmodel.h"
 #include <KLocalizedQmlContext>
 #include <LayerShellQt/Window>
 #include <QQmlContext>
@@ -51,6 +52,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     QQmlEngine::setContextForObject(localized, m_view.engine()->rootContext());
     m_view.rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(this));
     m_view.rootContext()->setContextProperty("menuTarget", new MenuTarget(this));
+    m_view.rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(this));
     m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);

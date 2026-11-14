@@ -57,3 +57,12 @@ The native integration tests `tests/applicationmenutest.cpp` and
 GPL-2.0-or-later. The optional-plasmoid bridge test was removed because this host
 links its own backend directly. No upstream translation catalog is bundled;
 standard translations are provided by the installed KDE packages.
+
+## Window previews
+
+`qml/WindowThumbnail.qml` adapts `contents/ui/PipeWireThumbnail.qml` from donor
+commit `cd5fa9d9efc31a08bbe4c6d346b46771dec4acca` (SarbaLabs/plasma-macos-dock).
+LGPL-2.0-or-later; Aleix Pol Gonzalez's 2020 notice is preserved. It uses installed
+KPipeWire and TaskManager.ScreencastingRequest without copying their internals.
+PlasmaCore.ToolTipArea and its themed interactive dialog are used as dependencies;
+no tooltip implementation or theme artwork is copied.

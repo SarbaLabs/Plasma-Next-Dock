@@ -4,6 +4,7 @@ import org.kde.taskmanager as TaskManager
 Item {
     id: source
     property alias tasks: tasks
+    property alias collisionTasks: collisionTasks
     readonly property var savedLaunchers: dockSettings.values.launchers
     onSavedLaunchersChanged: Qt.callLater(applySavedLaunchers)
     function applySavedLaunchers() {
@@ -30,7 +31,9 @@ Item {
     TaskManager.ActivityInfo { id: activities }
     TaskManager.TasksModel {
         id: tasks
-        groupMode: TaskManager.TasksModel.GroupDisabled
+        groupMode: TaskManager.TasksModel.GroupApplications
+        groupInline: false
+        groupingWindowTasksThreshold: -1
         sortMode: TaskManager.TasksModel.SortManual
         separateLaunchers: true
         launchInPlace: true
@@ -40,6 +43,17 @@ Item {
         filterByActivity: true
         filterByScreen: false
     }
-    Component.onCompleted: { applySavedLaunchers(); dockController.model = tasks; }
+    // Collision must keep every individual window geometry, including siblings
+    // hidden behind a group in the presentation model.
+    TaskManager.TasksModel {
+        id: collisionTasks
+        groupMode: TaskManager.TasksModel.GroupDisabled
+        virtualDesktop: desktops.currentDesktop
+        activity: activities.currentActivity
+        filterByVirtualDesktop: true
+        filterByActivity: true
+        filterByScreen: false
+    }
+    Component.onCompleted: { applySavedLaunchers(); dockController.model = collisionTasks; }
     Component.onDestruction: dockController.model = null
 }

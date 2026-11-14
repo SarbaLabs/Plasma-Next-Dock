@@ -9,7 +9,8 @@ Plasma panel causing premature window avoidance.
 
 **Status: early standalone dock with persistent settings, not yet feature-complete.**
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
-validated by the maintainer on CachyOS. Native context menus now need desktop validation. It does not modify Plasma or KWin, install a
+validated by the maintainer on CachyOS, including native context menus. Grouping and
+interactive previews now need desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -20,8 +21,11 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
   correctly; interior drawing margins remain click-through.
 - Continuous icon magnification (40 logical pixels and 1.5× by default).
 - Running tasks and persistent pinned launchers through KDE's native TasksModel;
-  clicking a task delegates activation/launching to KDE. Tasks are ungrouped and
-  filtered to the current desktop and activity.
+  clicking a single task delegates activation/launching to KDE. Application windows
+  are grouped and filtered to the current desktop and activity. Clicking a group
+  opens its window selector. Collision tracking remains independently ungrouped.
+- Native Plasma tooltips anchored toward the desktop interior, with window titles,
+  activate/close controls and on-demand KDE PipeWire thumbnails.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
@@ -34,8 +38,8 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This first stage intentionally does **not** yet port window previews, grouping,
-System Blur/Liquid Glass, bounce, badges or the full indicator system. Those remain
+This stage intentionally does **not** yet port System Blur/Liquid Glass, bounce,
+badges or the full indicator system. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
 ## Build and install on CachyOS / Arch
@@ -45,18 +49,18 @@ Dependencies (the KDE runtime packages are usually already installed):
 ```bash
 paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
     layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
-    ki18n kio kservice knotifications plasma-activities-stats plasma-integration gettext
+    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire gettext
 ```
 
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the native context menu development branch:
+For the grouped-window preview development branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/native-context-menus https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/grouped-window-previews https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -218,3 +222,22 @@ translate the entire existing settings window.
 See [menu architecture and limitations](docs/context-menus.md) and
 [manual validation](docs/testing.md). No Plasma Shell restart is needed: quit and
 restart **Plasma Next Dock** after running `./install.sh`.
+
+## Grouped windows and previews
+
+Hover an icon to show the native Plasma tooltip toward the interior of the screen.
+A pinned launcher without a window shows its name. Running windows show titles,
+activation and close controls; clicking a grouped application opens the selector
+immediately. A small count marks groups for now, not the final indicator system.
+Previews scroll when the group exceeds the available area.
+
+Live thumbnails use KDE's `ScreencastingRequest` and KPipeWire under KWin Wayland.
+Only visible, non-minimized cards request capture, and hiding the popup releases
+it. A missing/minimized thumbnail retains an application icon and window title.
+Install `kpipewire` and restart the dock after updating. No Plasma restart or KWin
+configuration change is required. The installed desktop file declares the capture
+interface for older KWin permission checks.
+
+[Preview architecture and manual checks](docs/window-previews.md) describe the
+headless test limitations. Full three-mode indicator customization from our older
+dock remains a final-version requirement, tracked explicitly in the roadmap.

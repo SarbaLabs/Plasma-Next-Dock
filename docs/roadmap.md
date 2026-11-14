@@ -27,7 +27,7 @@ not feature parity with Plasma macOS Dock and not a replacement recommendation.
 
 1. Optional autostart (explicit opt-in), application chooser and further configuration polish.
 2. Extend native context menus as future grouping/audio-stream features are added.
-3. Grouped tasks, interactive previews, keyboard navigation, external drops and badges.
+3. Keyboard navigation improvements, external drops and badges; grouped previews are now under validation.
 4. Port the optional blur component with its full lifecycle regression coverage,
    then System Blur/Liquid Glass and the established indicator/bounce features.
 5. Multiple dock instances, output reassignment and packaging.
@@ -109,3 +109,32 @@ catalog includes French for dock-specific commands. Appearance follows the nativ
 widget style, with no custom opacity or background. See docs/context-menus.md.
 Wayland positioning, theme matching, live recent documents and actual window/media
 operations remain maintainer desktop acceptance items. Do not merge automatically.
+
+## Final-version parity requirement
+
+The maintainer requires at least the capabilities developed in plasma-macos-dock:
+macOS/Plasma/Custom indicator modes, native group symbol and independent task
+frames; segment/state dimensions, color sources and separate unfocused color;
+opacity/minimized handling, animations and edge-aware placement. Also retain
+bounce, complete native menus, bounded configurable hover glow, pixel corner
+radius and the established System Blur/Liquid Glass lifecycle fixes. The removed
+nonfunctional custom overflow + is not a parity requirement. Track these explicitly
+rather than treating the current simple running dot/count as the final renderer.
+
+## 2026-11-14 — Grouped windows and native tooltips
+
+PR #4 was merged at `a39bc3f7b6734bd95733c106e7d224c8acf5b6ee` after maintainer
+acceptance and successful CI. Native menus, their localization and positioning are
+now part of the accepted baseline.
+
+Branch `feature/grouped-window-previews` introduces native TasksModel grouping,
+a separate ungrouped collision model, persistent-index window selection and
+interactive Plasma tooltips. Explicit edge location replaces the generic attached
+Controls.ToolTip which had no knowledge of the dock edge. Capture uses KDE
+ScreencastingRequest/KPipeWire, with an icon fallback and bounded visible cards.
+The application desktop entry declares the screencast interface for older KWin.
+
+The small group count is an interim affordance. It does not replace the full
+indicator parity requirement above. No blur, bounce or styling settings are
+silently removed or declared implemented. See window-previews.md for architecture
+and the pending CachyOS acceptance matrix. Do not merge automatically.
