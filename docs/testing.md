@@ -327,3 +327,17 @@ new installed executable. Use ./install.sh; no Plasma Shell restart is required.
 This stage is not yet complete feature parity with a grouped Plasma task manager:
 window grouping/previews, per-stream volume controls, bounce and blur remain future
 stages, as documented in the roadmap.
+
+### PR #4 desktop acceptance and CI catalog compatibility
+
+The maintainer reports the native menus working correctly on CachyOS/Plasma 6.8.
+The first GitHub CI run compiled successfully but failed the French heading check:
+Debian's Plasma 6.3 catalog translates `Recent Files` without a msgctxt, whereas
+current KDE uses `@title:group for section of menu items`. The prior local catalog
+was the current KDE one, so it had not exposed this older-catalog mismatch.
+
+Heading lookup now prefers the contextual entry and falls back to the legacy
+context-free entry only when necessary. The translation assertion remains enabled.
+The complete ten-entry suite passes with both current and Plasma 6.3.6 French
+catalogs. This preserves the desktop-validated current behavior. No menu styling,
+geometry, window actions or compositor configuration changes are involved.

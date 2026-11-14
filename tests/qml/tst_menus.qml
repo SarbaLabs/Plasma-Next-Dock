@@ -54,8 +54,9 @@ TestCase {
         tryCompare(loader.item, "visibleMenu", true);
         verify(testEnvironment.menuTexts().indexOf("Détacher du dock") >= 0, JSON.stringify(testEnvironment.menuTexts()));
         verify(testEnvironment.menuTexts().indexOf("Configurer Plasma Next Dock…") >= 0);
-        compare(loader.item.kde("@title:group for section of menu items", "Recent Files"),
-                i18ndc("plasma_applet_org.kde.plasma.taskmanager", "@title:group for section of menu items", "Recent Files"));
+        const current = i18ndc("plasma_applet_org.kde.plasma.taskmanager", "@title:group for section of menu items", "Recent Files");
+        const expected = current === "Recent Files" ? i18nd("plasma_applet_org.kde.plasma.taskmanager", "Recent Files") : current;
+        compare(loader.item.kde("@title:group for section of menu items", "Recent Files"), expected);
     }
     function test_kdeFrenchCatalog() {
         if (!testEnvironment.translationLocaleAvailable() || !testEnvironment.kdeFrenchAvailable()) {

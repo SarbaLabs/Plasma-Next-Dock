@@ -47,7 +47,14 @@ Item {
         }
     }
     function get(role) { return menuTarget.data(role); }
-    function kde(context, text) { return i18ndc(domain, context, text); }
+    function kde(context, text) {
+        const translated = i18ndc(domain, context, text);
+        // Plasma 6.3 stored these headings without a translation context.
+        // Prefer the current catalog entry; retain compatibility with older KDE.
+        if (context === "@title:group for section of menu items" && translated === text)
+            return i18nd(domain, text);
+        return translated;
+    }
     function request(method, argument) {
         if (!menuTarget.valid || !source || !source.tasks) return;
         if (argument === undefined) source.tasks[method](menuTarget.index);

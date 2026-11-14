@@ -41,7 +41,8 @@ LiveTasks launcher APIs and persistence; background clicks expose Configure/Quit
 The old fork called generic i18n for several standard labels under a different
 application catalog. Those calls cannot automatically find task-manager entries.
 The new menu uses explicit `plasma_applet_org.kde.plasma.taskmanager` lookups with
-the original contexts, including section headings. Application desktop actions and
+the original contexts, including section headings. Headings fall back to the
+context-free lookup used by Plasma 6.3 when the newer entry is unavailable. Application desktop actions and
 Places retain their own KDE localization. Dock-specific strings use the
 `plasma-next-dock` domain. French is included in po/fr; gettext/ki18n_install builds
 and installs the catalog. Messages.sh extracts project strings. Other project
