@@ -210,20 +210,33 @@ Item {
                 }
             }
         }
-        WheelHandler {
-            onWheel: event => {
-                if (viewport.contentWidth > viewport.width) {
-                    const pixel = event.pixelDelta;
-                    const angle = event.angleDelta;
-                    const delta = (pixel.x || pixel.y) || (angle.x || angle.y) / 2;
-                    viewport.contentX = Adaptive.scrollPosition(viewport.contentX, -delta,
-                        viewport.contentWidth, viewport.width);
-                    root.updatePointer(pointer.point.position);
-                    event.accepted = true;
-                }
-            }
-        }
     }
+    function scrollWheel(event, axis) {
+        const pixel = event.pixelDelta;
+        const angle = event.angleDelta;
+        // A diagonal gesture belongs to one handler only. Honour pixel scrolling
+        // when supplied, otherwise use traditional wheel-angle increments.
+        const delta = (pixel.x || pixel.y) ? pixel : Qt.point(angle.x / 2, angle.y / 2);
+        const selectedAxis = delta.y ? Qt.Vertical : Qt.Horizontal;
+        if (selectedAxis !== axis || (!delta.x && !delta.y)) {
+            event.accepted = false;
+            return;
+        }
+        viewport.contentX = Adaptive.scrollPosition(viewport.contentX,
+            -(axis === Qt.Vertical ? delta.y : delta.x), viewport.contentWidth, viewport.width);
+        root.updatePointer(Qt.point(event.x, event.y));
+        event.accepted = true;
+    }
+    component DockWheelHandler: WheelHandler {
+        target: null
+        enabled: viewport.contentWidth > viewport.width && !contextMenu.visible
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => root.scrollWheel(event, orientation)
+    }
+    // Receive wheel events in fixed, unrotated coordinates, including the edge
+    // corridor. Never attach scrolling input to the moving task content.
+    DockWheelHandler { orientation: Qt.Vertical }
+    DockWheelHandler { orientation: Qt.Horizontal }
     DragHandler {
         id: reorder
         objectName: "reorderHandler"

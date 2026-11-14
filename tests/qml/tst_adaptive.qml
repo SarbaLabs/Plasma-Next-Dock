@@ -5,7 +5,7 @@ import "../../qml/code/AdaptiveLayout.js" as Adaptive
 
 TestCase {
     name: "AdaptiveLayout"
-    width: 1000; height: 300
+    width: 1000; height: 800
     visible: true
     when: windowShown
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
@@ -35,6 +35,59 @@ TestCase {
         compare(Adaptive.scrollPosition(200, 100, 500, 300), 200);
         compare(Adaptive.scrollPosition(200, 0, 100, 300), 0);
         compare(Adaptive.scrollPosition(20, -100, 500, 300), 0);
+    }
+    function test_synthesizedWheel() {
+        tryCompare(dock, "status", Loader.Ready);
+        const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;
+        const viewport = findChild(dock.item, "taskViewport");
+        const original = tasks.count;
+        try {
+            for (let i = original; i < 100; ++i)
+                tasks.append({decoration: "folder", display: "Scroll", IsWindow: false, IsActive: false});
+            wait(150);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                wait(100);
+                for (const pixels of [false, true]) {
+                    for (const delta of [Qt.point(0, -120), Qt.point(-120, 0), Qt.point(-60, -120)]) {
+                        viewport.contentX = 0;
+                        const p = Qt.point(dock.item.width / 2, dock.item.height / 2);
+                        testEnvironment.wheel(dock.item, p, delta, true, pixels);
+                        const expected = pixels ? 120 : 60;
+                        compare(viewport.contentX, expected, "One scroll for synthesized/diagonal input");
+                        testEnvironment.wheel(dock.item, p, Qt.point(-delta.x, -delta.y), true, pixels);
+                        compare(viewport.contentX, 0);
+                    }
+                }
+            }
+        } finally { tasks.remove(original, tasks.count - original); testEnvironment.setEdge(0); }
+    }
+    function test_wheelAcrossEdgesAndScrollOffsets() {
+        tryCompare(dock, "status", Loader.Ready);
+        const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;
+        const viewport = findChild(dock.item, "taskViewport");
+        const original = tasks.count;
+        try {
+            for (let i = original; i < 100; ++i)
+                tasks.append({decoration: "folder", display: "Scroll", IsWindow: false, IsActive: false});
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                wait(150);
+                // First at the start, then after scrolling more than one viewport.
+                for (const offset of [0, viewport.width * 1.5]) {
+                    viewport.contentX = offset;
+                    wait(100);
+                    const x = dock.item.width / 2;
+                    const y = dock.item.height / 2;
+                    const before = viewport.contentX;
+                    mouseWheel(dock.item, x, y, 0, -120);
+                    tryVerify(() => viewport.contentX > before, 1000, "Wheel edge " + edge + " offset " + offset);
+                }
+            }
+        } finally {
+            tasks.remove(original, tasks.count - original);
+            testEnvironment.setEdge(0);
+        }
     }
     function test_liveCountShrinkAndRecovery() {
         tryCompare(dock, "status", Loader.Ready);

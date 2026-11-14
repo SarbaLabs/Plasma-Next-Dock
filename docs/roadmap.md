@@ -89,3 +89,7 @@ Sizing follow-up: desktop testing found premature shrink caused by reserving ful
 zoom for every task. The branch now budgets only local magnification and caps
 animation tails independently of the resting size. Regression coverage includes a
 crowded list that still fits at its preferred size. Awaiting desktop confirmation.
+
+Maintainer validated adaptive shrink/recovery. Wheel scrolling remains under
+validation: synthesized and horizontal events now have explicit coverage and
+fixed-root handlers; all nine local tests pass. No further sizing change.

@@ -195,3 +195,12 @@ input and clamped offsets on content/output changes. Left dragging belongs only
 to native task reorder, avoiding competing Flickable grabs. The popup envelope
 ignores offscreen icons. Input remains clipped to the drawing surface and dodge
 continues to follow the capsule only. No timers or compositor changes are added.
+
+Wheel input is received by unrotated root-level handlers rather than the
+Flickable's content. Explicit Mouse|TouchPad acceptance also enables synthesized
+system wheel events (Qt rejects them with the default Mouse-only filter).
+Separate axis handlers feed one routing function; diagonal input is consumed once,
+pixel deltas take precedence and the current event position updates hover mapping.
+The handlers are enabled only for actual overflow with the context menu closed.
+Source reference: Qt `src/quick/handlers/qquickwheelhandler.cpp`,
+`wantsPointerEvent()` device/source and orientation checks (Qt 6.8).

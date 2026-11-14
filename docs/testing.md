@@ -236,3 +236,27 @@ width plus at most two zoom equivalents. Regression: 18 icons at 40 px/1.5x on
 The animation-tail test explicitly exceeds the aggregate budget and checks its
 bounded rendered weight. All nine CTest entries pass after the correction; staged
 installation and QML checks pass. Live CachyOS confirmation remains pending.
+
+### Wheel input follow-up
+
+The maintainer accepted adaptive shrinking/growing but reported no wheel scrolling.
+The prior QtTest mouseWheel coverage used unsynthesized vertical events only.
+A new test sending QWheelEvent with MouseEventSynthesizedBySystem failed before
+this fix: WheelHandler's default device filter rejects synthesized wheel events.
+This is a verified input-path defect, not proof of the maintainer's exact device
+source (no live input trace is available). Pure horizontal gestures were also
+filtered by the default vertical orientation before reaching our callback.
+
+Two fixed-root handlers explicitly accept Mouse and TouchPad, route vertical or
+horizontal input once per event, prefer pixel deltas, and disable while a menu is
+open or no content overflows. Tests now cover synthesized angle/pixel input,
+horizontal/vertical/diagonal deltas and reversal on all four edges, plus ordinary
+wheel events before and after scrolling beyond a viewport. All nine CTest entries
+pass after the fix, including the previously failing synthesized event. Build,
+QML parsing and staged installation pass. No sizing formula was changed.
+
+Manual: with enough tasks to overflow at minimum size, wheel over an icon and in
+the screen-edge corridor; reach both ends on each dock edge. Check mouse and
+trackpad, reverse direction, menu-open behavior, hover and drag. At maximum dock
+length but with every icon still fitting, there is intentionally nothing to scroll.
+Actual CachyOS input behavior remains pending maintainer confirmation.
