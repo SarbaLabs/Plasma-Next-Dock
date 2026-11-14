@@ -3,6 +3,7 @@
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
+#include "windowpreviewmodel.h"
 #include <KLocalizedQmlContext>
 #include <LayerShellQt/Window>
 #include <QQmlContext>
@@ -29,6 +30,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.setFlags(Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     m_view.setResizeMode(QQuickView::SizeViewToRootObject);
     if (wayland) {
+        m_surfacePosition = new LayerSurfacePosition(&m_view);
         // Select layer-shell for this window only; settings retain normal xdg-shell.
         auto *layer = LayerShellQt::Window::get(&m_view);
         selectOutput(layer, screen);
@@ -51,6 +53,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     QQmlEngine::setContextForObject(localized, m_view.engine()->rootContext());
     m_view.rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(this));
     m_view.rootContext()->setContextProperty("menuTarget", new MenuTarget(this));
+    m_view.rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(this));
     m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);
@@ -85,5 +88,6 @@ void DockHost::position()
     const QRect rect = DockGeometry::surface(m_screen->geometry(), m_view.size(), m_edge);
     m_controller.setSurfaceOrigin(rect.topLeft());
     if (qGuiApp->platformName().startsWith("wayland")) desiredSize(LayerShellQt::Window::get(&m_view), rect.size());
-    m_view.setPosition(rect.topLeft());
+    if (m_surfacePosition) m_surfacePosition->setOrigin(rect.topLeft());
+    else m_view.setPosition(rect.topLeft());
 }

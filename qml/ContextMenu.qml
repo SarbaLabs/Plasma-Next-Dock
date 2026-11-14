@@ -130,7 +130,7 @@ Item {
         }
         if (menuTarget.valid && get("CanLaunchNewInstance"))
             add(menu, kde("action:inmenu", "Open New Window"), "window-new", () => request("requestNewInstance"));
-        if (menuTarget.valid && get("IsWindow")) addWindowActions(menu);
+        if (menuTarget.valid && (get("IsWindow") || get("IsGroupParent"))) addWindowActions(menu);
         if (launcherUrl.length) {
             separator(menu);
             const url = launcherUrl;
@@ -190,9 +190,10 @@ Item {
         for (const command of commands)
             add(more, kde("action:inmenu", command[0]), command[1], () => request(command[2]),
                 !command[3] || get(command[3]), command[4] ? get(command[4]) : undefined);
-        add(menu, kde("action:inmenu", "&Close"), "window-close", () => request("requestClose"), get("IsClosable"));
+        add(menu, get("IsGroupParent") ? kde("@action:inmenu", "&Close All") : kde("action:inmenu", "&Close"), "window-close", () => request("requestClose"), get("IsClosable"));
     }
     function addMedia(menu) {
+        if ((get("WinIdList") || []).length > 1) return;
         const player = players.playerForLauncherUrl(launcherUrl, get("AppPid") || 0);
         if (!player || !player.canControl) return;
         separator(menu);

@@ -3,6 +3,7 @@
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
+#include "windowpreviewmodel.h"
 #include <QApplication>
 #include <QMenu>
 #include <clocale>
@@ -23,12 +24,41 @@
 #include <QUrl>
 #include <QWheelEvent>
 #include <QQuickItem>
+class PreviewFixture : public QStandardItemModel
+{
+    Q_OBJECT
+public:
+    QString activated, closed;
+    PreviewFixture() {
+        setItemRoleNames({{Qt::DisplayRole, "display"}, {Qt::DecorationRole, "decoration"},
+            {Qt::UserRole, "IsWindow"}, {Qt::UserRole + 1, "IsGroupParent"},
+            {Qt::UserRole + 2, "IsClosable"}, {Qt::UserRole + 3, "IsActive"},
+            {Qt::UserRole + 4, "IsMinimized"}, {Qt::UserRole + 5, "WinIdList"}});
+        auto *group = new QStandardItem("Test group");
+        group->setData(true, Qt::UserRole + 1);
+        for (const auto &title : {"First window", "Second window"}) {
+            auto *window = new QStandardItem(QString::fromLatin1(title));
+            window->setData(true, Qt::UserRole);
+            window->setData(true, Qt::UserRole + 2);
+            window->setData(false, Qt::UserRole + 3);
+            window->setData(false, Qt::UserRole + 4);
+            window->setData(QStringLiteral("folder"), Qt::DecorationRole);
+            group->appendRow(window);
+        }
+        appendRow(group);
+    }
+    Q_INVOKABLE void requestActivate(const QModelIndex &index) { activated = index.data().toString(); }
+    Q_INVOKABLE void requestClose(const QModelIndex &index) { closed = index.data().toString(); }
+};
 class Setup : public QObject
 {
     Q_OBJECT
     QStandardItemModel m_menuModel;
+    PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE QString activatedPreview() const { return m_previewModel.activated; }
+    Q_INVOKABLE QString closedPreview() const { return m_previewModel.closed; }
     Q_INVOKABLE QStringList menuTexts() const {
         QStringList result;
         for (auto *widget : QApplication::topLevelWidgets()) {
@@ -91,12 +121,14 @@ public Q_SLOTS:
         KLocalizedString::setApplicationDomain("plasma-next-dock");
         KLocalizedString::addDomainLocaleDir("plasma-next-dock", QStringLiteral(DOCK_TEST_LOCALE));
         engine->rootContext()->setContextProperty("testMenuModel", &m_menuModel);
+        engine->rootContext()->setContextProperty("testPreviewModel", &m_previewModel);
         auto *localized = new KLocalizedQmlContext(engine);
         localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
         engine->rootContext()->setContextObject(localized);
         QQmlEngine::setContextForObject(localized, engine->rootContext());
         engine->rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(engine));
         engine->rootContext()->setContextProperty("menuTarget", new MenuTarget(engine));
+        engine->rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(engine));
         engine->rootContext()->setContextProperty("testEnvironment", this);
         initializeIconPaths();
         engine->rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(engine));

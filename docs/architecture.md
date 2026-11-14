@@ -204,3 +204,26 @@ pixel deltas take precedence and the current event position updates hover mappin
 The handlers are enabled only for actual overflow with the context menu closed.
 Source reference: Qt `src/quick/handlers/qquickwheelhandler.cpp`,
 `wantsPointerEvent()` device/source and orientation checks (Qt 6.8).
+
+## Group presentation and previews
+
+The presentation TasksModel groups application windows. A separate GroupDisabled
+model supplies individual window geometry to DockController with the same activity
+and desktop filters. Launcher persistence remains on the presentation model.
+WindowPreviewModel exposes only the selected task's leaves via persistent indexes;
+its queued, coalesced updates avoid reading the model mid-notification.
+
+Main.qml supplies a shared TaskPreview to PlasmaCore.ToolTipArea. Explicit
+Bottom/Top/Left/Right edge location chooses the inward side; the actual icon is
+its visual anchor. Native Plasma handles tooltip placement and theming rather than
+PopupAnchor, which remains specific to context menus. Preview visibility inhibits
+dodge until the native interactive tooltip dismisses. See window-previews.md.
+
+### Known layer-surface origin
+
+Qt Wayland can report the screen origin for ordinary top-level windows even when
+layer-shell places them elsewhere. LayerSurfacePosition publishes the host's known
+edge-centered surface origin to Qt's coordinate mapping without moving/resizing
+the compositor surface. Native Plasma tooltip placement then has a valid parent
+origin. Keep this per-window adapter separate from PopupAnchor (xdg menus), and
+never change Qt's process-wide fixed-position flag. See window-previews.md.

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import QtQuick
 import QtQuick.Controls as Controls
+import QtQuick.Window
+import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import "code/CapsuleGeometry.js" as Geometry
 import "code/InteractionGeometry.js" as Interaction
@@ -25,6 +27,19 @@ Item {
     height: vertical ? length : depth
     property int dragIndex: -1
     readonly property bool dragging: dragIndex >= 0
+    readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
+        PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
+    function refreshHover() {
+        dockController.setHovered(pointer.hovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
+    }
+    onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
+    TaskPreview {
+        id: previewPanel
+        objectName: "taskPreview"
+        dockWindow: root.Window.window
+        vertical: root.vertical
+        onDisplayedChanged: root.refreshHover()
+    }
     function taskAt(position, nearest) {
         let result = -1;
         let distance = Infinity;
@@ -42,7 +57,7 @@ Item {
         if (!dragging) return;
         dragIndex = -1;
         if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
-        dockController.setHovered(pointer.hovered || contextMenu.visibleMenu);
+        root.refreshHover();
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
@@ -150,7 +165,7 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { root.finishDrag(); root.queueGeometry(); }
+                onCountChanged: { previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
@@ -183,14 +198,33 @@ Item {
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
                         onYChanged: root.queueGeometry()
-                        TapHandler { onTapped: if (!reorder.active) taskSource.item.activate(slot.index) }
+                        TapHandler {
+                            onTapped: {
+                                if (reorder.active) return;
+                                if (slot.model.IsGroupParent) taskTip.showToolTip();
+                                else { previewPanel.dismiss(); taskSource.item.activate(slot.index); }
+                            }
+                        }
                         HoverHandler {
                             id: iconHover
                             onHoveredChanged: if (hovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
                         }
-                        Controls.ToolTip.visible: iconHover.hovered
-                        Controls.ToolTip.delay: 900
-                        Controls.ToolTip.text: slot.model.display || ""
+                        PlasmaCore.ToolTipArea {
+                            id: taskTip
+                            objectName: "taskTip" + slot.index
+                            anchors.fill: parent
+                            location: root.tooltipLocation
+                            mainText: slot.model.AppName || slot.model.display || ""
+                            textFormat: Text.PlainText
+                            mainItem: previewPanel
+                            interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent
+                            active: !root.dragging && !contextMenu.visibleMenu
+                            onAboutToShow: {
+                                previewPanel.applicationName = mainText;
+                                previewPanel.applicationIcon = slot.model.decoration;
+                                windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, slot.index);
+                            }
+                        }
                     }
                     Loader {
                         id: colorLoader
@@ -200,8 +234,18 @@ Item {
                             onPaletteChanged: if (iconHover.hovered) root.applicationColor = dominant
                         }
                     }
+                    Controls.Label {
+                        objectName: "groupCount" + slot.index
+                        visible: !!slot.model.IsGroupParent && slot.model.ChildCount > 1
+                        text: slot.model.ChildCount || ""
+                        font.pixelSize: Math.max(9, 11 * root.fitScale)
+                        x: slot.width - width
+                        y: icon.y
+                        rotation: root.vertical ? -90 : 0
+                        Accessible.name: visible ? text : ""
+                    }
                     Rectangle {
-                        visible: !!slot.model.IsWindow
+                        visible: !!slot.model.IsWindow || !!slot.model.IsGroupParent
                         width: 4 * root.fitScale; height: width; radius: width / 2
                         x: (slot.width - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale
@@ -262,6 +306,7 @@ Item {
     TapHandler {
         acceptedButtons: Qt.RightButton
         onTapped: eventPoint => {
+            previewPanel.dismiss();
             const row = dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false);
             // Include magnified icons so the menu does not cover their inner edge.
             let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
@@ -280,7 +325,7 @@ Item {
     ContextMenu {
         id: contextMenu
         objectName: "dockMenu"
-        onOpenedChanged: opened => dockController.setHovered(pointer.hovered || opened || root.dragging)
+        onOpenedChanged: root.refreshHover()
     }
     Controls.Label {
         anchors.centerIn: bar
@@ -291,6 +336,6 @@ Item {
         id: pointer
         blocking: false
         onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: dockController.setHovered(hovered || contextMenu.visibleMenu || root.dragging)
+        onHoveredChanged: root.refreshHover()
     }
 }

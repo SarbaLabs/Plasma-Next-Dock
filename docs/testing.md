@@ -341,3 +341,43 @@ context-free entry only when necessary. The translation assertion remains enable
 The complete ten-entry suite passes with both current and Plasma 6.3.6 French
 catalogs. This preserves the desktop-validated current behavior. No menu styling,
 geometry, window actions or compositor configuration changes are involved.
+
+## Grouped-window preview stage — 2026-11-14
+
+Native context menu PR #4 was accepted and merged. The new preview stage passes
+all **11 CTest entries** with Qt 6.8.2 / Plasma 6.3.6 in the isolated environment.
+Additional coverage includes:
+
+- Group children, single windows and empty launchers; title/UUID/state updates.
+- Persistent indexes across child/root insertion and removal, source destruction,
+  non-closable windows and stale-action rejection before queued model refresh.
+- Real Plasma ToolTipArea import, explicit location on all four edges, showing
+  and switching its shared owner/name, and dismissal/model release.
+- Populated QML preview cards routing activate/close to the intended child.
+- Real KPipeWire/ScreencastingRequest component loading with no capture UUID.
+- Separate actual native grouped presentation and ungrouped collision models.
+- Existing pointer, sizing, scrolling, launcher ordering, settings and menu tests.
+
+Compilation, QML parser checks, shell syntax, git diff whitespace and isolated
+installation checks pass. The installed desktop entry retains absolute Exec and
+now advertises the screencast interface. No system installation is performed.
+The source baseline for this stage is main a39bc3f7b6734bd95733c106e7d224c8acf5b6ee.
+
+No live KWin session is available here. Inward physical placement, live thumbnails,
+real-window activation/close, crossing into an interactive tooltip, grouped drag,
+GPU load and multi-output scaling require the checklist in window-previews.md.
+Explicit location assertions are not proof of the final on-screen coordinates.
+
+## PR #5 positioning feedback
+
+The maintainer reports the preview feature functioning but supplies a recording
+showing substantial placement offsets. Correct edge properties did not prove
+correct global coordinates: Qt's normalized top-level origin was being used by
+native Plasma tooltip placement. See window-previews.md for the verified code path.
+
+The origin adapter adds a twelfth CTest entry. It simulates backend normalization
+and tests all four edges, translated/negative output origins, mapToGlobal, unchanged
+surface size, updated origins and native surface recreation. The full 12-entry
+suite passes locally; compilation and isolated installation pass. No live KWin
+positioning is claimed. Recheck tooltips and previews near each icon, transitions,
+magnification, adaptive resize, menus, dragging and dodge on the actual desktop.
