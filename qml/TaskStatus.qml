@@ -16,6 +16,7 @@ Item {
     property var streams: []
     property var player: null
     property var smart: null
+    property string smartError: ""
     readonly property bool muted: streams.length > 0 && streams.every(s => s && s.muted)
     readonly property bool playing: streams.some(s => s && !s.corked)
     readonly property real volume: streams.reduce((v, s) => Math.max(v, s ? s.volume : 0), 0)
@@ -52,14 +53,19 @@ Item {
     function schedule() { Qt.callLater(refresh); }
     function loadSmart() {
         if (smart) { smart.destroy(); smart = null; }
+        smartError = "";
         if (!nativeEnabled || !launcherEnabled || !launcherUrl) return;
         // Plasma 6 moved this type into the applet module. Instantiate only the
         // status type, never its Backend (which registers global shortcuts).
+        statusSupport.prepareSmartLauncherModule();
         let component = Qt.createComponent("plasma.applet.org.kde.plasma.taskmanager", "SmartLauncherItem");
+        const modernError = component.errorString();
         if (component.status !== Component.Ready)
             component = Qt.createComponent("org.kde.plasma.private.taskmanager", "SmartLauncherItem");
         if (component.status === Component.Ready)
             smart = component.createObject(root, {launcherUrl: root.launcherUrl});
+        if (!smart)
+            smartError = statusSupport.smartLauncherLoadError() + "\n" + modernError + "\n" + component.errorString();
     }
     onLauncherUrlChanged: { schedule(); Qt.callLater(loadSmart); }
     onTasksModelChanged: schedule()

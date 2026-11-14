@@ -11,7 +11,10 @@ TestCase {
         const component = Qt.createComponent("qrc:/qml/TaskStatus.qml");
         compare(component.status, Component.Ready, component.errorString());
         const status = component.createObject(this, {task: {LauncherUrlWithoutIcon: testLauncherUrls[0]}, taskIndex: 0});
-        tryVerify(() => status.smart !== null, 5000, "Installed KDE SmartLauncherItem must load");
+        // Let queued initialization finish before capturing its diagnostics.
+        wait(0);
+        tryVerify(() => status.smart !== null, 5000,
+            "Installed KDE SmartLauncherItem must load: " + status.smartError);
         verify(testEnvironment.publishLauncher({"count": 7, "count-visible": true, "progress": 0.42, "progress-visible": true}));
         tryCompare(status.smart, "count", 7);
         tryCompare(status.smart, "countVisible", true);

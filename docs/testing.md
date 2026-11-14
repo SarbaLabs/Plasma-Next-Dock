@@ -506,3 +506,14 @@ new audio UI after this failure can therefore be the previous installed binary.
 Update the branch and rerun ./install.sh; do not bypass tests. Quit/restart only
 Plasma Next Dock after successful installation. Audio matching still needs actual
 desktop validation once the new binary is installed.
+
+### Modern applet loading follow-up
+
+The maintainer confirms the resource fix: hover-and-render now passes on Qt 6.12.
+The remaining failure is native SmartLauncher loading. Modern Plasma's applet
+library registers a QT_NO_PLUGIN QML module only when loaded by the host; importing
+its URI alone was insufficient in this standalone host. Load the installed applet
+library without instantiating its factory, with the legacy import retained.
+New applet-status-loading regression uses a NO_PLUGIN QML module fixture whose
+factory must never be constructed. See application-status.md for the distinction
+between this mechanism test and actual installed-KDE integration/desktop tests.

@@ -87,3 +87,21 @@ See [testing.md](testing.md#cachyos-resource-loading-follow-up) for the Qt 6.12
 missing-resource report, isolated test resource bundle and tooltip lifetime fix.
 Failed tests stop installation; new audio controls cannot be assessed using the
 previous installed executable. Actual Qt 6.12/Plasma 6.8 acceptance remains pending.
+
+### Modern Plasma applet module registration
+
+Modern libplasma's plasma_add_applet uses ecm_add_qml_module with QT_NO_PLUGIN
+and installs the backing library under Qt's plasma/applets plugin directory. The
+module URI alone cannot load that library in a standalone QQmlEngine.
+StatusSupport loads org.kde.plasma.taskmanager.so using QPluginLoader::load from
+Qt's plugin paths before importing SmartLauncherItem. It never calls instance(),
+creates an Applet or instantiates Backend. PreventUnloadHint keeps registered QML
+types valid throughout the process. Legacy private.taskmanager import remains.
+
+The native test includes detailed loader/import diagnostics if neither path works.
+A separate no-QML-plugin fixture validates registration and idempotent loading;
+its plugin factory aborts if constructed. This validates the mechanism, not the
+actual Plasma 6.8 build. The native test still exercises the installed KDE type.
+
+References: KDE libplasma PlasmaMacros.cmake (plasma_add_applet), plasma-desktop
+applets/taskmanager/CMakeLists.txt and smartlauncheritem.h, consulted 2026-11-15.

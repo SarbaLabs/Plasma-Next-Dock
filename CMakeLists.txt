@@ -50,6 +50,23 @@ install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/InstallDesktop.cmake")
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test QuickTest)
     find_program(DOCK_KBUILDSYCOCA NAMES kbuildsycoca6 REQUIRED)
+    # Exercise the modern QT_NO_PLUGIN applet packaging independently of the
+    # installed Plasma version. The fixture factory aborts if instantiated.
+    add_library(statusmodulefixture SHARED)
+    qt_add_qml_module(statusmodulefixture
+        URI plasma.applet.org.kde.plasma.taskmanager NO_PLUGIN
+        RESOURCE_PREFIX /qt/qml
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/status-fixture/qml/plasma/applet/org/kde/plasma/taskmanager"
+        SOURCES tests/statusmodulefixture.h)
+    target_include_directories(statusmodulefixture PRIVATE tests)
+    set_target_properties(statusmodulefixture PROPERTIES PREFIX ""
+        OUTPUT_NAME "org.kde.plasma.taskmanager"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/status-fixture/plasma/applets")
+    add_executable(statussupporttest tests/statussupporttest.cpp)
+    target_link_libraries(statussupporttest PRIVATE dockcore Qt6::Test)
+    target_compile_definitions(statussupporttest PRIVATE STATUS_FIXTURE_PATH="${CMAKE_CURRENT_BINARY_DIR}/status-fixture")
+    add_dependencies(statussupporttest statusmodulefixture)
+    add_test(NAME applet-status-loading COMMAND statussupporttest)
     add_executable(menulaunchprobe tests/menulaunchprobe.cpp)
     target_link_libraries(menulaunchprobe PRIVATE Qt6::Core)
     add_executable(applicationmenutest tests/applicationmenutest.cpp)
