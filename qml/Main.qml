@@ -186,6 +186,32 @@ Item {
                     Behavior on animatedFactor { NumberAnimation { duration: 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
+                    // Follow the slot along the dock, but keep the capsule's
+                    // resting cross-axis geometry throughout icon magnification.
+                    Item {
+                        width: slot.width
+                        height: root.base
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
+                            ? root.edgeSpacing + root.taskPadding
+                            : slot.height - height - root.edgeSpacing - root.taskPadding
+                        z: -1
+                        DockIndicators {
+                            objectName: "dockIndicators" + slot.index
+                            anchors.centerIn: parent
+                            anchors.alignWhenCentered: false
+                            width: root.vertical ? parent.height : parent.width
+                            height: root.vertical ? parent.width : parent.height
+                            rotation: root.vertical ? -90 : 0
+                            configuration: dockOptions
+                            task: slot.model
+                            taskIndex: slot.index
+                            tasksModel: dockOptions.demo ? null : taskSource.item.tasks
+                            edge: dockOptions.edge
+                            padding: root.taskPadding
+                            hovered: iconHover.hovered
+                            dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
+                        }
+                    }
                     Kirigami.Icon {
                         id: icon
                         objectName: "icon" + slot.index
@@ -198,18 +224,6 @@ Item {
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
                         onYChanged: root.queueGeometry()
-                        DockIndicators {
-                            anchors.fill: parent
-                            z: -1
-                            configuration: dockOptions
-                            task: slot.model
-                            taskIndex: slot.index
-                            tasksModel: dockOptions.demo ? null : taskSource.item.tasks
-                            edge: dockOptions.edge
-                            padding: root.taskPadding
-                            hovered: iconHover.hovered
-                            dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
-                        }
                         TapHandler {
                             onTapped: {
                                 if (reorder.active) return;

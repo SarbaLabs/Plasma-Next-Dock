@@ -396,3 +396,18 @@ Compilation, QML parsing, PO catalog validation and isolated installation pass.
 Native reveal uses KDE's documented slide effect; no live KWin compositor is
 available here. Do not describe smooth recall, reversal, theme fidelity or GPU
 performance as visually validated. Use the checklist in indicators.md on CachyOS.
+
+## Indicator anchor regression — 2026-11-14
+
+A new Main.qml integration test samples intermediate magnification and shrink
+frames for native Plasma strips and Custom segments on all four edges (eight
+data rows). It checks fixed cross-axis coordinates while confirming icon growth.
+Running it against the previous Main.qml reproduces exactly two failures:
+Custom bottom and right. The corrected resting lane passes all eight rows.
+Fractional anchor alignment also prevents subpixel jitter on vertical layouts.
+
+All 12 CTest entries pass with the correction, including 57 Qt Quick cases.
+Compilation, QML parsing, shell syntax, whitespace and staged installation pass.
+These offscreen tests verify animated geometry, not live KWin rendering. Confirm
+bottom/right magnification visually on CachyOS before merging. No settings were
+removed; cleanup remains deferred.

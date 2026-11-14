@@ -5,7 +5,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.taskmanager as TaskManager
 import "code/IndicatorLogic.js" as Logic
 
-// Coordinates are those of the upright icon, not the rotated task row.
+// Coordinates use the upright resting lane, not the magnified icon.
 Item {
     id: root
     required property var configuration

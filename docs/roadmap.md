@@ -163,3 +163,9 @@ No system setting is changed or second animation layered on top. See indicators.
 This stage does not implement blur, Liquid Glass, bounce, badges or every final
 parity feature. Those remain on the roadmap. Desktop validation of this branch is
 pending; do not merge or release automatically.
+
+The maintainer reports the indicator/reveal stage works, with cross-axis indicator
+drift during magnification on bottom/right docks. A focused resting-lane correction
+and frame-sampled regression tests address this feedback; desktop confirmation of
+the correction remains pending. Settings cleanup is explicitly deferred until the
+final development stage; do not remove controls in this iteration.

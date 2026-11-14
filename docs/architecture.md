@@ -230,8 +230,10 @@ never change Qt's process-wide fixed-position flag. See window-previews.md.
 
 ## Indicator composition and compositor animation
 
-DockIndicators is attached in the upright icon coordinate system and never changes
-layout dimensions. It composes KSvg native frames/strips and group elements with
+DockIndicators uses an upright resting lane, separate from the magnified icon.
+Only its longitudinal extent follows the slot; its cross-axis anchor stays fixed
+to the capsule. Fractional centering is preserved on rotated vertical layouts.
+It never changes layout dimensions. It composes KSvg native frames/strips and group elements with
 CustomIndicators. The existing macOS dot remains in its original slot geometry.
 IndicatorTaskState observes model events and reads at most eight children; icon
 colors share the existing lazy ImageColors loader with the glow.

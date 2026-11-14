@@ -10,6 +10,7 @@ Item {
     property var prefixes: ["normal"]
     Item {
         id: strip
+        objectName: "nativeIndicatorStrip"
         clip: true
         readonly property real thickness: Math.max(1, root.edge === 0 ? svg.margins.bottom
             : root.edge === 1 ? svg.margins.top : root.edge === 2 ? svg.margins.left : svg.margins.right)

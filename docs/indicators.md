@@ -108,3 +108,22 @@ Licensing/provenance of reused indicator components is in licensing.md.
 Headless tests check rendering geometry, native SVG availability, bounded state,
 settings and component integration. They cannot prove KWin's animation, final
 GPU visuals or real pointer crossing between surfaces. Those require CachyOS tests.
+
+## Magnification anchor correction — 2026-11-14
+
+Desktop feedback identified cross-axis drift in Custom mode on bottom and right
+edges. The icon origin moves on those edges as it grows. Anchoring indicators
+inside it made their animated position lag behind that moving origin. Top/left
+origins stay fixed, explaining the edge-specific symptom.
+
+Indicators now occupy a separate resting lane anchored to the capsule. Only the
+longitudinal dimension follows magnification; the icon animation is unchanged.
+Counter-rotated vertical items retain fractional centering to avoid rounding
+jitter. Native strips and group symbols share this lane; macOS dots retain their
+existing geometry. All configuration options remain available. Intentional
+state-dependent indicator sizes still apply.
+
+Frame-sampled tests reproduce the original bottom/right Custom failures and
+verify stable cross-axis coordinates during growth and shrinkage on all four
+edges, for Custom and native Plasma strips. Recheck this correction on CachyOS,
+including configured state sizes, scrolling and adaptive fit.
