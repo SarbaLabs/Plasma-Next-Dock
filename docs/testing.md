@@ -367,3 +367,17 @@ No live KWin session is available here. Inward physical placement, live thumbnai
 real-window activation/close, crossing into an interactive tooltip, grouped drag,
 GPU load and multi-output scaling require the checklist in window-previews.md.
 Explicit location assertions are not proof of the final on-screen coordinates.
+
+## PR #5 positioning feedback
+
+The maintainer reports the preview feature functioning but supplies a recording
+showing substantial placement offsets. Correct edge properties did not prove
+correct global coordinates: Qt's normalized top-level origin was being used by
+native Plasma tooltip placement. See window-previews.md for the verified code path.
+
+The origin adapter adds a twelfth CTest entry. It simulates backend normalization
+and tests all four edges, translated/negative output origins, mapToGlobal, unchanged
+surface size, updated origins and native surface recreation. The full 12-entry
+suite passes locally; compilation and isolated installation pass. No live KWin
+positioning is claimed. Recheck tooltips and previews near each icon, transitions,
+magnification, adaptive resize, menus, dragging and dodge on the actual desktop.

@@ -218,3 +218,12 @@ Bottom/Top/Left/Right edge location chooses the inward side; the actual icon is
 its visual anchor. Native Plasma handles tooltip placement and theming rather than
 PopupAnchor, which remains specific to context menus. Preview visibility inhibits
 dodge until the native interactive tooltip dismisses. See window-previews.md.
+
+### Known layer-surface origin
+
+Qt Wayland can report the screen origin for ordinary top-level windows even when
+layer-shell places them elsewhere. LayerSurfacePosition publishes the host's known
+edge-centered surface origin to Qt's coordinate mapping without moving/resizing
+the compositor surface. Native Plasma tooltip placement then has a valid parent
+origin. Keep this per-window adapter separate from PopupAnchor (xdg menus), and
+never change Qt's process-wide fixed-position flag. See window-previews.md.

@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "screenedge.h"
 #include "settings.h"
+#include "layersurfaceposition.h"
 #include <QQuickView>
 class DockHost : public QObject
 {
@@ -22,6 +23,7 @@ private:
     DockGeometry::Edge m_edge;
     QQuickView m_view;
     DockController m_controller;
+    LayerSurfacePosition *m_surfacePosition = nullptr;
     std::unique_ptr<ScreenEdge> m_screenEdge;
     bool m_failed = false;
     bool m_warnings = false;

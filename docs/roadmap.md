@@ -138,3 +138,11 @@ The small group count is an interim affordance. It does not replace the full
 indicator parity requirement above. No blur, bounce or styling settings are
 silently removed or declared implemented. See window-previews.md for architecture
 and the pending CachyOS acceptance matrix. Do not merge automatically.
+
+### PR #5 desktop positioning correction
+
+Maintainer video showed tooltips offset from their icons, notably on top/right
+edges. Native Plasma placement used Qt's normalized layer-window origin. A
+per-dock LayerSurfacePosition adapter now keeps Qt's client geometry consistent
+with the known layer-shell placement. Native tooltip appearance is unchanged.
+All 12 local tests pass; actual desktop placement requires follow-up validation.

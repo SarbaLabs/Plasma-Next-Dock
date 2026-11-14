@@ -86,3 +86,39 @@ Headless tests validate model routing, native component imports, tooltip ownersh
 and explicit edge configuration. They do not validate live PipeWire images, KWin
 popup placement, GPU performance, real input crossing between surfaces or actual
 application close/activation. Those remain maintainer desktop acceptance items.
+
+## Desktop positioning follow-up
+
+The maintainer's recording exposed a coordinate-origin defect despite correct
+edge selection: a top-dock tooltip was shifted left, and right-dock tooltips could
+appear at the opposite screen edge. The native tooltip is not an xdg menu popup;
+its Plasma placement helper derives global anchors from the parent QWindow position.
+
+Qt Wayland's QWaylandWindow::setGeometry normalizes ordinary top-level positions
+to the output origin. The dock's original QWindow::setPosition call therefore did
+not publish the actual layer-shell origin. The compositor independently centers
+and edge-anchors the dock. Plasma then added the wrong origin to the icon's local
+rectangle. Explicit tooltip location alone could not repair that discrepancy.
+
+LayerSurfacePosition now publishes DockGeometry::surface's known origin into the
+client-side QPlatformWindow geometry and delivers a synchronous Qt geometry
+notification. It intentionally bypasses QWaylandWindow::setGeometry's normalization,
+without sending a Wayland move, changing the surface size, setting a global Qt
+flag or replacing the native tooltip. All coordinates remain logical pixels.
+
+The adapter is attached only to the dock's layer-shell window. It coalesces
+move/resize/show/native-surface lifecycle events, restoring bookkeeping if a later
+configure resets it. Reentrancy protection and an equality check prevent a feedback
+loop. Output and adaptive-size changes use the host's existing origin calculation.
+The settings window and native context-menu positioner are unchanged.
+
+This is a small Qt GUI-private compatibility adapter (the project already requires
+matching GUI-private headers). Revalidate after Qt upgrades. Reference:
+Qt qtwayland v6.8.2 src/client/qwaylandwindow.cpp and current qtbase
+src/plugins/platforms/wayland/qwaylandwindow.cpp; libplasma
+src/plasmaquick/popupplasmawindow.cpp and transientplacementhint.cpp.
+
+A dedicated test simulates the normalized backend geometry and checks correction,
+mapToGlobal, unchanged sizes, all four edges, nonzero/negative output origins and
+surface destruction/recreation. Actual KWin placement still needs the maintainer's
+follow-up using the same four-edge desktop scenario.

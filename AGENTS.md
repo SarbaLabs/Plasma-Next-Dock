@@ -56,3 +56,8 @@
   icon/title fallback. Do not weaken compositor permissions to obtain thumbnails.
 - Preserve the final indicator parity checklist in docs/roadmap.md; the current
   simple dot/count is not the final customization system.
+
+- LayerSurfacePosition supplies the known layer-shell origin to Qt's client-side
+  geometry; QWindow::setPosition alone is normalized by Qt Wayland. Keep its GUI
+  private adapter per-window, event-driven and size-preserving. Never change Qt's
+  global fixed-position policy or move the dock surface to position a tooltip.
