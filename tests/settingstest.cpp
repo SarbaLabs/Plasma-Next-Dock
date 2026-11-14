@@ -60,6 +60,52 @@ private Q_SLOTS:
         QCOMPARE(clean["indicatorCustomColor"], DockSettings::defaults()["indicatorCustomColor"]);
         QVERIFY(!clean.contains("indicatorOverflow"));
     }
+    void backgroundPersistence() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["backgroundType"].toInt(), 0);
+        QCOMPARE(settings.values()["radius"].toInt(), 10);
+        QVERIFY(settings.apply({{"radius", 0}, {"backgroundType", 4}, {"backgroundOpacity", 0.25},
+            {"borderWidth", 0}, {"borderUseTheme", false}, {"borderColor", "#ff0000"},
+            {"iconSpacing", 18}, {"horizontalPadding", 30}, {"verticalPadding", 20}}));
+        QVERIFY(settings.apply({{"backgroundType", 0}}));
+        DockSettings restored(file);
+        QCOMPARE(restored.values()["radius"].toInt(), 0);
+        QCOMPARE(restored.values()["backgroundOpacity"].toDouble(), 0.25);
+        QCOMPARE(restored.values()["borderWidth"].toInt(), 0);
+        QCOMPARE(restored.values()["borderColor"].toString(), "#ff0000");
+        QVERIFY(!restored.values()["borderUseTheme"].toBool());
+        QCOMPARE(restored.values()["iconSpacing"].toInt(), 18);
+        QCOMPARE(restored.values()["horizontalPadding"].toInt(), 30);
+        QCOMPARE(restored.values()["verticalPadding"].toInt(), 20);
+        const auto clean = DockSettings::normalized({{"backgroundType", 900}, {"backgroundOpacity", -1},
+            {"borderWidth", 99}, {"borderColor", "bad"}, {"iconSpacing", -9}, {"horizontalPadding", 999},
+            {"verticalPadding", std::numeric_limits<double>::quiet_NaN()}, {"blurSaturation", 2.0}});
+        QCOMPARE(clean["backgroundType"].toInt(), 0);
+        QCOMPARE(clean["backgroundOpacity"].toDouble(), 0.0);
+        QCOMPARE(clean["borderWidth"].toInt(), 12);
+        QCOMPARE(clean["borderColor"].toString(), "#808080");
+        QCOMPARE(clean["iconSpacing"].toInt(), 0);
+        QCOMPARE(clean["horizontalPadding"].toInt(), 128);
+        QCOMPARE(clean["verticalPadding"].toInt(), 10);
+        QVERIFY(!clean.contains("blurSaturation"));
+        QVERIFY(!clean.contains("blurContrast"));
+        QVERIFY(!clean.contains("blurBrightness"));
+    }
+    void hoverSettings() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["blastRadius"].toInt(), 2);
+        QCOMPARE(settings.values()["hoverLift"].toInt(), 0);
+        QVERIFY(settings.apply({{"blastRadius", 4}, {"hoverLift", 6}}));
+        DockSettings restored(file);
+        QCOMPARE(restored.values()["blastRadius"].toInt(), 4);
+        QCOMPARE(restored.values()["hoverLift"].toInt(), 6);
+        const auto clean = DockSettings::normalized({{"blastRadius", -1}, {"hoverLift", 999}});
+        QCOMPARE(clean["blastRadius"].toInt(), 0);
+        QCOMPARE(clean["hoverLift"].toInt(), 64);
+    }
     void temporarySessionsNeverWrite() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file, false);

@@ -10,7 +10,8 @@ Plasma panel causing premature window avoidance.
 **Status: early standalone dock with persistent settings, not yet feature-complete.**
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
-Advanced indicators and native reveal animation now need desktop validation. It does not modify Plasma or KWin, install a
+Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
+The new background modes and blur integration need desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -29,7 +30,11 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
-- Solid capsule, configurable corner radius and optional bounded application-color glow.
+- Solid, Transparent, Translucent, System Blur and Liquid Glass backgrounds.
+  The existing corner radius (pixels) is shared by paint, glow and native blur.
+  Optional application-color glow stays inside the capsule.
+- macOS, Plasma and Custom running indicators, independent native group/decorations,
+  and native KWin reveal animation.
 - A normal configuration window, saved launcher order, and native Plasma context menus:
   desktop-entry actions, KDE Places, activity-filtered recent files, window operations,
   desktops/activities, supported media controls, Pin/Unpin, Configure and Quit.
@@ -38,9 +43,23 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This stage intentionally does **not** yet port System Blur/Liquid Glass, bounce
-or badges. Those remain
+This stage intentionally does **not** yet port bounce or badges. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
+
+## Capsule backgrounds
+
+Open Configure → Appearance and launchers → Capsule and style. Solid remains the
+default; updating does not change the existing appearance or saved corner radius.
+System Blur and Liquid Glass require an enabled KWin blur effect. Liquid Glass adds
+tint and internal gloss; it does not refract desktop pixels. The theme
+supplies the base/border colors. Tint opacity, border thickness/color and independent icon/end/thickness spacing
+are saved independently of the selected mode. A zero-width border is invisible.
+Spacing follows the dock orientation and participates in adaptive sizing.
+
+The native effects are built into this executable, not a plasmoid plugin. No new
+dependency, system configuration change or Plasma Shell restart is required.
+If KWin's blur effect is unavailable, tint/gloss remain visible without blur.
+See [background architecture and testing](docs/backgrounds.md).
 
 ## Build and install on CachyOS / Arch
 

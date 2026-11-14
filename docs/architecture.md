@@ -246,3 +246,53 @@ ScreenEdge registers a KWindowEffects slide hint for its edge and preserves nati
 hide/recall ownership. Registration is cached and restored after surface lifecycle
 changes; KWindowEffects handles effect-manager availability. There is no client
 position/opacity animation, polling or global KWin configuration mutation.
+
+## Capsule effects ownership
+
+The standalone host owns one BackgroundEffects instance for its QQuickWindow.
+DockController emits capsuleChanged only for capsule geometry/radius changes,
+separately from animated icon input regions. This supplies the same effective
+radius used by CapsuleBackground, its border, gloss, glow and collision path.
+
+BackgroundEffects coalesces GUI-thread updates, caches the rasterized region, and never observes render-thread/per-frame signals. It
+restores after show/exposure, native surface creation and application palette
+changes, clears requests before surface destruction, and defers application until
+visible/exposed. KWindowSystem independently restores remembered requests when its
+Wayland effect managers return. Native compositor hiding preserves the mapped
+surface and its requests; it does not require a QWindow hide event.
+
+There is no PanelView in this process to overwrite the dock's effects. The old
+plasmoid's panel mask/floating and delayed Plasma theme hooks would solve shared
+panel ownership issues that do not exist here and are intentionally not imported.
+See backgrounds.md for fallback, visual limits and desktop acceptance.
+
+### Border and independent spacing refinement
+
+User feedback removed ineffective blur saturation/contrast/brightness controls
+and native contrast registration. The old INI keys are ignored. BackgroundEffects
+now owns blur alone. CapsuleBackground exposes its existing border width/color;
+theme color stays the default, with an explicit custom override and zero-width off.
+
+Separate iconSpacing, horizontalPadding (long-axis ends) and verticalPadding
+(short-axis thickness) replace the shared/hardcoded 10/12/10 values. AdaptiveLayout
+budgets all three before zoom and output fitting; all scale with icon shrinkage.
+Short capsules use actual content plus end padding rather than a minimum 160 px.
+The canvas retains magnification headroom, and input/dodge use the updated capsule.
+
+### Configurable magnification reach and lift
+
+blastRadius (0–8, default 2) controls the number of neighboring icon centers within
+the squared falloff. The existing 2.4-icon denominator is preserved at the default
+(radius + 0.4); radius zero uses a half-icon interval and affects only the nearest
+icon. Fractional pointer positions retain continuous interpolation.
+
+AdaptiveLayout computes a bounded sum of falloff weights for the selected radius.
+The same budget caps overlapping animation tails and reserves canvas length before
+hover, preventing clipping or a wide radius being flattened by the old fixed budget.
+The default keeps the former two-icon-equivalent reserve.
+
+hoverLift (0–64 logical px, default 0) adds an inward offset using the same animated
+weight, independent of zoom amplitude. It works even at 100% magnification. Extra
+headroom is reserved before hovering, participates in adaptive fitting, and never
+changes the resting capsule or dodge region. Input and preview anchors follow the
+actual lifted icon. Indicators remain in their separate resting lane.

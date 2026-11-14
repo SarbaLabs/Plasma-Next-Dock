@@ -14,15 +14,19 @@ Item {
     readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
         vertical ? outputSize.width : outputSize.height,
-        dockOptions.spacing === undefined ? 8 : dockOptions.spacing)
+        dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
+        dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
+        dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
+        dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
     readonly property real maximum: base * dockOptions.zoom
     readonly property real depth: layoutMetrics.depth
     readonly property real length: layoutMetrics.length
-    readonly property real taskPadding: 10 * fitScale
-    readonly property real endPadding: 12 * fitScale
+    readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
+    readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
     width: vertical ? depth : length
     height: vertical ? length : depth
     property int dragIndex: -1
@@ -61,12 +65,14 @@ Item {
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
-    readonly property real zoomBudgetScale: Math.min(1, 2 / Math.max(2, animatedWeight))
+    readonly property int blastRadius: dockOptions.blastRadius === undefined ? 2 : dockOptions.blastRadius
+    readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
+    readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
     property real pointerIndex: -10
     property bool hovering: pointer.hovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
-    readonly property real barLength: Math.min(length, Math.max(160 * fitScale, taskRow.width + 2 * endPadding))
+    readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
 
     function updatePointer(position) {
         const coordinate = vertical ? position.y : position.x;
@@ -94,7 +100,7 @@ Item {
             const p = slot.iconItem.mapToItem(root, 0, 0);
             icons.push(Qt.rect(p.x, p.y, slot.iconItem.width, slot.iconItem.height));
         }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.radius, icons, dockOptions.edge);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.effectiveRadius, icons, dockOptions.edge);
     }
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
@@ -107,32 +113,29 @@ Item {
         source: dockOptions.demo ? "DemoTasks.qml" : "LiveTasks.qml"
         onStatusChanged: if (status === Loader.Error) Qt.exit(1)
     }
-    Rectangle {
+    CapsuleBackground {
         id: bar
+        objectName: "capsuleBackground"
         x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : (root.width - width) / 2
         y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
         width: root.vertical ? root.barThickness : root.barLength
         height: root.vertical ? root.barLength : root.barThickness
         radius: Geometry.radius(width, height, true, dockOptions.radius)
-        color: Kirigami.Theme.backgroundColor
-        border.color: Kirigami.Theme.disabledTextColor
-        border.width: 1
+        backgroundType: dockOptions.backgroundType === undefined ? 0 : dockOptions.backgroundType
+        blurOpacity: dockOptions.backgroundOpacity === undefined ? 0.35 : dockOptions.backgroundOpacity
+        customBorderWidth: dockOptions.borderWidth === undefined ? 1 : dockOptions.borderWidth
+        customBorderColor: dockOptions.borderUseTheme !== false ? Kirigami.Theme.disabledTextColor : dockOptions.borderColor
+        isVertical: root.vertical
+        glowEnabled: dockOptions.glow
+        glowPosition: Qt.point(pointer.point.position.x - bar.x, pointer.point.position.y - bar.y)
+        glowHovering: pointer.hovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
+        glowColor: root.applicationColor
+        glowRadius: root.maximum
+        onRadiusChanged: root.queueGeometry()
         onXChanged: root.queueGeometry()
         onYChanged: root.queueGeometry()
         onWidthChanged: root.queueGeometry()
         onHeightChanged: root.queueGeometry()
-        Loader {
-            anchors.fill: parent
-            active: dockOptions.glow
-            sourceComponent: CapsuleGlow {
-                cornerRadius: bar.radius
-                pointerX: pointer.point.position.x - bar.x
-                pointerY: pointer.point.position.y - bar.y
-                hovering: pointer.hovered && Geometry.containsPoint(width, height, cornerRadius, pointerX, pointerY)
-                glowColor: root.applicationColor
-                glowRadius: root.maximum
-            }
-        }
     }
     // Rotate the layout axis only; icons counter-rotate to stay upright.
     Flickable {
@@ -159,7 +162,7 @@ Item {
             id: taskRow
             x: Math.max(root.endPadding, (viewport.width - width) / 2)
             height: viewport.height
-            spacing: root.taskPadding
+            spacing: (dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing) * root.fitScale
             onXChanged: root.queueGeometry()
             onWidthChanged: root.queueGeometry()
             Repeater {
@@ -171,8 +174,8 @@ Item {
                     objectName: "task" + index
                     required property int index
                     required property var model
-                    readonly property real factor: root.hovering && !root.dragging ? Math.max(0, 1 - Math.abs(root.pointerIndex - index) / 2.4) : 0
-                    property real animatedFactor: factor * factor
+                    readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
+                    property real animatedFactor: factor
                     property real reportedFactor: 0
                     onAnimatedFactorChanged: {
                         root.animatedWeight += animatedFactor - reportedFactor;
@@ -218,7 +221,10 @@ Item {
                         width: slot.size; height: width
                         x: 0
                         // After a clockwise rotation, local bottom is the screen's left.
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + root.taskPadding : slot.height - height - root.edgeSpacing - root.taskPadding
+                        readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
+                            ? root.edgeSpacing + root.taskPadding + lift
+                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
@@ -254,7 +260,7 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: dockOptions.glow || (dockOptions.indicatorMode === 2
+                        active: (dockOptions.glow && bar.backgroundType !== 1) || (dockOptions.indicatorMode === 2
                             && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {

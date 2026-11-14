@@ -9,6 +9,20 @@ TestCase {
     visible: true
     when: windowShown
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
+    function test_radiusBudgetAndLift() {
+        for (let r = 0; r <= 8; ++r) {
+            for (let p = 0; p < 1; p += 0.05) {
+                let total = 0;
+                for (let i = -10; i <= 10; ++i) total += Adaptive.hoverWeight(p - i, r);
+                verify(total <= Adaptive.zoomBudget(r) + 0.00001);
+            }
+            compare(Adaptive.hoverWeight(r + 1, r), 0);
+            if (r > 0) verify(Adaptive.hoverWeight(r, r) > 0);
+            const m = Adaptive.metrics(40, 40, 1.5, 984, 120, 8, 10, 12, 10, r, 64);
+            verify(m.depth <= 120 && m.length <= 984);
+        }
+        fuzzyCompare(Adaptive.hoverWeight(1, 2), Math.pow(1 - 1 / 2.4, 2), 0.00001);
+    }
     function test_limitsAndMonotonicity() {
         for (const preferred of [24, 40, 96]) {
             for (const zoom of [1, 1.5, 2.5]) {
@@ -35,6 +49,44 @@ TestCase {
         compare(Adaptive.scrollPosition(200, 100, 500, 300), 200);
         compare(Adaptive.scrollPosition(200, 0, 100, 300), 0);
         compare(Adaptive.scrollPosition(20, -100, 500, 300), 0);
+    }
+    function test_customPaddingAcrossEdges() {
+        tryCompare(dock, "status", Loader.Ready);
+        try {
+            for (const gap of [0, 18, 64]) {
+                for (const ends of [0, 25, 128]) {
+                    for (const thickness of [0, 16, 64]) {
+                        const m = Adaptive.metrics(22, 40, 1.5, 984, 700, 8, gap, ends, thickness);
+                        verify(m.length <= 984 && m.depth <= 700);
+                        if (m.base > 24)
+                            verify(22 * m.base + 2 * m.base * 0.5 + (21 * gap + 2 * ends) * m.scale <= m.length + 0.001);
+                    }
+                }
+            }
+            dock.item.hovering = false;
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                for (const values of [[0, 0, 0], [18, 25, 16], [18, 0, 30], [5, 35, 0]]) {
+                    testEnvironment.layoutOptions(values[0], values[1], values[2]);
+                    wait(120);
+                    const capsule = findChild(dock.item, "capsuleBackground");
+                    const first = findChild(dock.item, "icon0");
+                    const second = findChild(dock.item, "icon1");
+                    const p = first.mapToItem(capsule, 0, 0);
+                    const q = second.mapToItem(capsule, 0, 0);
+                    const gap = values[0] * dock.item.fitScale;
+                    const ends = values[1] * dock.item.fitScale;
+                    const thickness = values[2] * dock.item.fitScale;
+                    fuzzyCompare(edge < 2 ? p.x : p.y, ends, 0.01);
+                    fuzzyCompare(edge < 2 ? p.y : p.x, thickness, 0.01);
+                    fuzzyCompare((edge < 2 ? q.x - p.x : q.y - p.y) - dock.item.base, gap, 0.01);
+                    fuzzyCompare(edge < 2 ? capsule.height : capsule.width, dock.item.base + 2 * thickness, 0.01);
+                }
+            }
+        } finally {
+            testEnvironment.layoutOptions(10, 12, 10);
+            testEnvironment.setEdge(0);
+        }
     }
     function test_synthesizedWheel() {
         tryCompare(dock, "status", Loader.Ready);

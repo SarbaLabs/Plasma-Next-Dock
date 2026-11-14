@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs as QtDialogs
 import org.kde.kirigami as Kirigami
 
 Controls.ApplicationWindow {
@@ -11,15 +12,26 @@ Controls.ApplicationWindow {
     width: 620; height: 720
     minimumWidth: 460; minimumHeight: 400
     visible: false
+    property color borderColorValue: "#808080"
+    QtDialogs.ColorDialog {
+        id: borderDialog; title: i18n("Border color"); selectedColor: window.borderColorValue
+        onAccepted: window.borderColorValue = selectedColor
+    }
     property string launcherError: ""
     function openSettings() {
         const v = dockSettings.values;
         edge.currentIndex = v.edge;
         screen.currentIndex = Math.max(0, outputNames.indexOf(v.screen));
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
+        blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing; radius.value = v.radius;
         glow.checked = v.glow; dodge.checked = v.dodge;
         revealAnimation.checked = v.revealAnimation;
+        backgroundType.currentIndex = v.backgroundType;
+        backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
+        borderWidth.value = v.borderWidth;
+        borderUseTheme.checked = v.borderUseTheme; borderColorValue = v.borderColor;
+        iconSpacing.value = v.iconSpacing; horizontalPadding.value = v.horizontalPadding; verticalPadding.value = v.verticalPadding;
         indicators.load(v);
         visible = true;
     }
@@ -35,6 +47,10 @@ Controls.ApplicationWindow {
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
         onApplied: dockSettings.apply(Object.assign({}, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
+            backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
+            borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
+            iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
+            blastRadius: blastRadius.value, hoverLift: hoverLift.value,
             radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
         onRejected: window.close()
     }
@@ -73,7 +89,45 @@ Controls.ApplicationWindow {
                 Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
                 Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
                 Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
+                Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
+                Controls.SpinBox { id: hoverLift; objectName: "hoverLiftControl"; Kirigami.FormData.label: i18n("Hover lift (px):"); from: 0; to: 64; editable: true }
+                Controls.Label { text: i18n("Capsule and style"); font.bold: true; Kirigami.FormData.isSection: true }
+                Controls.ComboBox {
+                    id: backgroundType; objectName: "backgroundTypeControl"
+                    implicitWidth: Kirigami.Units.gridUnit * 16
+                    Kirigami.FormData.label: i18n("Background:")
+                    model: [i18n("Solid"), i18n("Transparent"), i18n("Translucent"), i18n("System Blur"), i18n("Liquid Glass")]
+                }
+                Controls.SpinBox {
+                    id: backgroundOpacity; objectName: "backgroundOpacityControl"
+                    visible: backgroundType.currentIndex >= 2
+                    Kirigami.FormData.label: i18n("Background tint opacity (%):")
+                    from: 0; to: 100; editable: true
+                }
+                Controls.Label {
+                    visible: backgroundType.currentIndex >= 3
+                    Layout.fillWidth: true
+                    text: i18n("Requires an enabled KWin blur effect. Liquid Glass adds tint and gloss, not optical refraction.")
+                    wrapMode: Text.WordWrap
+                }
                 Controls.SpinBox { id: radius; objectName: "radiusControl"; Kirigami.FormData.label: i18n("Corner radius (px):"); from: 0; to: 96; editable: true }
+                Controls.SpinBox { id: borderWidth; objectName: "borderWidthControl"; Kirigami.FormData.label: i18n("Border thickness (px):"); from: 0; to: 12; editable: true }
+                Controls.CheckBox { id: borderUseTheme; objectName: "borderUseThemeControl"; text: i18n("Use theme border color"); enabled: borderWidth.value > 0 }
+                Controls.Button {
+                    objectName: "borderColorControl"
+                    Kirigami.FormData.label: i18n("Border color:")
+                    text: window.borderColorValue.toString()
+                    enabled: borderWidth.value > 0 && !borderUseTheme.checked
+                    icon.name: "color-picker"
+                    onClicked: { borderDialog.selectedColor = window.borderColorValue; borderDialog.open(); }
+                }
+                Controls.SpinBox { id: iconSpacing; objectName: "iconSpacingControl"; Kirigami.FormData.label: i18n("Space between icons (px):"); from: 0; to: 64; editable: true }
+                Controls.SpinBox { id: horizontalPadding; objectName: "horizontalPaddingControl"; Kirigami.FormData.label: i18n("Padding at both ends (px):"); from: 0; to: 128; editable: true }
+                Controls.SpinBox { id: verticalPadding; objectName: "verticalPaddingControl"; Kirigami.FormData.label: i18n("Padding across thickness (px):"); from: 0; to: 64; editable: true }
+                Controls.Label {
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    text: i18n("End padding follows the dock's length; thickness padding follows its short axis, on every screen edge. Spacing and padding scale down with icons when space is limited.")
+                }
                 Controls.CheckBox { id: glow; text: i18n("Enable hover glow") }
                 Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }
                 Controls.Label {

@@ -70,3 +70,8 @@
   global compositor changes, or a competing QML hide/show animation.
 - Settings QML uses KI18n through its configuration engine context. Keep source
   strings English, update Messages.sh inputs and maintain the French PO catalog.
+
+- BackgroundEffects is the sole native effect owner for the standalone window.
+  Reuse the existing radius setting and controller capsule signal; never blur the
+  full canvas/edge corridor or enable an empty region. No PanelView hooks, render
+  thread effect calls or periodic restoration loops. See docs/backgrounds.md.

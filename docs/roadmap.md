@@ -169,3 +169,31 @@ drift during magnification on bottom/right docks. A focused resting-lane correct
 and frame-sampled regression tests address this feedback; desktop confirmation of
 the correction remains pending. Settings cleanup is explicitly deferred until the
 final development stage; do not remove controls in this iteration.
+
+## Capsule background stage — 2026-11-14
+
+The maintainer accepted the bottom/right magnification correction and merged PR #6.
+Branch feature/capsule-backgrounds starts from main at
+27e79e277315bbc210dd271c597b4a1baa336284 (tree e466186d4ad4603a0b4b1a421e29426732ce455c).
+
+Add Solid/Transparent/Translucent/System Blur/Liquid Glass modes with native
+single-window effects ownership, shared rounded geometry and theme-based paint.
+Reuse the existing radius setting; do not duplicate or migrate it. Solid remains
+the default. Settings cleanup, bounce, badges and other parity items remain deferred.
+The headless validation does not replace CachyOS/KWin desktop acceptance.
+
+### PR #7 desktop refinements — 2026-11-15
+
+Background rendering is accepted by the maintainer. Remove the three ineffective
+blur tuning controls, add theme/custom border color and thickness (zero disables),
+and expose independent icon spacing plus long-axis/short-axis padding. Preserve
+the existing radius and screen-edge gap controls. Validate adaptive fit and all
+four orientations. This is focused feedback; general settings cleanup stays deferred.
+
+### Hover controls — 2026-11-15
+
+Add blast radius and hover lift to PR #7. Preserve the existing falloff at radius 2
+and default lift to zero; both settings persist. Reserve the variable zoom budget
+and lift headroom in adaptive layout, keep resting indicators fixed, and validate
+all four inward directions. Also check fixture file opening instead of ignoring
+QFile::open's nodiscard result on newer Qt.

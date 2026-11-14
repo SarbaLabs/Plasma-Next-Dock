@@ -85,3 +85,18 @@ No unrelated Fancy Tasks NG host/model code or theme artwork is imported. The
 new DockIndicators composition and standalone settings persistence remain project
 code. Native reveal animation uses KWindowEffects/KWin as installed dependencies,
 not copied compositor implementation. Original licensing texts remain preserved.
+
+## Capsule backgrounds
+
+Donor: SarbaLabs/plasma-macos-dock commit
+daf60631cbca7ae12b1a587bfff3a3fd7639a53e:
+
+- contents/ui/LiquidGlassBackground.qml adapted as qml/CapsuleBackground.qml;
+  GPL-2.0-or-later, Matt Anis (2024) notice retained. Removed optional plasmoid
+  plugin discovery; kept tint, rounded layers, gloss and bounded glow composition.
+- src/dockbluritem.cpp/.h informed the GUI-thread, queued restoration and effect
+  cache reset in the host-specific src/backgroundeffects.cpp/.h; original
+  Matt Anis notice retained. No PanelView or Plasma theme observer is imported.
+
+KWindowEffects is used as an installed KDE Frameworks API; no KWin implementation
+or theme artwork is copied. Existing license texts remain unchanged.

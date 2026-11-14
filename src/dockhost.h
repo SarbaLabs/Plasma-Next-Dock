@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
 #include "controller.h"
+#include "backgroundeffects.h"
 #include "screenedge.h"
 #include "settings.h"
 #include "layersurfaceposition.h"
@@ -23,6 +24,7 @@ private:
     DockGeometry::Edge m_edge;
     QQuickView m_view;
     DockController m_controller;
+    BackgroundEffects m_backgroundEffects;
     LayerSurfacePosition *m_surfacePosition = nullptr;
     std::unique_ptr<ScreenEdge> m_screenEdge;
     bool m_failed = false;

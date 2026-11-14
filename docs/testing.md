@@ -411,3 +411,48 @@ Compilation, QML parsing, shell syntax, whitespace and staged installation pass.
 These offscreen tests verify animated geometry, not live KWin rendering. Confirm
 bottom/right magnification visually on CachyOS before merging. No settings were
 removed; cleanup remains deferred.
+
+## Capsule backgrounds — 2026-11-14
+
+All 13 CTest entries pass locally, including 64 Qt Quick cases. The new native
+background-effects test records production effect requests on real offscreen
+QQuickWindows: rounded/fractional bounds, radius-only edits including zero and
+clamping, parameter updates, no writes for changing icon input geometry, empty
+regions, repeated palette/visibility cycles, deferred work during surface teardown,
+recreation and destruction with pending work. Calls are checked on the GUI thread.
+QML cases cover all five modes, shared glow/background radius and Transparent
+suppression; settings tests cover Apply/reopen, persistence, defaults and invalid
+values. Existing indicator anchoring, menus, previews and adaptive-layout tests pass.
+
+Build, QML parser, French gettext catalog, shell syntax, whitespace and staged
+installation checks pass. No new package dependency or installer changes are needed.
+There is no live KWin compositor here. These results do not validate actual blur,
+contrast, slide animation, wallpaper transitions or GPU appearance. Follow the
+CachyOS checklist in backgrounds.md before merging.
+
+## Border and layout refinement — 2026-11-15
+
+The full 13-entry CTest suite passes, including 65 Qt Quick cases. New coverage
+checks independent (unequal) icon/end/thickness spacing and zero values on all four
+edges using actual Main.qml icon/capsule coordinates. Adaptive budget checks cover
+large padding/spacing combinations; previous shrink/recovery, overflow scroll and
+indicator anchoring tests remain green. Border checks cover zero width and custom
+color; settings tests cover persistence, Apply/reopen, ranges and ignored obsolete
+blur-tuning keys. The native blur lifecycle suite still passes after removing
+contrast registration.
+
+Compilation, QML parsing, gettext validation, whitespace and staged installation
+pass. Confirm contour appearance, large/zero padding, hover and dodge on CachyOS;
+these offscreen checks do not establish compositor pixel rendering.
+
+## Magnification reach and hover lift — 2026-11-15
+
+All 13 CTest suites pass, including 66 Qt Quick cases. Falloff tests sample fractional
+pointer positions at every radius 0–8 and check the shared maximum-weight budget.
+Large lift/radius combinations stay inside output budgets. Actual Main.qml zoom
+tests now use 24 px lift, checking inward displacement, canvas containment and
+stationary Plasma/Custom indicators on all four edges throughout animation.
+Settings tests cover defaults, persistence, clamping and Apply/reopen for both
+controls. Fixture creation now checks QFile::open instead of ignoring its return.
+QML parsing, gettext, whitespace and staged installation pass. Live Wayland
+appearance, pointer travel and previews still require desktop confirmation.

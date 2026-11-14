@@ -275,3 +275,63 @@ msgstr "Aperçu (survolez pour tester) :"
 
 msgid "6 windows"
 msgstr "6 fenêtres"
+
+msgid "Capsule and style"
+msgstr "Capsule et style"
+
+msgid "Background:"
+msgstr "Fond :"
+
+msgid "Solid"
+msgstr "Uni"
+
+msgid "Transparent"
+msgstr "Transparent"
+
+msgid "Translucent"
+msgstr "Translucide"
+
+msgid "System Blur"
+msgstr "Flou système"
+
+msgid "Liquid Glass"
+msgstr "Liquid Glass"
+
+msgid "Background tint opacity (%):"
+msgstr "Opacité de la teinte du fond (%) :"
+
+
+
+
+msgid "Requires an enabled KWin blur effect. Liquid Glass adds tint and gloss, not optical refraction."
+msgstr "Nécessite un effet de flou KWin activé. Liquid Glass ajoute une teinte et des reflets, sans réfraction optique."
+
+msgid "Border color"
+msgstr "Couleur du contour"
+
+msgid "Border thickness (px):"
+msgstr "Épaisseur du contour (px) :"
+
+msgid "Use theme border color"
+msgstr "Utiliser la couleur de contour du thème"
+
+msgid "Border color:"
+msgstr "Couleur du contour :"
+
+msgid "Space between icons (px):"
+msgstr "Espace entre les icônes (px) :"
+
+msgid "Padding at both ends (px):"
+msgstr "Marges aux deux extrémités (px) :"
+
+msgid "Padding across thickness (px):"
+msgstr "Marges dans l’épaisseur (px) :"
+
+msgid "End padding follows the dock's length; thickness padding follows its short axis, on every screen edge. Spacing and padding scale down with icons when space is limited."
+msgstr "Les marges aux extrémités suivent la longueur du dock ; celles dans l’épaisseur suivent son axe court, quel que soit le bord de l’écran. Les espacements et les marges diminuent avec les icônes lorsque la place manque."
+
+msgid "Blast radius (neighbor icons):"
+msgstr "Portée du grossissement (icônes voisines) :"
+
+msgid "Hover lift (px):"
+msgstr "Soulèvement au survol (px) :"

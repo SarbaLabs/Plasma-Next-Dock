@@ -47,6 +47,7 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
     if (rect == m_capsule && radius == m_radius) return;
     m_capsule = rect;
     m_radius = radius;
+    Q_EMIT capsuleChanged(rect, radius);
     // Zoom changes capsule bounds during hover; test the final geometry on leave.
     if (!m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
 }
