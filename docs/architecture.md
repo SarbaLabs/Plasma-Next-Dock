@@ -304,3 +304,16 @@ instantiating the full taskmanager Backend. Overlay and preview controls stay
 independent of geometry, collision, background effects and running indicators.
 Matching refreshes follow model events rather than animation frames. See
 [application-status.md](application-status.md) for lifecycle, defaults and tests.
+
+## Presentation behavior and boundary
+
+BehaviorSettings drafts and persists only its own keys. LiveTasks applies native
+KDE grouping/sorting/filtering to the presentation model, leaving the ungrouped
+collision model's scope unchanged. TaskBehavior routes click/cycle requests without
+creating another backend. Output geometry is global logical geometry.
+
+Row direction reverses presentation, never saved launcher identity. A coalesced
+IsLauncher/HasLauncher boundary adds one scaled separator span to AdaptiveLayout;
+icons and indicators share its longitudinal offset and preserve their resting
+cross-axis anchors. Overflow wheel handling takes precedence over optional group
+cycling. Attention is an independent opt-in hide inhibitor. See behavior.md.

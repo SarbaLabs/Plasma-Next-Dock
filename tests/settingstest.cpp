@@ -7,6 +7,25 @@ class SettingsTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void behaviorRoundTrip() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QVERIFY(settings.values()["groupApplications"].toBool());
+        QVERIFY(!settings.values()["minimizeActive"].toBool());
+        QVERIFY(!settings.values()["filterScreen"].toBool());
+        QVERIFY(settings.values()["showSeparator"].toBool());
+        const QVariantMap changes{{"groupApplications", false}, {"taskSort", 2}, {"groupClick", 1},
+            {"middleClick", 3}, {"wheelAction", 1}, {"minimizeActive", true}, {"layoutDirection", 2},
+            {"filterScreen", true}, {"filterDesktop", false}, {"filterActivity", false},
+            {"onlyMinimized", true}, {"skipMinimized", false}, {"revealAttention", true}, {"showSeparator", false}};
+        QVERIFY(settings.apply(changes));
+        const auto restored = DockSettings(file).values();
+        for (auto it = changes.begin(); it != changes.end(); ++it) QCOMPARE(restored[it.key()], it.value());
+        const auto clean = DockSettings::normalized({{"taskSort", 99}, {"middleClick", -1}, {"layoutDirection", "bad"}});
+        QCOMPARE(clean["taskSort"].toInt(), 0);
+        QCOMPARE(clean["middleClick"].toInt(), 0);
+        QCOMPARE(clean["layoutDirection"].toInt(), 0);
+    }
     void defaultsAndRoundTrip() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         {

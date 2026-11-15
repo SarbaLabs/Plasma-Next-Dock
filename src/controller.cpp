@@ -74,6 +74,12 @@ void DockController::setDodgeEnabled(bool value)
     m_dodgeEnabled = value;
     evaluate();
 }
+void DockController::setAttention(bool attention)
+{
+    if (m_attention == attention) return;
+    m_attention = attention;
+    scheduleEvaluation();
+}
 void DockController::scheduleEvaluation()
 {
     if (m_queued) return;
@@ -101,7 +107,7 @@ void DockController::evaluate()
             }
         }
     }
-    const bool hide = overlap && m_dodgeEnabled && m_edgeAvailable && !m_hovered && !m_leaveTimer.isActive();
+    const bool hide = overlap && m_dodgeEnabled && m_edgeAvailable && !m_attention && !m_hovered && !m_leaveTimer.isActive();
     if (overlap == m_overlapping && hide == m_hideRequested) return;
     m_overlapping = overlap;
     m_hideRequested = hide;

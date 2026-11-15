@@ -380,3 +380,120 @@ msgstr "Couper le son de l’application"
 
 msgid "Application volume"
 msgstr "Volume de l’application"
+
+msgid "Behavior"
+msgstr "Comportement"
+
+msgid "Grouping and sorting"
+msgstr "Regroupement et tri"
+
+msgid "Group windows by application"
+msgstr "Regrouper les fenêtres par application"
+
+msgid "Clicking a group:"
+msgstr "Clic sur un groupe :"
+
+msgid "Show window previews"
+msgstr "Afficher les aperçus des fenêtres"
+
+msgid "Cycle through windows"
+msgstr "Parcourir les fenêtres"
+
+msgid "Activate the group"
+msgstr "Activer le groupe"
+
+msgid "Sort order:"
+msgstr "Ordre de tri :"
+
+msgid "Manually"
+msgstr "Manuellement"
+
+msgid "Alphabetically"
+msgstr "Alphabétiquement"
+
+msgid "Last activated"
+msgstr "Dernière activation"
+
+msgid "Virtual desktop"
+msgstr "Bureau virtuel"
+
+msgid "Activity"
+msgstr "Activité"
+
+msgid "Mouse actions"
+msgstr "Actions de la souris"
+
+msgid "Minimize the active task on click"
+msgstr "Réduire la tâche active au clic"
+
+msgid "Middle-click:"
+msgstr "Clic central :"
+
+msgid "Do nothing"
+msgstr "Ne rien faire"
+
+msgid "Open a new instance"
+msgstr "Ouvrir une nouvelle instance"
+
+msgid "Close the task"
+msgstr "Fermer la tâche"
+
+msgid "Toggle minimization"
+msgstr "Réduire ou restaurer"
+
+msgid "Mouse wheel:"
+msgstr "Molette de la souris :"
+
+msgid "Scroll overflowing dock only"
+msgstr "Faire défiler uniquement le dock débordant"
+
+msgid "Cycle through the hovered group"
+msgstr "Parcourir les fenêtres du groupe survolé"
+
+msgid "Skip minimized windows when cycling"
+msgstr "Ignorer les fenêtres réduites lors du défilement"
+
+msgid "Filters"
+msgstr "Filtres"
+
+msgid "Only tasks on this screen"
+msgstr "Uniquement les tâches de cet écran"
+
+msgid "Only tasks on the current desktop"
+msgstr "Uniquement les tâches du bureau actuel"
+
+msgid "Only tasks on the current activity"
+msgstr "Uniquement les tâches de l’activité actuelle"
+
+msgid "Only minimized tasks"
+msgstr "Uniquement les tâches réduites"
+
+msgid "Layout and attention"
+msgstr "Disposition et attention"
+
+msgid "Task direction:"
+msgstr "Sens des tâches :"
+
+msgid "Follow system language"
+msgstr "Suivre la langue du système"
+
+msgid "Left to right / top to bottom"
+msgstr "De gauche à droite / de haut en bas"
+
+msgid "Right to left / bottom to top"
+msgstr "De droite à gauche / de bas en haut"
+
+msgid "Separate pinned and unpinned applications"
+msgstr "Séparer les applications épinglées et non épinglées"
+
+msgid "Reveal the dock when a task requests attention"
+msgstr "Afficher le dock lorsqu’une tâche demande de l’attention"
+
+msgid "Overflow scrolling takes priority over window cycling. Manual dragging is available only with manual sorting."
+msgstr "Le défilement du dock débordant est prioritaire sur celui des fenêtres. Le glisser-déposer nécessite le tri manuel."
+
+msgid "Reversing the direction also moves unpinned applications to the opposite side. Display filters do not change window avoidance."
+msgstr "Inverser le sens déplace aussi les applications non épinglées de l’autre côté. Les filtres d’affichage ne modifient pas l’évitement des fenêtres."
+
+msgid "Counters and progress depend on application support and KDE notification settings."
+msgstr "Les compteurs et la progression dépendent des applications et des paramètres de notification de KDE."

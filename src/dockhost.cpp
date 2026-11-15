@@ -61,11 +61,13 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);
     m_view.rootContext()->setContextProperty("outputSize", screen->size());
+    m_view.rootContext()->setContextProperty("outputGeometry", screen->geometry());
     update(false);
     connect(&m_view, &QWindow::widthChanged, this, &DockHost::position);
     connect(&m_view, &QWindow::heightChanged, this, &DockHost::position);
     connect(screen, &QScreen::geometryChanged, this, [this] {
-        m_view.rootContext()->setContextProperty("outputSize", m_screen->size()); position();
+        m_view.rootContext()->setContextProperty("outputSize", m_screen->size());
+        m_view.rootContext()->setContextProperty("outputGeometry", m_screen->geometry()); position();
     });
     connect(m_view.engine(), &QQmlEngine::warnings, this, [this](const QList<QQmlError> &) { m_warnings = true; });
     connect(m_view.engine(), &QQmlEngine::quit, qApp, &QCoreApplication::quit);

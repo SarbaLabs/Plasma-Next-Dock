@@ -36,6 +36,7 @@ Controls.ApplicationWindow {
         muteOnClick.checked = v.muteOnClick; mediaControls.checked = v.showMediaControls;
         badges.checked = v.showBadges; progress.checked = v.showProgress;
         indicators.load(v);
+        behavior.load(v);
         visible = true;
     }
     function moveLauncher(index, delta) {
@@ -48,7 +49,7 @@ Controls.ApplicationWindow {
     footer: Controls.DialogButtonBox {
         objectName: "settingsButtons"
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
-        onApplied: dockSettings.apply(Object.assign({}, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
+        onApplied: dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
@@ -64,6 +65,7 @@ Controls.ApplicationWindow {
         Controls.TabButton { text: i18n("Appearance and launchers") }
         Controls.TabButton { text: i18n("Indicators") }
         Controls.TabButton { text: i18n("Application status") }
+        Controls.TabButton { text: i18n("Behavior") }
     }
     StackLayout {
       anchors.fill: parent
@@ -216,9 +218,10 @@ Controls.ApplicationWindow {
             Controls.CheckBox { id: progress; objectName: "progressControl"; text: i18n("Show application progress") }
             Controls.Label {
                 Layout.fillWidth: true; wrapMode: Text.WordWrap
-                text: i18n("Counters and progress depend on application support and KDE notification settings. Clicking grouped tasks still opens their window list.")
+                text: i18n("Counters and progress depend on application support and KDE notification settings.")
             }
         }
       }
+      BehaviorSettings { id: behavior }
     }
 }

@@ -26,6 +26,7 @@ public:
     Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom);
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void evaluate();
+    Q_INVOKABLE void setAttention(bool attention);
 Q_SIGNALS:
     void capsuleChanged(QRectF capsule, qreal radius);
     void modelChanged();
@@ -42,6 +43,7 @@ private:
     bool m_dodgeEnabled = true;
     bool m_edgeAvailable = false;
     bool m_hovered = false;
+    bool m_attention = false;
     bool m_overlapping = false;
     bool m_hideRequested = false;
     bool m_queued = false;

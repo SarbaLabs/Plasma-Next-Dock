@@ -528,3 +528,83 @@ null-safe. A warning-sensitive test covers initially null tasks and repeated
 attach/queued-update/detach cycles, then verifies recovery on reattachment.
 The separate startup Unity/JobViewServer registration warnings are emitted by KDE
 services and are not suppressed by this fix.
+
+## Behavior and separator — 2026-11-15
+
+Base: merged PR #8; branch feature/behavior-and-separator. Added native TasksModel
+binding tests (group/sort/filter, selected output with negative origin, collision
+independence, launcher reorder retaining sort binding), settings persistence and
+invalid enum fallback, settings draft safety, action-policy dispatch/wrap/minimized
+filtering, separator geometry on four edges and both directions, dynamic pin state,
+magnification lane stability and controller attention inhibition.
+
+Local environment: Qt 6.8.2 / Plasma 6.3, offscreen/software. The native application
+status D-Bus test cannot start here: dbus-daemon reports `Failed to open socket:
+Operation not permitted`. This is not recorded as a pass; the complete test remains
+mandatory in GitHub CI and on CachyOS. No tests have been disabled or weakened.
+Installation was staged under /tmp (executable, desktop entry and French catalog),
+with shell syntax and git diff whitespace checks. The new code adds no dependencies.
+See behavior.md for live desktop acceptance; native window action effects, multi-
+monitor filters and compositor attention reveal require CachyOS validation.
+
+Result: all 14 locally runnable CTest entries passed (27.03 s), including the
+expanded hover/render suite. Native application status remains the separate
+runner limitation above; full CI result is reported on the pull request.
+
+### Qt 6.12 launcher fixture isolation follow-up
+
+CachyOS reported one failure: NativeLaunchers.test_pinUnpinAndRestoreOrder found
+launcherCount=1 instead of 0 immediately after test_behaviorFiltersAndSort. All
+other cases passed, including the installed native audio/status integration.
+
+The preceding test saved a QVariantMap with Object.assign, which does not detach
+nested QML sequence references. That is unsafe as a restoration snapshot on newer
+Qt (QVariantMap in-place QML support was extended in Qt 6.9). This matches the one
+launcher introduced by that test surviving restoration. The fixture now snapshots
+its JSON-compatible settings deeply, asserts that the saved list remains empty
+after pinning, waits for the native launcherList to match the restored list, and
+drains deferred destruction before another test creates a model. Pin/unpin also
+restores its fixture in finally, including on assertion failure.
+
+No production settings, native pinning behavior or assertions are removed. Theme,
+shadow and activity-database warnings arise in the isolated offscreen fixture and
+are distinct from this assertion. Do not change the maintainer's theme/database.
+Reference: https://doc.qt.io/qt-6/qtqml-cppintegration-data.html
+Local validation uses Qt 6.8.2; the exact Qt 6.12 failure needs maintainer recheck.
+The focused NativeLaunchers suite passes, and all 14 locally runnable CTest entries
+pass after the fixture fix (27.37 s). The unchanged native status test was confirmed
+passing in the maintainer's supplied Qt 6.12 log. No Qt 6.12 local pass is claimed.
+
+### Discrete wheel cycling — desktop follow-up
+
+The maintainer confirmed the launcher-fixture correction, then reported that group
+cycling needed three wheel notches. The implementation accumulated angle deltas
+until 120, incorrectly coupling a discrete window action to wheel magnitude.
+Each nonzero angular wheel event now selects one adjacent window immediately;
+continuous pixel input keeps its 40-pixel threshold and discards an opposite-direction
+remainder. The actual-overflow branch is unchanged and still takes priority.
+
+Regression coverage includes angular magnitudes 15/40/60/120/240 in both directions,
+zero input, continuous pixel accumulation and direction changes. Existing four-edge
+synthesized/diagonal overflow tests remain enabled. Real wheel feel on CachyOS still
+requires maintainer confirmation; this runner uses Qt 6.8.2 offscreen.
+Result: build, all 14 locally runnable CTest entries (28.09 s), staged installation
+and whitespace validation pass. Native D-Bus test remains the runner limitation
+already documented above; no test is disabled in CI or the installation script.
+
+### Pixel/combined wheel input follow-up
+
+The maintainer still reports 2–3 notches after the first wheel change. That change
+only removed the threshold for angle-only events: nonzero pixelDelta still selected
+the accumulated path, including events carrying both kinds of delta. No raw event
+capture from the maintainer is available, so this is the remaining code-path defect,
+not a claim about the exact device's event payload.
+
+Remove distance accumulation from window selection entirely. Each nonzero angular,
+pixel-only or combined event requests one adjacent window; zero events do nothing.
+Overflow continues using its existing distance-based scrolling path. Regressions
+now cover all three event forms with small and large magnitudes in both directions;
+the previous tests covered angle-only and deliberately retained pixel accumulation.
+Desktop wheel behavior remains to be rechecked, including continuous touchpads.
+Validation: build and all 14 locally runnable CTest entries pass (26.83 s, Qt 6.8.2
+software/offscreen). Native D-Bus test has the same documented runner restriction.

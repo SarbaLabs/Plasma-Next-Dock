@@ -118,6 +118,11 @@ public:
                           Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
         QCoreApplication::sendEvent(item->window(), &event);
     }
+    Q_INVOKABLE void behaviorOptions(const QVariantMap &changes) {
+        auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
+        for (auto it = changes.begin(); it != changes.end(); ++it) options[it.key()] = it.value();
+        m_engine->rootContext()->setContextProperty("dockOptions", options);
+    }
     Q_INVOKABLE void hoverOptions(int radius, int lift) {
         auto options = m_engine->rootContext()->contextProperty("dockOptions").toMap();
         options["blastRadius"] = radius; options["hoverLift"] = lift;
@@ -182,6 +187,7 @@ public Q_SLOTS:
         engine->rootContext()->setContextProperty("outputNames", QStringList{QString(), "DP-1"});
         engine->rootContext()->setContextProperty("dockController", new DockController(nullptr, engine));
         engine->rootContext()->setContextProperty("outputSize", QSize(1000, 700));
+        engine->rootContext()->setContextProperty("outputGeometry", QRect(-1000, 0, 1000, 700));
         engine->rootContext()->setContextProperty("dockOptions", QVariantMap{
             {"demo", true}, {"edge", 0}, {"iconSize", 40}, {"zoom", 1.5}, {"radius", 10}, {"glow", true}, {"launchers", QStringList{}}});
     }

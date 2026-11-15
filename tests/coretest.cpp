@@ -154,6 +154,10 @@ private Q_SLOTS:
         QVERIFY(!dock.hideRequested()); // No recall capability: never strand the dock.
         dock.setEdgeAvailable(true);
         QVERIFY(dock.hideRequested());
+        dock.setAttention(true);
+        QTRY_VERIFY(!dock.hideRequested());
+        dock.setAttention(false);
+        QTRY_VERIFY(dock.hideRequested());
         dock.setHovered(true);
         QVERIFY(!dock.hideRequested());
         dock.setHovered(false);
