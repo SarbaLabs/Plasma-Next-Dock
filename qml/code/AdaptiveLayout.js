@@ -15,11 +15,11 @@ function hoverWeight(distance, radius) {
 // Reserve the same zoom budget in the canvas and in animated delegates.
 // The renderer caps animation tails to this same fixed budget.
 // Sizing depends only on count/settings/output, never on animated row geometry.
-function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0) {
+function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, separatorSpan = 0) {
     available = Math.max(1, available);
     crossAvailable = Math.max(1, crossAvailable);
     gap = Math.min(Math.max(0, gap), Math.max(0, crossAvailable - 1));
-    const resting = count * preferred + Math.max(0, count - 1) * iconSpacing + 2 * endPadding;
+    const resting = count * preferred + Math.max(0, count - 1) * iconSpacing + 2 * endPadding + separatorSpan;
     const zoomReserve = Math.min(count, zoomBudget(blastRadius)) * preferred * (zoom - 1);
     const natural = Math.max(200, resting + zoomReserve);
     const crossScale = Math.min(1, (crossAvailable - gap) / (preferred * zoom + hoverLift + 2 * crossPadding + 4));

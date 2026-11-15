@@ -11,7 +11,7 @@ Plasma panel causing premature window avoidance.
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
-Background modes, blur, spacing and hover controls have also been accepted. Application status is the next stage awaiting desktop validation. It does not modify Plasma or KWin, install a
+Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings and the pinned/unpinned separator are now awaiting desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -24,7 +24,10 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Running tasks and persistent pinned launchers through KDE's native TasksModel;
   clicking a single task delegates activation/launching to KDE. Application windows
   are grouped and filtered to the current desktop and activity. Clicking a group
-  opens its window selector. Collision tracking remains independently ungrouped.
+  opens its window selector by default. Collision tracking remains independently ungrouped.
+- A Behavior page for native grouping/sorting, mouse actions, screen/desktop/activity
+  filters, task direction, attention reveal and the pinned/unpinned separator.
+  Overflow scrolling takes priority over optional group-window cycling.
 - Native Plasma tooltips anchored toward the desktop interior, with window titles,
   activate/close controls and on-demand KDE PipeWire thumbnails.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
@@ -43,8 +46,16 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This stage intentionally does **not** yet port bounce. Those remain
+This stage intentionally does **not** yet port bounce. It remains
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
+
+## Task behavior
+
+Open Configure → Behavior. Existing grouping, desktop/activity filters and manual
+sorting remain the defaults. New click and wheel behaviors are opt-in. Reversing
+the task direction also places unpinned tasks at the opposite end; the separator
+stays between sections. Automatic sorting disables manual icon dragging.
+See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds
 

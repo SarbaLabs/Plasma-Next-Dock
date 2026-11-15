@@ -5,6 +5,32 @@ import org.kde.taskmanager as TaskManager
 TestCase {
     name: "NativeLaunchers"
     when: windowShown
+    function test_behaviorFiltersAndSort() {
+        const component = Qt.createComponent("qrc:/qml/LiveTasks.qml");
+        compare(component.status, Component.Ready, component.errorString());
+        const saved = Object.assign({}, dockSettings.values);
+        const live = component.createObject(this);
+        try {
+            dockSettings.apply({groupApplications: false, taskSort: 2, filterDesktop: false,
+                filterActivity: false, filterScreen: true, onlyMinimized: true});
+            tryCompare(live.tasks, "groupMode", TaskManager.TasksModel.GroupDisabled);
+            compare(live.tasks.sortMode, TaskManager.TasksModel.SortLastActivated);
+            compare(live.tasks.filterByVirtualDesktop, false);
+            compare(live.tasks.filterByActivity, false);
+            compare(live.tasks.filterByScreen, true);
+            compare(live.tasks.screenGeometry, Qt.rect(-1000, 0, 1000, 700));
+            compare(live.tasks.filterNotMinimized, true);
+            compare(live.collisionTasks.groupMode, TaskManager.TasksModel.GroupDisabled);
+            compare(live.collisionTasks.filterByVirtualDesktop, true);
+            compare(live.collisionTasks.filterByActivity, true);
+            compare(live.collisionTasks.filterNotMinimized, false);
+            dockSettings.saveLaunchers([testLauncherUrls[0]]);
+            tryCompare(live.tasks, "launcherList", dockSettings.values.launchers);
+            compare(live.tasks.sortMode, TaskManager.TasksModel.SortLastActivated);
+            dockSettings.apply({taskSort: 1});
+            tryCompare(live.tasks, "sortMode", TaskManager.TasksModel.SortAlpha);
+        } finally { dockSettings.apply(saved); live.destroy(); }
+    }
     function test_pinUnpinAndRestoreOrder() {
         const component = Qt.createComponent("qrc:/qml/LiveTasks.qml");
         compare(component.status, Component.Ready, component.errorString());

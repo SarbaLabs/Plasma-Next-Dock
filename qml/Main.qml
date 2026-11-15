@@ -8,6 +8,7 @@ import org.kde.kirigami as Kirigami
 import "code/CapsuleGeometry.js" as Geometry
 import "code/InteractionGeometry.js" as Interaction
 import "code/AdaptiveLayout.js" as Adaptive
+import "code/TaskBehavior.js" as Behavior
 
 Item {
     id: root
@@ -17,6 +18,20 @@ Item {
         active: !dockOptions.demo && (dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false)
         source: active ? "AudioService.qml" : ""
     }
+    readonly property bool reverseLayout: Behavior.reversed(dockOptions.layoutDirection || 0, vertical, Qt.application.layoutDirection === Qt.RightToLeft)
+    property int dividerIndex: -1
+    function refreshDivider() {
+        const flags = [];
+        for (let i = 0; i < repeater.count; ++i) {
+            const slot = repeater.itemAt(i);
+            if (!slot) { dividerIndex = -1; return; }
+            flags.push(slot.pinned);
+        }
+        dividerIndex = Behavior.boundary(flags);
+    }
+    function queueDivider() { Qt.callLater(refreshDivider); }
+    readonly property bool hasDivider: dockOptions.showSeparator !== false && dividerIndex >= 0
+    readonly property real dividerSpan: hasDivider ? 12 * fitScale : 0
     readonly property bool vertical: dockOptions.edge >= 2
     readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
@@ -25,7 +40,7 @@ Item {
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
         dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
-        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift)
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -89,12 +104,12 @@ Item {
         for (let i = 0; i < repeater.count; ++i) {
             const slot = repeater.itemAt(i);
             if (!slot) continue;
-            const center = slot.mapToItem(root, slot.width / 2, slot.height / 2);
+            const center = slot.mapToItem(root, slot.iconOffset + slot.size / 2, slot.height / 2);
             const delta = coordinate - (vertical ? center.y : center.x);
             if (Math.abs(delta) < distance) {
                 distance = Math.abs(delta);
                 nearest = i;
-                fraction = delta / (slot.width + taskRow.spacing);
+                fraction = (reverseLayout ? -delta : delta) / (slot.size + taskRow.spacing);
             }
         }
         pointerIndex = nearest < 0 ? -10 : nearest + fraction;
@@ -167,6 +182,8 @@ Item {
         onContentXChanged: root.queueGeometry()
         Row {
             id: taskRow
+            layoutDirection: root.reverseLayout ? Qt.RightToLeft : Qt.LeftToRight
+            LayoutMirroring.enabled: false
             x: Math.max(root.endPadding, (viewport.width - width) / 2)
             height: viewport.height
             spacing: (dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing) * root.fitScale
@@ -175,7 +192,7 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); }
+                onCountChanged: { previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
@@ -191,7 +208,13 @@ Item {
                     Component.onDestruction: root.animatedWeight -= reportedFactor
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias iconItem: icon
-                    width: size
+                    readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
+                    onPinnedChanged: root.queueDivider()
+                    onIndexChanged: root.queueDivider()
+                    Component.onCompleted: root.queueDivider()
+                    readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
+                    readonly property real iconOffset: root.reverseLayout ? 0 : extra
+                    width: size + extra
                     height: viewport.height
                     Behavior on animatedFactor { NumberAnimation { duration: 90 } }
                     onXChanged: root.queueGeometry()
@@ -199,7 +222,8 @@ Item {
                     // Follow the slot along the dock, but keep the capsule's
                     // resting cross-axis geometry throughout icon magnification.
                     Item {
-                        width: slot.width
+                        x: slot.iconOffset
+                        width: slot.size
                         height: root.base
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
                             ? root.edgeSpacing + root.taskPadding
@@ -237,7 +261,7 @@ Item {
                         id: icon
                         objectName: "icon" + slot.index
                         width: slot.size; height: width
-                        x: 0
+                        x: slot.iconOffset
                         // After a clockwise rotation, local bottom is the screen's left.
                         readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
@@ -252,9 +276,17 @@ Item {
                             enabled: !overlays.audioHovered
                             onTapped: {
                                 if (reorder.active) return;
-                                if (slot.model.IsGroupParent) taskTip.showGroupWindows();
+                                if (slot.model.IsGroupParent && !dockOptions.groupClick) taskTip.showGroupWindows();
+                                else if (slot.model.IsGroupParent && dockOptions.groupClick === 1) {
+                                    previewPanel.dismiss(); taskSource.item.cycle(slot.index, 1);
+                                }
                                 else { previewPanel.dismiss(); taskSource.item.activate(slot.index); }
                             }
+                        }
+                        TapHandler {
+                            acceptedButtons: Qt.MiddleButton
+                            enabled: !dockOptions.demo && !overlays.audioHovered && dockOptions.middleClick > 0
+                            onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
                         }
                         HoverHandler {
                             id: iconHover
@@ -297,6 +329,19 @@ Item {
                             configuration: dockOptions
                         }
                     }
+                    Rectangle {
+                        objectName: "taskSeparator" + slot.index
+                        visible: slot.extra > 0
+                        width: Math.max(1, root.fitScale)
+                        height: root.base * 0.6
+                        radius: width / 2
+                        x: (root.reverseLayout ? slot.size + (slot.extra + taskRow.spacing) / 2 : (slot.extra - taskRow.spacing) / 2) - width / 2
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
+                            ? root.edgeSpacing + root.taskPadding + (root.base - height) / 2
+                            : slot.height - root.edgeSpacing - root.taskPadding - (root.base + height) / 2
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.3
+                    }
                     Loader {
                         id: colorLoader
                         active: (dockOptions.glow && bar.backgroundType !== 1) || (dockOptions.indicatorMode === 2
@@ -310,7 +355,7 @@ Item {
                     Rectangle {
                         visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
                         width: 4 * root.fitScale; height: width; radius: width / 2
-                        x: (slot.width - width) / 2
+                        x: slot.iconOffset + (slot.size - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
@@ -318,6 +363,8 @@ Item {
             }
         }
     }
+    property int wheelRow: -1
+    property real wheelRemainder: 0
     function scrollWheel(event, axis) {
         const pixel = event.pixelDelta;
         const angle = event.angleDelta;
@@ -329,6 +376,21 @@ Item {
             event.accepted = false;
             return;
         }
+        if (viewport.contentWidth <= viewport.width) {
+            const row = root.taskAt(Qt.point(event.x, event.y), false);
+            if (row < 0 || dockOptions.demo || dockOptions.wheelAction !== 1) { event.accepted = false; return; }
+            const isPixel = pixel.x || pixel.y;
+            const amount = isPixel ? (axis === Qt.Vertical ? pixel.y : pixel.x) : (axis === Qt.Vertical ? angle.y : angle.x);
+            const threshold = isPixel ? 40 : 120;
+            if (wheelRow !== row) { wheelRow = row; wheelRemainder = 0; }
+            wheelRemainder += amount;
+            if (Math.abs(wheelRemainder) >= threshold) {
+                taskSource.item.cycle(row, wheelRemainder > 0 ? -1 : 1);
+                wheelRemainder %= threshold;
+            }
+            event.accepted = true;
+            return;
+        }
         viewport.contentX = Adaptive.scrollPosition(viewport.contentX,
             -(axis === Qt.Vertical ? delta.y : delta.x), viewport.contentWidth, viewport.width);
         root.updatePointer(Qt.point(event.x, event.y));
@@ -336,7 +398,7 @@ Item {
     }
     component DockWheelHandler: WheelHandler {
         target: null
-        enabled: viewport.contentWidth > viewport.width && !contextMenu.visibleMenu
+        enabled: (viewport.contentWidth > viewport.width || dockOptions.wheelAction === 1) && !contextMenu.visibleMenu
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: event => root.scrollWheel(event, orientation)
     }
@@ -347,7 +409,7 @@ Item {
     DragHandler {
         id: reorder
         objectName: "reorderHandler"
-        enabled: !dockOptions.demo
+        enabled: !dockOptions.demo && (!dockOptions.taskSort || dockOptions.taskSort === 0)
         target: null
         acceptedButtons: Qt.LeftButton
         cursorShape: active ? Qt.ClosedHandCursor : Qt.ArrowCursor

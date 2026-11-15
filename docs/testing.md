@@ -528,3 +528,25 @@ null-safe. A warning-sensitive test covers initially null tasks and repeated
 attach/queued-update/detach cycles, then verifies recovery on reattachment.
 The separate startup Unity/JobViewServer registration warnings are emitted by KDE
 services and are not suppressed by this fix.
+
+## Behavior and separator — 2026-11-15
+
+Base: merged PR #8; branch feature/behavior-and-separator. Added native TasksModel
+binding tests (group/sort/filter, selected output with negative origin, collision
+independence, launcher reorder retaining sort binding), settings persistence and
+invalid enum fallback, settings draft safety, action-policy dispatch/wrap/minimized
+filtering, separator geometry on four edges and both directions, dynamic pin state,
+magnification lane stability and controller attention inhibition.
+
+Local environment: Qt 6.8.2 / Plasma 6.3, offscreen/software. The native application
+status D-Bus test cannot start here: dbus-daemon reports `Failed to open socket:
+Operation not permitted`. This is not recorded as a pass; the complete test remains
+mandatory in GitHub CI and on CachyOS. No tests have been disabled or weakened.
+Installation was staged under /tmp (executable, desktop entry and French catalog),
+with shell syntax and git diff whitespace checks. The new code adds no dependencies.
+See behavior.md for live desktop acceptance; native window action effects, multi-
+monitor filters and compositor attention reveal require CachyOS validation.
+
+Result: all 14 locally runnable CTest entries passed (27.03 s), including the
+expanded hover/render suite. Native application status remains the separate
+runner limitation above; full CI result is reported on the pull request.

@@ -38,6 +38,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
+    qml/BehaviorSettings.qml qml/code/TaskBehavior.js
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml
     qml/CapsuleBackground.qml qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
     qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)

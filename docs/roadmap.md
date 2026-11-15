@@ -209,3 +209,12 @@ toggle. See application-status.md for test scope and pending desktop acceptance.
 Confirmed order after this branch: **behavior settings plus the pinned/unpinned
 separator**, then bounce. Do not silently advance these into the current scope.
 The older chronological entries describe historical milestones, not current gaps.
+
+## 2026-11-15 — Application status accepted; behavior and separator
+
+The maintainer confirmed audio/media/status fixes and merged PR #8. Base main is
+8dc6126ed4d87180ca3094c8871f0726dd151c34 (tree 93d61ffebaf9549ba8db6b7b68cb0aa2233e62ee).
+Branch `feature/behavior-and-separator` adds the agreed behavior settings and native
+pinned/unpinned boundary. See behavior.md for defaults, architecture and acceptance.
+No bounce, autostart, release or broad settings cleanup is included. Bounce remains
+the next agreed stage. Desktop acceptance of this branch is pending.

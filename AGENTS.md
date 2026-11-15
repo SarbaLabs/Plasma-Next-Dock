@@ -80,3 +80,11 @@
   Never instantiate the full taskmanager Backend for these features. Match streams
   to task identity, preserve native badge privacy, and do not poll on animation.
   Keep D-Bus tests isolated from the user's session and settings.
+
+- Behavior display filters must not widen the collision model's desktop/activity
+  scope. Keep native model indexes independent of visual reversal. Separator space
+  participates in adaptive fitting, with IsLauncher/HasLauncher membership and no
+  outside separator. Overflow scrolling takes priority over group cycling.
+- Settings drafts must contain only their own keys: never overwrite launcher
+  changes made while the configuration window is open. Preserve selected sort
+  bindings when applying saved launcher order.
