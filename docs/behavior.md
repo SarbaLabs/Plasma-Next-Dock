@@ -74,7 +74,8 @@ the adjusted longitudinal offset. Capsule-only dodge and rounded blur are unchan
 
 Actual overflow always takes priority, preserving synthesized wheel, touchpad and
 both-axis scrolling. Without overflow, optional cycling requires the pointer over
-an icon. Angle input accumulates to 120 units and pixel input to 40 logical pixels,
+an icon. Each nonzero discrete wheel event selects one window, independent of its angle
+magnitude (and configured wheel speed). Continuous pixel input accumulates to 40 logical pixels,
 with at most one activation per input event. Diagonal events are handled once.
 No timer, animation-frame scan or background polling is introduced.
 

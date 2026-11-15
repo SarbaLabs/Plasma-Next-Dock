@@ -22,6 +22,22 @@ TestCase {
         verify(divided.scale < normal.scale);
         verify(divided.length <= 984);
     }
+    function test_oneWheelEventPerWindow() {
+        // A lower wheel speed must not require multiple notches for one action.
+        for (const amount of [15, 40, 60, 120, 240]) {
+            compare(Behavior.wheelCycle(amount, 0, 0), {direction: -1, remainder: 0});
+            compare(Behavior.wheelCycle(-amount, 0, 0), {direction: 1, remainder: 0});
+        }
+        compare(Behavior.wheelCycle(0, 0, 20).direction, 0);
+        let remainder = 0;
+        for (let i = 0; i < 3; ++i) {
+            const step = Behavior.wheelCycle(0, 10, remainder);
+            compare(step.direction, 0); remainder = step.remainder;
+        }
+        compare(Behavior.wheelCycle(0, 10, remainder), {direction: -1, remainder: 0});
+        compare(Behavior.wheelCycle(0, -10, 30), {direction: 0, remainder: -10});
+        compare(Behavior.wheelCycle(0, -80, 0), {direction: 1, remainder: 0});
+    }
     function test_nativeActionRouting() {
         const roles = {active: "active", minimized: "minimized", minimizable: "minimizable", closable: "closable"};
         const leaves = [{active: false, minimized: false}, {active: true, minimized: false}, {active: false, minimized: true}];

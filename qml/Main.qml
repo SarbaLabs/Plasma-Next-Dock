@@ -379,15 +379,11 @@ Item {
         if (viewport.contentWidth <= viewport.width) {
             const row = root.taskAt(Qt.point(event.x, event.y), false);
             if (row < 0 || dockOptions.demo || dockOptions.wheelAction !== 1) { event.accepted = false; return; }
-            const isPixel = pixel.x || pixel.y;
-            const amount = isPixel ? (axis === Qt.Vertical ? pixel.y : pixel.x) : (axis === Qt.Vertical ? angle.y : angle.x);
-            const threshold = isPixel ? 40 : 120;
             if (wheelRow !== row) { wheelRow = row; wheelRemainder = 0; }
-            wheelRemainder += amount;
-            if (Math.abs(wheelRemainder) >= threshold) {
-                taskSource.item.cycle(row, wheelRemainder > 0 ? -1 : 1);
-                wheelRemainder %= threshold;
-            }
+            const step = Behavior.wheelCycle(axis === Qt.Vertical ? angle.y : angle.x,
+                axis === Qt.Vertical ? pixel.y : pixel.x, wheelRemainder);
+            wheelRemainder = step.remainder;
+            if (step.direction) taskSource.item.cycle(row, step.direction);
             event.accepted = true;
             return;
         }

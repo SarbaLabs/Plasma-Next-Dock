@@ -574,3 +574,20 @@ Local validation uses Qt 6.8.2; the exact Qt 6.12 failure needs maintainer reche
 The focused NativeLaunchers suite passes, and all 14 locally runnable CTest entries
 pass after the fixture fix (27.37 s). The unchanged native status test was confirmed
 passing in the maintainer's supplied Qt 6.12 log. No Qt 6.12 local pass is claimed.
+
+### Discrete wheel cycling — desktop follow-up
+
+The maintainer confirmed the launcher-fixture correction, then reported that group
+cycling needed three wheel notches. The implementation accumulated angle deltas
+until 120, incorrectly coupling a discrete window action to wheel magnitude.
+Each nonzero angular wheel event now selects one adjacent window immediately;
+continuous pixel input keeps its 40-pixel threshold and discards an opposite-direction
+remainder. The actual-overflow branch is unchanged and still takes priority.
+
+Regression coverage includes angular magnitudes 15/40/60/120/240 in both directions,
+zero input, continuous pixel accumulation and direction changes. Existing four-edge
+synthesized/diagonal overflow tests remain enabled. Real wheel feel on CachyOS still
+requires maintainer confirmation; this runner uses Qt 6.8.2 offscreen.
+Result: build, all 14 locally runnable CTest entries (28.09 s), staged installation
+and whitespace validation pass. Native D-Bus test remains the runner limitation
+already documented above; no test is disabled in CI or the installation script.
