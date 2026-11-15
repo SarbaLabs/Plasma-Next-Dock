@@ -12,7 +12,7 @@ Item {
     property bool nativeEnabled: true
     property bool audioEnabled: true
     property bool launcherEnabled: true
-    property string launcherUrl: String(task.LauncherUrlWithoutIcon || task.LauncherUrl || "")
+    property string launcherUrl: String(task?.LauncherUrlWithoutIcon || task?.LauncherUrl || "")
     property var streams: []
     property var player: null
     property var smart: null
@@ -30,6 +30,12 @@ Item {
         streams.filter(s => s).forEach(s => s.setVolume(loudest > 0 ? s.volume / loudest * value : value));
     }
     function refresh() {
+        // TasksModel can detach a delegate before an already queued refresh runs.
+        if (!task) {
+            streams = [];
+            player = null;
+            return;
+        }
         const matches = [];
         if (nativeEnabled && audioEnabled && audio && (task.IsWindow || task.IsGroupParent)) {
             let found = task.AppId ? audio.streamsForAppId(task.AppId) : [];

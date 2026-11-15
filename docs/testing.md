@@ -517,3 +517,14 @@ library without instantiating its factory, with the legacy import retained.
 New applet-status-loading regression uses a NO_PLUGIN QML module fixture whose
 factory must never be constructed. See application-status.md for the distinction
 between this mechanism test and actual installed-KDE integration/desktop tests.
+
+### Task removal during deferred status updates
+
+The maintainer accepted the audio/status functionality on CachyOS, but reported
+repeated TaskStatus.qml IsWindow-of-null errors when opening/closing windows.
+TasksModel can detach a delegate while Qt.callLater(refresh) is queued. Guard the
+missing task, clear its audio/player state, and make the launcher URL binding
+null-safe. A warning-sensitive test covers initially null tasks and repeated
+attach/queued-update/detach cycles, then verifies recovery on reattachment.
+The separate startup Unity/JobViewServer registration warnings are emitted by KDE
+services and are not suppressed by this fix.

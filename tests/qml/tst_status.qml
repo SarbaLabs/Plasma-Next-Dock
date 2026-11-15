@@ -54,6 +54,28 @@ TestCase {
         tryCompare(status, "streams", []);
         status.destroy(); audio.destroy(); model.destroy(); a.destroy(); b.destroy();
     }
+    function test_taskRemovedBeforeQueuedRefresh() {
+        failOnWarning(/TypeError/);
+        const a = streamFactory.createObject(test);
+        const audio = audioFactory.createObject(test, {first: a});
+        const component = Qt.createComponent("qrc:/qml/TaskStatus.qml");
+        compare(component.status, Component.Ready, component.errorString());
+        const status = component.createObject(test, {task: null, taskIndex: 0,
+            audio: audio, launcherEnabled: false});
+        wait(0);
+        compare(status.launcherUrl, "");
+        for (let i = 0; i < 3; ++i) {
+            status.task = {IsWindow: true, AppPid: 101, LauncherUrl: "applications:test.desktop"};
+            tryCompare(status, "streams", [a]);
+            status.player = a;
+            audio.streamsChanged(); // Queue work, then detach the model first.
+            status.task = null;
+            tryCompare(status, "streams", []);
+            compare(status.player, null);
+            compare(status.launcherUrl, "");
+        }
+        status.destroy(); audio.destroy(); a.destroy();
+    }
     function test_mediaCapabilitiesAndActions() {
         const component = Qt.createComponent("qrc:/qml/MediaControls.qml");
         compare(component.status, Component.Ready, component.errorString());
