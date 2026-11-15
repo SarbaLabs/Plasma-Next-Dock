@@ -218,3 +218,13 @@ Branch `feature/behavior-and-separator` adds the agreed behavior settings and na
 pinned/unpinned boundary. See behavior.md for defaults, architecture and acceptance.
 No bounce, autostart, release or broad settings cleanup is included. Bounce remains
 the next agreed stage. Desktop acceptance of this branch is pending.
+
+## 2026-11-15 — Behavior accepted; icon bounce
+
+The maintainer confirmed the final wheel correction and merged PR #9. Base main:
+6ef8c889f50d8bcb95dcc575675b6aa66b2f5ea8 (tree 3df1146a42c345ec4153b7f92aafc28127218819).
+Branch feature/icon-bounce adds configurable launch/attention feedback and the
+native Test Bounce Animation action. Preserve behavior filters, separator, immediate
+wheel cycling, status integrations, indicator anchors, blur and capsule-only dodge.
+See bounce.md for defaults and pending desktop acceptance. General settings cleanup,
+packaging and optional autostart remain outside this stage; no automatic merge.

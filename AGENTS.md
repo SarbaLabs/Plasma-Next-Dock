@@ -88,3 +88,8 @@
 - Settings drafts must contain only their own keys: never overwrite launcher
   changes made while the configuration window is open. Preserve selected sort
   bindings when applying saved launcher order.
+
+- Bounce is an inward icon offset, never a capsule/indicator transform. Reserve
+  its maximum headroom before animation; keep input geometry attached to the icon.
+  Use native startup/attention roles and persistent menu targets, finite launch/test
+  cycles, and no polling. Suppress bounce during drag, previews and hide requests.

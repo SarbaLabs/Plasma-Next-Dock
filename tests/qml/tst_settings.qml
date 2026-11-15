@@ -49,6 +49,8 @@ TestCase {
         verify(behavior !== null);
         behavior.change("layoutDirection", 2);
         behavior.change("minimizeActive", true);
+        behavior.change("bounceHeight", 22);
+        behavior.change("bounceOnLaunch", false);
         // Applying a stale settings draft must not overwrite newly pinned apps.
         dockSettings.saveLaunchers([testLauncherUrls[0]]);
         spacing.value = 40;
@@ -56,6 +58,8 @@ TestCase {
         compare(dockSettings.values.spacing, 40);
         compare(dockSettings.values.layoutDirection, 2);
         compare(dockSettings.values.minimizeActive, true);
+        compare(dockSettings.values.bounceHeight, 22);
+        compare(dockSettings.values.bounceOnLaunch, false);
         compare(dockSettings.values.launchers, [testLauncherUrls[0]]);
         compare(dockSettings.values.indicatorMode, 2);
         compare(dockSettings.values.indicatorMaxSegments, 7);
@@ -77,7 +81,7 @@ TestCase {
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "radiusControl").value, 0);
         window.close();
-        dockSettings.apply({launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

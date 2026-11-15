@@ -608,3 +608,19 @@ the previous tests covered angle-only and deliberately retained pixel accumulati
 Desktop wheel behavior remains to be rechecked, including continuous touchpads.
 Validation: build and all 14 locally runnable CTest entries pass (26.83 s, Qt 6.8.2
 software/offscreen). Native D-Bus test has the same documented runner restriction.
+
+## Icon bounce — 2026-11-15
+
+Base: accepted/merged PR #9; feature/icon-bounce. Added focused animation lifecycle
+checks (finite completion, repeated attention, clearing attention, disabling,
+startup and suppression), four-edge inward bounds under simultaneous 48 px bounce,
+zoom and 32 px lift, unchanged capsule/indicator coordinates, tiny-output fitting,
+settings persistence/validation/draft handling and native menu test-action dispatch.
+
+Build and all 14 locally runnable CTest entries pass (30.60 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged executable, desktop entry and French catalog install
+successfully; shell syntax and whitespace checks pass. The native D-Bus test still
+cannot start in this runner (`Failed to open socket: Operation not permitted`);
+it remains enabled in CI and ./install.sh. No Qt 6.12 or live KWin result is claimed.
+See bounce.md for the CachyOS acceptance checklist, particularly real launch/attention
+notifications, interaction feel, popup placement and hide/reveal behavior.

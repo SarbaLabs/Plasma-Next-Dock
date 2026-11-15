@@ -111,3 +111,12 @@ parent-PID helper replaces the donor's dependency on its larger backend.
 SmartLauncherItem, plasma-pa models and MPRIS are installed KDE dependencies;
 their source is not copied into this repository. New composition, overlays,
 media controls and tests use GPL-2.0-or-later.
+
+## Icon bounce
+
+`qml/TaskBounce.qml` adapts the jump/rebound easing phases from
+`contents/ui/Task.qml` in SarbaLabs/plasma-macos-dock commit
+`cd5fa9d9efc31a08bbe4c6d346b46771dec4acca` (GPL-2.0-or-later).
+The source file's Eike Hein (2012–2013) and Nate Graham (2024) notices are retained.
+Standalone lifecycle, configuration, headroom and tests are new project code;
+no plasmoid host, popup delegate or compositor implementation is imported.

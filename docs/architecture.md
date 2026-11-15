@@ -317,3 +317,12 @@ IsLauncher/HasLauncher boundary adds one scaled separator span to AdaptiveLayout
 icons and indicators share its longitudinal offset and preserve their resting
 cross-axis anchors. Overflow wheel handling takes precedence over optional group
 cycling. Attention is an independent opt-in hide inhibitor. See behavior.md.
+
+## Icon bounce composition
+
+TaskBounce produces a normalized jump/rebound offset; Main adds it to icon hover
+lift along the inward cross-axis. AdaptiveLayout reserves maximum headroom before
+animation. Indicators and capsule stay in their resting geometry. Existing icon
+input rectangles follow the animated y coordinate and preserve capsule-only dodge.
+Native task startup/attention roles and launch requests drive animations; disabled,
+dragging, hidden-policy and preview states stop them at rest. See bounce.md.

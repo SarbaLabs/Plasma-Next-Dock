@@ -497,3 +497,30 @@ msgstr "Inverser le sens déplace aussi les applications non épinglées de l’
 
 msgid "Counters and progress depend on application support and KDE notification settings."
 msgstr "Les compteurs et la progression dépendent des applications et des paramètres de notification de KDE."
+
+msgid "Test Bounce Animation"
+msgstr "Tester l’animation de rebond"
+
+msgid "Icon bounce"
+msgstr "Rebond des icônes"
+
+msgid "Enable icon bounce"
+msgstr "Activer le rebond des icônes"
+
+msgid "Bounce when launching an application"
+msgstr "Faire rebondir au lancement d’une application"
+
+msgid "Bounce when an application requests attention"
+msgstr "Faire rebondir lorsqu’une application demande de l’attention"
+
+msgid "Bounce height (px, 0 = automatic):"
+msgstr "Hauteur du rebond (px, 0 = automatique) :"
+
+msgid "Bounce speed (%):"
+msgstr "Vitesse du rebond (%) :"
+
+msgid "Launch and test repetitions:"
+msgstr "Répétitions au lancement et pour le test :"
+
+msgid "Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it."
+msgstr "Le rebond d’attention se répète jusqu’à acquittement. Il est suspendu lorsque le dock est masqué, pendant un déplacement ou lorsque les aperçus sont ouverts. Utilisez le menu contextuel de l’application pour le tester."

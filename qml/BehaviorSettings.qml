@@ -8,11 +8,19 @@ Controls.ScrollView {
     id: page
     objectName: "behaviorSettings"
     property var values: ({})
-    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "taskSort", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "layoutDirection", "showSeparator", "revealAttention"]) copy[key] = configuration[key]; values = copy; }
+    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "taskSort", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "layoutDirection", "showSeparator", "revealAttention", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "bounceHeight", "bounceSpeed", "bounceCount"]) copy[key] = configuration[key]; values = copy; }
     function change(key, value) { const copy = Object.assign({}, values); copy[key] = value; values = copy; }
     contentWidth: availableWidth
     Kirigami.FormLayout {
         width: parent.width
+        Controls.Label { text: i18n("Icon bounce"); font.bold: true; Kirigami.FormData.isSection: true }
+        Controls.CheckBox { objectName: "bounceEnabledControl"; text: i18n("Enable icon bounce"); checked: page.values.bounceEnabled === true; onToggled: page.change("bounceEnabled", checked) }
+        Controls.CheckBox { objectName: "bounceOnLaunchControl"; text: i18n("Bounce when launching an application"); enabled: page.values.bounceEnabled === true; checked: page.values.bounceOnLaunch === true; onToggled: page.change("bounceOnLaunch", checked) }
+        Controls.CheckBox { objectName: "bounceOnAttentionControl"; text: i18n("Bounce when an application requests attention"); enabled: page.values.bounceEnabled === true; checked: page.values.bounceOnAttention === true; onToggled: page.change("bounceOnAttention", checked) }
+        Controls.SpinBox { objectName: "bounceHeightControl"; Kirigami.FormData.label: i18n("Bounce height (px, 0 = automatic):"); enabled: page.values.bounceEnabled === true; from: 0; to: 64; value: page.values.bounceHeight || 0; editable: true; onValueModified: page.change("bounceHeight", value) }
+        Controls.SpinBox { objectName: "bounceSpeedControl"; Kirigami.FormData.label: i18n("Bounce speed (%):"); enabled: page.values.bounceEnabled === true; from: 50; to: 200; stepSize: 10; value: page.values.bounceSpeed || 100; editable: true; onValueModified: page.change("bounceSpeed", value) }
+        Controls.SpinBox { objectName: "bounceCountControl"; Kirigami.FormData.label: i18n("Launch and test repetitions:"); enabled: page.values.bounceEnabled === true; from: 1; to: 5; value: page.values.bounceCount || 3; editable: true; onValueModified: page.change("bounceCount", value) }
+        Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it.") }
         Controls.Label { text: i18n("Grouping and sorting"); font.bold: true; Kirigami.FormData.isSection: true }
         Controls.CheckBox {
             objectName: "groupApplicationsControl"

@@ -32,6 +32,8 @@ Item {
     function queueDivider() { Qt.callLater(refreshDivider); }
     readonly property bool hasDivider: dockOptions.showSeparator !== false && dividerIndex >= 0
     readonly property real dividerSpan: hasDivider ? 12 * fitScale : 0
+    readonly property real bounceHeight: dockOptions.bounceEnabled === false ? 0
+        : (dockOptions.bounceHeight > 0 ? dockOptions.bounceHeight : Math.min(10, Math.max(6, Math.round(dockOptions.iconSize * 0.18))))
     readonly property bool vertical: dockOptions.edge >= 2
     readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
@@ -40,7 +42,7 @@ Item {
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
         dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
-        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0)
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0, bounceHeight)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -134,6 +136,14 @@ Item {
         objectName: "taskSourceLoader"
         source: dockOptions.demo ? "DemoTasks.qml" : "LiveTasks.qml"
         onStatusChanged: if (status === Loader.Error) Qt.exit(1)
+    }
+    Connections {
+        target: taskSource.item
+        ignoreUnknownSignals: true
+        function onLaunchRequested(row) {
+            const slot = repeater.itemAt(row);
+            if (slot) Qt.callLater(slot.triggerLaunchBounce);
+        }
     }
     CapsuleBackground {
         id: bar
@@ -246,6 +256,21 @@ Item {
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
                     }
+                    function triggerTestBounce() { bounce.test(); }
+                    function triggerLaunchBounce() { bounce.launch(); }
+                    TaskBounce {
+                        id: bounce
+                        objectName: "taskBounce" + slot.index
+                        animationsEnabled: dockOptions.bounceEnabled !== false
+                        launchEnabled: dockOptions.bounceOnLaunch !== false
+                        attentionEnabled: dockOptions.bounceOnAttention !== false
+                        attention: !!slot.model.IsDemandingAttention
+                        startup: !!slot.model.IsStartup
+                        suspended: root.dragging || previewPanel.displayed || dockController.hideRequested
+                        amplitude: root.bounceHeight * root.fitScale
+                        speed: dockOptions.bounceSpeed || 100
+                        repetitions: dockOptions.bounceCount || 3
+                    }
                     TaskStatus {
                         id: taskStatus
                         task: slot.model
@@ -265,8 +290,8 @@ Item {
                         // After a clockwise rotation, local bottom is the screen's left.
                         readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding + lift
-                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift
+                            ? root.edgeSpacing + root.taskPadding + lift + bounce.offset
+                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift - bounce.offset
                         rotation: root.vertical ? -90 : 0
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
@@ -443,6 +468,11 @@ Item {
         id: contextMenu
         objectName: "dockMenu"
         onOpenedChanged: root.refreshHover()
+        onTestBounceRequested: row => {
+            previewPanel.dismiss();
+            const slot = repeater.itemAt(row);
+            if (slot) slot.triggerTestBounce();
+        }
     }
     Controls.Label {
         anchors.centerIn: bar

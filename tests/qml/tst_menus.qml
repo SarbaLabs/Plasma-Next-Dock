@@ -33,6 +33,16 @@ TestCase {
         verify(texts.indexOf("Places") < 0);
         verify(texts.indexOf("Actions") < 0); // No redundant heading for actions alone.
     }
+    SignalSpy { id: bounceSpy; target: loader.item; signalName: "testBounceRequested" }
+    function test_nativeBounceAction() {
+        bounceSpy.clear();
+        loader.item.showAt(Qt.point(100, 100), source, 0);
+        tryCompare(loader.item, "visibleMenu", true);
+        verify(testEnvironment.menuTexts().indexOf("Test Bounce Animation") >= 0);
+        verify(testEnvironment.clickMenu("Test Bounce Animation"));
+        compare(bounceSpy.count, 1);
+        compare(bounceSpy.signalArguments[0][0], 0);
+    }
     function test_nativePinAndUnpin() {
         loader.item.showAt(Qt.point(100, 100), source, 0);
         tryCompare(loader.item, "visibleMenu", true);

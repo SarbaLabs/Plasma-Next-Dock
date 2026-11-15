@@ -15,6 +15,8 @@ QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
+        {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"taskSort", 0}, {"groupClick", 0},
         {"minimizeActive", false}, {"middleClick", 0}, {"wheelAction", 0}, {"skipMinimized", true},
         {"filterDesktop", true}, {"filterActivity", true}, {"filterScreen", false}, {"onlyMinimized", false},
@@ -68,7 +70,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         result[key] = !ok || !std::isfinite(value) ? defaults()[key]
             : QVariant(integer ? std::round(std::clamp(value, low, high)) : std::clamp(value, low, high));
     };
-    for (const auto &key : {"groupApplications", "minimizeActive", "skipMinimized", "filterDesktop",
+    for (const auto &key : {"bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "groupApplications", "minimizeActive", "skipMinimized", "filterDesktop",
                            "filterActivity", "filterScreen", "onlyMinimized", "showSeparator", "revealAttention"})
         result[key] = result[key].toBool();
     for (const auto &[key, maximum] : {std::pair{"taskSort", 4}, {"groupClick", 2},
@@ -77,6 +79,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         const int value = result[key].toInt(&ok);
         result[key] = ok && value >= 0 && value <= maximum ? value : defaults()[key];
     }
+    number("bounceHeight", 0, 64, true); number("bounceSpeed", 50, 200, true); number("bounceCount", 1, 5, true);
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
     number("blastRadius", 0, 8, true); number("hoverLift", 0, 64, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);

@@ -20,6 +20,7 @@ Item {
     readonly property bool visibleMenu: activeMenu !== null && activeMenu.status === PlasmaExtras.Menu.Open
     // Kept as an Item wrapper so menu lifetime never follows a moving task delegate.
     signal openedChanged(bool opened)
+    signal testBounceRequested(int row)
     onVisibleMenuChanged: openedChanged(visibleMenu)
     readonly property string domain: "plasma_applet_org.kde.plasma.taskmanager"
     TaskManager.VirtualDesktopInfo { id: desktops }
@@ -57,6 +58,8 @@ Item {
     }
     function request(method, argument) {
         if (!menuTarget.valid || !source || !source.tasks) return;
+        if (method === "requestNewInstance" && typeof source.launchRequested === "function")
+            source.launchRequested(menuTarget.index.row);
         if (argument === undefined) source.tasks[method](menuTarget.index);
         else source.tasks[method](menuTarget.index, argument);
     }
@@ -137,6 +140,11 @@ Item {
             const pinned = source.pinned(url);
             add(menu, pinned ? i18n("Unpin from Dock") : i18n("Pin to Dock"), pinned ? "window-unpin" : "window-pin",
                 () => source.togglePinned(url));
+        }
+        if (menuTarget.valid) {
+            add(menu, i18n("Test Bounce Animation"), "view-refresh", () => {
+                if (menuTarget.valid) controller.testBounceRequested(menuTarget.index.row);
+            }, dockOptions.bounceEnabled !== false);
         }
         separator(menu);
         add(menu, i18n("Configure Plasma Next Dock…"), "configure", () => dockSettings.configure());
