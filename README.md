@@ -11,7 +11,7 @@ Plasma panel causing premature window avoidance.
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
-The new background modes and blur integration need desktop validation. It does not modify Plasma or KWin, install a
+Background modes, blur, spacing and hover controls have also been accepted. Application status is the next stage awaiting desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -43,7 +43,7 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This stage intentionally does **not** yet port bounce or badges. Those remain
+This stage intentionally does **not** yet port bounce. Those remain
 available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
 
 ## Capsule backgrounds
@@ -66,7 +66,7 @@ See [background architecture and testing](docs/backgrounds.md).
 Dependencies (the KDE runtime packages are usually already installed):
 
 ```bash
-paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
+paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg plasma-pa \
     layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
     ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kwindowsystem gettext
 ```
@@ -74,12 +74,12 @@ paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg \
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the advanced indicators development branch:
+For the application status development branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/advanced-indicators https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch feature/application-status https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -282,3 +282,22 @@ there is no misleading local duration slider and no competing QML animation.
 
 See [indicator and animation architecture](docs/indicators.md) for defaults,
 performance limits and desktop acceptance checks.
+
+## Audio, media and application status
+
+The **Application status** settings tab controls hover previews, the audio indicator,
+click-to-mute, media/volume controls, application counters and progress. All six
+options default to enabled and are saved independently. Disabling hover previews
+keeps the application title and any supported media controls; clicking a group
+still opens its window selector.
+
+Audio uses KDE's plasma-pa model (including PipeWire's PulseAudio compatibility).
+Click the speaker badge to mute/unmute the application's matched streams. Preview
+volume controls preserve relative stream volumes and are limited to 100%. Media
+buttons use the application's MPRIS player and its advertised capabilities.
+Counters/progress use the installed task manager's SmartLauncherItem and honor its
+notification settings and application support. No independent tracking is added.
+
+The runtime needs `plasma-pa` and `plasma-desktop` in addition to the existing
+Plasma packages. Restart only Plasma Next Dock after `./install.sh`.
+See [application status architecture and validation](docs/application-status.md).

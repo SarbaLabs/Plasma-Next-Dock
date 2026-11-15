@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 include(GNUInstallDirs)
 include(CTest)
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Quick Qml WaylandClient)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Quick Qml WaylandClient DBus)
 # Recent Qt releases no longer import private targets through public modules.
 # Older releases provide GuiPrivate through Gui without a separate package.
 if(NOT TARGET Qt6::GuiPrivate)
@@ -24,7 +24,7 @@ find_package(LayerShellQt REQUIRED)
 find_package(PlasmaWaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
-add_library(dockcore STATIC src/backgroundeffects.cpp src/geometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
+add_library(dockcore STATIC src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
 target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
 target_link_libraries(dockcore PRIVATE Qt6::GuiPrivate KF6::WindowSystem)
@@ -38,9 +38,10 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
+    qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml
     qml/CapsuleBackground.qml qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
     qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
-qt_add_resources(plasma-next-dock dockqml PREFIX / FILES ${DOCK_QML_FILES})
+qt_add_resources(plasma-next-dock dockqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.
@@ -49,6 +50,23 @@ install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/InstallDesktop.cmake")
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test QuickTest)
     find_program(DOCK_KBUILDSYCOCA NAMES kbuildsycoca6 REQUIRED)
+    # Exercise the modern QT_NO_PLUGIN applet packaging independently of the
+    # installed Plasma version. The fixture factory aborts if instantiated.
+    add_library(statusmodulefixture SHARED)
+    qt_add_qml_module(statusmodulefixture
+        URI plasma.applet.org.kde.plasma.taskmanager NO_PLUGIN
+        RESOURCE_PREFIX /qt/qml
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/status-fixture/qml/plasma/applet/org/kde/plasma/taskmanager"
+        SOURCES tests/statusmodulefixture.h)
+    target_include_directories(statusmodulefixture PRIVATE tests)
+    set_target_properties(statusmodulefixture PROPERTIES PREFIX ""
+        OUTPUT_NAME "org.kde.plasma.taskmanager"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/status-fixture/plasma/applets")
+    add_executable(statussupporttest tests/statussupporttest.cpp)
+    target_link_libraries(statussupporttest PRIVATE dockcore Qt6::Test)
+    target_compile_definitions(statussupporttest PRIVATE STATUS_FIXTURE_PATH="${CMAKE_CURRENT_BINARY_DIR}/status-fixture")
+    add_dependencies(statussupporttest statusmodulefixture)
+    add_test(NAME applet-status-loading COMMAND statussupporttest)
     add_executable(menulaunchprobe tests/menulaunchprobe.cpp)
     target_link_libraries(menulaunchprobe PRIVATE Qt6::Core)
     add_executable(applicationmenutest tests/applicationmenutest.cpp)
@@ -59,12 +77,21 @@ if(BUILD_TESTING)
     add_test(NAME native-application-menus COMMAND applicationmenutest)
     set_tests_properties(native-application-menus PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;LANGUAGE=en;LANG=C.UTF-8")
     add_executable(hoverqmltest tests/hoverqmltest.cpp)
-    target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest)
+    target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest Qt6::DBus)
     target_compile_definitions(hoverqmltest PRIVATE DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
     add_dependencies(hoverqmltest pofiles)
-    qt_add_resources(hoverqmltest dockqml PREFIX / FILES ${DOCK_QML_FILES})
+    # Resource names determine generated paths, not only linker symbols. Never
+    # reuse the application's name for another target in this build directory.
+    qt_add_resources(hoverqmltest docktestqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
+    string(JOIN "\n" dock_resource_manifest ${DOCK_QML_FILES})
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/dock-resource-manifest.txt" "${dock_resource_manifest}\n")
+    target_compile_definitions(hoverqmltest PRIVATE
+        DOCK_RESOURCE_MANIFEST="${CMAKE_CURRENT_BINARY_DIR}/dock-resource-manifest.txt")
     add_test(NAME hover-and-render COMMAND hoverqmltest -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml)
     set_tests_properties(hover-and-render PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+    find_program(DOCK_DBUS_RUN_SESSION dbus-run-session REQUIRED)
+    add_test(NAME native-application-status COMMAND ${DOCK_DBUS_RUN_SESSION} -- $<TARGET_FILE:hoverqmltest> -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/status)
+    set_tests_properties(native-application-status PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
     add_executable(layerpositiontest tests/layerpositiontest.cpp)
     target_link_libraries(layerpositiontest PRIVATE dockcore Qt6::Test Qt6::GuiPrivate)
     add_test(NAME layer-surface-position COMMAND layerpositiontest)

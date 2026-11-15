@@ -75,3 +75,8 @@
   Reuse the existing radius setting and controller capsule signal; never blur the
   full canvas/edge corridor or enable an empty region. No PanelView hooks, render
   thread effect calls or periodic restoration loops. See docs/backgrounds.md.
+
+- Application status uses installed SmartLauncherItem, plasma-pa and MPRIS APIs.
+  Never instantiate the full taskmanager Backend for these features. Match streams
+  to task identity, preserve native badge privacy, and do not poll on animation.
+  Keep D-Bus tests isolated from the user's session and settings.

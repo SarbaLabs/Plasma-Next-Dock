@@ -197,3 +197,15 @@ and default lift to zero; both settings persist. Reserve the variable zoom budge
 and lift headroom in adaptive layout, keep resting indicators fixed, and validate
 all four inward directions. Also check fixture file opening instead of ignoring
 QFile::open's nodiscard result on newer Qt.
+
+## Application status — next stage
+
+The maintainer accepted PR #7 backgrounds, spacing and hover controls and merged
+it into main at `5113bd89a6b2d1a50aa39f1b10ede11fd0a1c911`.
+Branch `feature/application-status` adds native audio matching/mute, MPRIS preview
+controls, application volume, native SmartLauncher counters/progress and a preview
+toggle. See application-status.md for test scope and pending desktop acceptance.
+
+Confirmed order after this branch: **behavior settings plus the pinned/unpinned
+separator**, then bounce. Do not silently advance these into the current scope.
+The older chronological entries describe historical milestones, not current gaps.

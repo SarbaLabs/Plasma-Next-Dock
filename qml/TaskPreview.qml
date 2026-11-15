@@ -4,26 +4,35 @@ import QtQuick.Window
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.core as PlasmaCore
 
 Item {
     id: panel
     // Plasma's tooltip sets this to its current owner before displaying us.
-    property var toolTip: null
+    property PlasmaCore.ToolTipArea toolTip: null
     property var dockWindow: null
     property string applicationName: ""
     property var applicationIcon: ""
     property bool vertical: false
+    property var status: null
+    readonly property bool mediaAvailable: dockOptions.showMediaControls !== false
+        && !!(status?.player?.canControl || status?.streams?.length)
+    property bool windowsEnabled: true
+    readonly property int visibleWindows: windowsEnabled ? windowPreviews.count : 0
     property bool thumbnailsEnabled: !dockOptions.demo
     readonly property bool displayed: Window.window !== null && Window.window !== dockWindow && Window.window.visible
     // A shared Plasma tooltip briefly detaches this item while changing owners.
     // Release the model only after that synchronous reparenting has finished.
     onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) windowPreviews.clear(); })
     visible: false
-    implicitWidth: windowPreviews.count ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(windowPreviews.count, 3) * 240) : Math.min(outputSize.width - 32, Math.max(80, heading.implicitWidth + 24))
-    implicitHeight: windowPreviews.count ? Math.min(outputSize.height - 32, 32 + (vertical ? Math.min(windowPreviews.count, 3) : 1) * 180) : 36
+    implicitWidth: visibleWindows ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(visibleWindows, 3) * 240) : Math.min(outputSize.width - 32, Math.max(mediaAvailable ? 260 : 80, heading.implicitWidth + 24))
+    implicitHeight: Math.min(outputSize.height - 32, (visibleWindows ? 32 + (vertical ? Math.min(visibleWindows, 3) : 1) * 180 : 36) + (media.item && media.item.visible ? media.item.implicitHeight + 12 : 0))
     width: Math.max(32, implicitWidth)
     height: Math.max(32, implicitHeight)
-    function dismiss() { if (toolTip) toolTip.hideImmediately(); }
+    function dismiss() {
+        const owner = toolTip;
+        if (owner && typeof owner.hideImmediately === "function") owner.hideImmediately();
+    }
     Connections {
         target: windowPreviews
         function onTargetGone() { if (panel.displayed) panel.dismiss(); }
@@ -40,8 +49,8 @@ Item {
     }
     ListView {
         id: list
-        anchors { left: parent.left; right: parent.right; top: heading.bottom; bottom: parent.bottom }
-        visible: windowPreviews.count > 0
+        anchors { left: parent.left; right: parent.right; top: heading.bottom; bottom: media.top }
+        visible: panel.visibleWindows > 0
         orientation: panel.vertical ? ListView.Vertical : ListView.Horizontal
         clip: true
         model: windowPreviews
@@ -85,7 +94,7 @@ Item {
                     Loader {
                         id: capture
                         anchors.fill: parent
-                        active: panel.displayed && panel.thumbnailsEnabled && card.onScreen && !card.minimized && card.windowId.length > 0
+                        active: panel.displayed && panel.windowsEnabled && panel.thumbnailsEnabled && card.onScreen && !card.minimized && card.windowId.length > 0
                         asynchronous: true
                         source: active ? "WindowThumbnail.qml" : ""
                         onLoaded: item.windowId = Qt.binding(() => card.windowId)
@@ -111,4 +120,12 @@ Item {
             }
         }
     }
+    Loader {
+        id: media
+        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 6 }
+        height: item && item.visible ? item.implicitHeight : 0
+        active: panel.displayed && panel.mediaAvailable
+        sourceComponent: MediaControls { status: panel.status }
+    }
+
 }

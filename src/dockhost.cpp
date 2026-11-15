@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "dockhost.h"
+#include "statussupport.h"
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
@@ -52,6 +53,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
     m_view.engine()->rootContext()->setContextObject(localized);
     QQmlEngine::setContextForObject(localized, m_view.engine()->rootContext());
+    m_view.rootContext()->setContextProperty("statusSupport", new StatusSupport(this));
     m_view.rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(this));
     m_view.rootContext()->setContextProperty("menuTarget", new MenuTarget(this));
     m_view.rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(this));

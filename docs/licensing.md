@@ -100,3 +100,14 @@ daf60631cbca7ae12b1a587bfff3a3fd7639a53e:
 
 KWindowEffects is used as an installed KDE Frameworks API; no KWin implementation
 or theme artwork is copied. Existing license texts remain unchanged.
+
+## Application status
+
+`qml/AudioService.qml` adapts `contents/ui/PulseAudio.qml` from
+SarbaLabs/plasma-macos-dock commit `daf60631cbca7ae12b1a587bfff3a3fd7639a53e`.
+GPL-2.0-or-later; Kai Uwe Broulik's 2017 copyright is retained. The focused
+parent-PID helper replaces the donor's dependency on its larger backend.
+
+SmartLauncherItem, plasma-pa models and MPRIS are installed KDE dependencies;
+their source is not copied into this repository. New composition, overlays,
+media controls and tests use GPL-2.0-or-later.

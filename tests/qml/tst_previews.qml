@@ -32,6 +32,11 @@ TestCase {
         first.showToolTip();
         tryCompare(panel, "displayed", true);
         compare(panel.applicationName, "Files");
+        verify(!panel.mediaAvailable);
+        verify(panel.implicitWidth < 260);
+        panel.status = {player: {canControl: true}, streams: []};
+        verify(panel.mediaAvailable);
+        verify(panel.implicitWidth >= 260);
         compare(panel.toolTip, first);
         last.showToolTip();
         tryCompare(panel, "displayed", true);
@@ -48,6 +53,13 @@ TestCase {
         tryCompare(panel, "displayed", true);
         windowPreviews.select(testPreviewModel, 0);
         compare(windowPreviews.count, 2);
+        panel.windowsEnabled = false;
+        compare(panel.visibleWindows, 0);
+        owner.showGroupWindows();
+        verify(panel.windowsEnabled);
+        // Showing the tooltip can reselect the demo owner; restore grouped fixture.
+        windowPreviews.select(testPreviewModel, 0);
+        compare(panel.visibleWindows, 2);
         tryVerify(() => findChild(panel, "previewClose1") !== null);
         const closeButton = findChild(panel, "previewClose1");
         closeButton.clicked();
@@ -57,6 +69,18 @@ TestCase {
         compare(testEnvironment.activatedPreview(), "First window");
         tryCompare(panel, "displayed", false);
         tryCompare(windowPreviews, "count", 0);
+    }
+    Component { id: temporaryOwner; PlasmaCore.ToolTipArea {} }
+    function test_destroyedTooltipOwnerIsCleared() {
+        const component = Qt.createComponent("qrc:/qml/TaskPreview.qml");
+        compare(component.status, Component.Ready, component.errorString());
+        const panel = component.createObject(test);
+        const owner = temporaryOwner.createObject(test);
+        panel.toolTip = owner;
+        owner.destroy();
+        tryCompare(panel, "toolTip", null);
+        panel.dismiss();
+        panel.destroy();
     }
     function test_nativeThumbnailComponentLoads() {
         const component = Qt.createComponent("qrc:/qml/WindowThumbnail.qml");

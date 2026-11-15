@@ -335,3 +335,48 @@ msgstr "Portée du grossissement (icônes voisines) :"
 
 msgid "Hover lift (px):"
 msgstr "Soulèvement au survol (px) :"
+
+msgid "Application status"
+msgstr "État des applications"
+
+msgid "Show window previews on hover"
+msgstr "Afficher les aperçus des fenêtres au survol"
+
+msgid "Show application audio indicator"
+msgstr "Afficher l’indicateur audio des applications"
+
+msgid "Click audio indicator to mute"
+msgstr "Couper le son en cliquant sur l’indicateur audio"
+
+msgid "Show media and volume controls in previews"
+msgstr "Afficher les commandes multimédias et le volume dans les aperçus"
+
+msgid "Show application counters"
+msgstr "Afficher les compteurs des applications"
+
+msgid "Show application progress"
+msgstr "Afficher la progression des applications"
+
+msgid "Counters and progress depend on application support and KDE notification settings. Clicking grouped tasks still opens their window list."
+msgstr "Les compteurs et la progression dépendent des applications et des paramètres de notification de KDE. Un clic sur une application groupée ouvre toujours sa liste de fenêtres."
+
+msgid "Previous track"
+msgstr "Piste précédente"
+
+msgid "Next track"
+msgstr "Piste suivante"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Play"
+msgstr "Lire"
+
+msgid "Unmute application"
+msgstr "Rétablir le son de l’application"
+
+msgid "Mute application"
+msgstr "Couper le son de l’application"
+
+msgid "Application volume"
+msgstr "Volume de l’application"

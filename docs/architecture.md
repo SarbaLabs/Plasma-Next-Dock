@@ -296,3 +296,11 @@ weight, independent of zoom amplitude. It works even at 100% magnification. Extr
 headroom is reserved before hovering, participates in adaptive fitting, and never
 changes the resting capsule or dodge region. Input and preview anchors follow the
 actual lifted icon. Indicators remain in their separate resting lane.
+
+## Application status adapters
+
+TaskStatus composes installed plasma-pa, MPRIS and SmartLauncherItem APIs without
+instantiating the full taskmanager Backend. Overlay and preview controls stay
+independent of geometry, collision, background effects and running indicators.
+Matching refreshes follow model events rather than animation frames. See
+[application-status.md](application-status.md) for lifecycle, defaults and tests.

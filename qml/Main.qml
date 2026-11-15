@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Window
+import org.kde.plasma.private.mpris as Mpris
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
 import "code/CapsuleGeometry.js" as Geometry
@@ -10,6 +11,12 @@ import "code/AdaptiveLayout.js" as Adaptive
 
 Item {
     id: root
+    Mpris.Mpris2Model { id: statusPlayers }
+    Loader {
+        id: audioService
+        active: !dockOptions.demo && (dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false)
+        source: active ? "AudioService.qml" : ""
+    }
     readonly property bool vertical: dockOptions.edge >= 2
     readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
@@ -215,6 +222,17 @@ Item {
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
                     }
+                    TaskStatus {
+                        id: taskStatus
+                        task: slot.model
+                        taskIndex: slot.index
+                        tasksModel: dockOptions.demo ? null : taskSource.item.tasks
+                        audio: audioService.item
+                        players: statusPlayers
+                        nativeEnabled: !dockOptions.demo
+                        audioEnabled: dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false
+                        launcherEnabled: dockOptions.showBadges !== false || dockOptions.showProgress !== false
+                    }
                     Kirigami.Icon {
                         id: icon
                         objectName: "icon" + slot.index
@@ -231,9 +249,10 @@ Item {
                         roundToIconSize: false
                         onYChanged: root.queueGeometry()
                         TapHandler {
+                            enabled: !overlays.audioHovered
                             onTapped: {
                                 if (reorder.active) return;
-                                if (slot.model.IsGroupParent) taskTip.showToolTip();
+                                if (slot.model.IsGroupParent) taskTip.showGroupWindows();
                                 else { previewPanel.dismiss(); taskSource.item.activate(slot.index); }
                             }
                         }
@@ -243,19 +262,39 @@ Item {
                         }
                         PlasmaCore.ToolTipArea {
                             id: taskTip
+                            property bool forceWindows: false
+                            function showGroupWindows() {
+                                forceWindows = true;
+                                // An already visible title tooltip may not emit aboutToShow again.
+                                if (previewPanel.toolTip === taskTip) previewPanel.windowsEnabled = true;
+                                showToolTip();
+                            }
+                            onToolTipVisibleChanged: toolTipVisible => {
+                                if (!toolTipVisible) forceWindows = false;
+                            }
                             objectName: "taskTip" + slot.index
                             anchors.fill: parent
                             location: root.tooltipLocation
                             mainText: slot.model.AppName || slot.model.display || ""
                             textFormat: Text.PlainText
                             mainItem: previewPanel
-                            interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent
+                            interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
                             active: !root.dragging && !contextMenu.visibleMenu
                             onAboutToShow: {
+                                previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
+                                forceWindows = false;
+                                previewPanel.status = taskStatus;
                                 previewPanel.applicationName = mainText;
                                 previewPanel.applicationIcon = slot.model.decoration;
                                 windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, slot.index);
                             }
+                        }
+                        StatusOverlay {
+                            id: overlays
+                            anchors.fill: parent
+                            z: 2
+                            status: taskStatus
+                            configuration: dockOptions
                         }
                     }
                     Loader {

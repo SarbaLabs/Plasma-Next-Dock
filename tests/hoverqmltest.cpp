@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "statussupport.h"
+#include <QDBusConnection>
+#include <QDBusMessage>
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
 #include "menutarget.h"
@@ -57,6 +60,11 @@ class Setup : public QObject
     PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE bool publishLauncher(const QVariantMap &properties) {
+        auto message = QDBusMessage::createSignal("/test/launcher", "com.canonical.Unity.LauncherEntry", "Update");
+        message << QStringLiteral("application://First.desktop") << properties;
+        return QDBusConnection::sessionBus().send(message);
+    }
     Q_INVOKABLE QString activatedPreview() const { return m_previewModel.activated; }
     Q_INVOKABLE QString closedPreview() const { return m_previewModel.closed; }
     Q_INVOKABLE QStringList menuTexts() const {
@@ -144,6 +152,7 @@ public Q_SLOTS:
         localized->setTranslationDomain(QStringLiteral("plasma-next-dock"));
         engine->rootContext()->setContextObject(localized);
         QQmlEngine::setContextForObject(localized, engine->rootContext());
+        engine->rootContext()->setContextProperty("statusSupport", new StatusSupport(engine));
         engine->rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(engine));
         engine->rootContext()->setContextProperty("menuTarget", new MenuTarget(engine));
         engine->rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(engine));
@@ -178,6 +187,21 @@ public Q_SLOTS:
     }
 };
 int main(int argc, char **argv) {
+    Q_INIT_RESOURCE(docktestqml);
+    // Fail once, before running dozens of QML cases against missing resources.
+    QFile manifest(QStringLiteral(DOCK_RESOURCE_MANIFEST));
+    if (!manifest.open(QIODevice::ReadOnly)) {
+        qCritical("Cannot read dock resource manifest");
+        return 1;
+    }
+    for (const auto &line : manifest.readAll().split('\n')) {
+        if (line.isEmpty()) continue;
+        QFile resource(QStringLiteral(":/") + QString::fromUtf8(line));
+        if (!resource.open(QIODevice::ReadOnly) || resource.size() == 0) {
+            qCritical("Missing or empty embedded test resource: %s", qPrintable(resource.fileName()));
+            return 1;
+        }
+    }
     QTemporaryDir environment;
     qputenv("XDG_DATA_HOME", (environment.path() + "/data").toUtf8());
     qputenv("XDG_CONFIG_HOME", (environment.path() + "/config").toUtf8());

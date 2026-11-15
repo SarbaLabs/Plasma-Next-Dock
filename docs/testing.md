@@ -456,3 +456,75 @@ Settings tests cover defaults, persistence, clamping and Apply/reopen for both
 controls. Fixture creation now checks QFile::open instead of ignoring its return.
 QML parsing, gettext, whitespace and staged installation pass. Live Wayland
 appearance, pointer travel and previews still require desktop confirmation.
+
+## Application status stage
+
+Local build: Qt 6.8.2, Plasma 6.3 installed QML modules. Thirteen regular CTest
+entries pass offscreen. Added coverage includes grouped child PID matching, portal
+ID priority, mute toggling across streams, relative volume, speaker clicks,
+MPRIS capability/button routing, disabled preview cards, and persistence of all
+six settings through the settings UI and file reload.
+
+The fourteenth entry, native-application-status, runs a real installed KDE
+SmartLauncherItem with a temporary desktop-entry cache and an isolated D-Bus bus.
+This runner forbids socket creation, so dbus-run-session fails before the test;
+CI is responsible for that round trip. Direct loading of native SmartLauncherItem
+and the plasma-pa model succeeds locally. No live audio operation, PipeWire server,
+KWin screenshot or actual user media player has been validated here.
+
+Staged installation, shell syntax, translation compilation and git diff whitespace
+checks pass. See application-status.md for the CachyOS manual acceptance checklist.
+
+### CI follow-up
+
+GitHub's isolated bus confirmed delivery of the real native launcher count (7),
+visibility and progress (42%). The first run then exposed a test lifetime error:
+tryCompare captured the old SmartLauncherItem before the queued launcher change
+replaced it. Wait for replacement before observing the new item's zero/hidden
+state. Also cover explicit group selection while a title tooltip is already open,
+and retain compact tooltips for tasks without media. Full CI is rerun after this
+correction; real desktop acceptance remains required.
+
+### CachyOS resource-loading follow-up
+
+The maintainer's Qt 6.12 run could not load any embedded QML in hoverqmltest,
+while the executable's smoke tests passed. Both targets previously generated
+resources with the same `dockqml` name/output paths. Give the test bundle its own
+`docktestqml` name, explicit source base, and explicit Q_INIT_RESOURCE reference.
+Validate every packaged QML/JS file before entering QuickTest so packaging failures
+produce one actionable error rather than a cascade of null-component failures.
+The exact Qt 6.12 failure is not reproduced on the local Qt 6.8 runner; confirmation
+on CachyOS is required. Do not claim all Qt versions have been tested.
+
+A typed Plasma ToolTipArea reference now clears when its owner is destroyed;
+dismissal checks the method before calling it. A regression test destroys an owner
+and dismisses the remaining preview. This protects the separate stale-tooltip
+error observed in the existing installed executable.
+
+The installer intentionally stops on failed tests, before cmake --install. Missing
+new audio UI after this failure can therefore be the previous installed binary.
+Update the branch and rerun ./install.sh; do not bypass tests. Quit/restart only
+Plasma Next Dock after successful installation. Audio matching still needs actual
+desktop validation once the new binary is installed.
+
+### Modern applet loading follow-up
+
+The maintainer confirms the resource fix: hover-and-render now passes on Qt 6.12.
+The remaining failure is native SmartLauncher loading. Modern Plasma's applet
+library registers a QT_NO_PLUGIN QML module only when loaded by the host; importing
+its URI alone was insufficient in this standalone host. Load the installed applet
+library without instantiating its factory, with the legacy import retained.
+New applet-status-loading regression uses a NO_PLUGIN QML module fixture whose
+factory must never be constructed. See application-status.md for the distinction
+between this mechanism test and actual installed-KDE integration/desktop tests.
+
+### Task removal during deferred status updates
+
+The maintainer accepted the audio/status functionality on CachyOS, but reported
+repeated TaskStatus.qml IsWindow-of-null errors when opening/closing windows.
+TasksModel can detach a delegate while Qt.callLater(refresh) is queued. Guard the
+missing task, clear its audio/player state, and make the launcher URL binding
+null-safe. A warning-sensitive test covers initially null tasks and repeated
+attach/queued-update/detach cycles, then verifies recovery on reattachment.
+The separate startup Unity/JobViewServer registration warnings are emitted by KDE
+services and are not suppressed by this fix.
