@@ -550,3 +550,27 @@ monitor filters and compositor attention reveal require CachyOS validation.
 Result: all 14 locally runnable CTest entries passed (27.03 s), including the
 expanded hover/render suite. Native application status remains the separate
 runner limitation above; full CI result is reported on the pull request.
+
+### Qt 6.12 launcher fixture isolation follow-up
+
+CachyOS reported one failure: NativeLaunchers.test_pinUnpinAndRestoreOrder found
+launcherCount=1 instead of 0 immediately after test_behaviorFiltersAndSort. All
+other cases passed, including the installed native audio/status integration.
+
+The preceding test saved a QVariantMap with Object.assign, which does not detach
+nested QML sequence references. That is unsafe as a restoration snapshot on newer
+Qt (QVariantMap in-place QML support was extended in Qt 6.9). This matches the one
+launcher introduced by that test surviving restoration. The fixture now snapshots
+its JSON-compatible settings deeply, asserts that the saved list remains empty
+after pinning, waits for the native launcherList to match the restored list, and
+drains deferred destruction before another test creates a model. Pin/unpin also
+restores its fixture in finally, including on assertion failure.
+
+No production settings, native pinning behavior or assertions are removed. Theme,
+shadow and activity-database warnings arise in the isolated offscreen fixture and
+are distinct from this assertion. Do not change the maintainer's theme/database.
+Reference: https://doc.qt.io/qt-6/qtqml-cppintegration-data.html
+Local validation uses Qt 6.8.2; the exact Qt 6.12 failure needs maintainer recheck.
+The focused NativeLaunchers suite passes, and all 14 locally runnable CTest entries
+pass after the fixture fix (27.37 s). The unchanged native status test was confirmed
+passing in the maintainer's supplied Qt 6.12 log. No Qt 6.12 local pass is claimed.
