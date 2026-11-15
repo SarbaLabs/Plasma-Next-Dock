@@ -363,8 +363,6 @@ Item {
             }
         }
     }
-    property int wheelRow: -1
-    property real wheelRemainder: 0
     function scrollWheel(event, axis) {
         const pixel = event.pixelDelta;
         const angle = event.angleDelta;
@@ -379,11 +377,9 @@ Item {
         if (viewport.contentWidth <= viewport.width) {
             const row = root.taskAt(Qt.point(event.x, event.y), false);
             if (row < 0 || dockOptions.demo || dockOptions.wheelAction !== 1) { event.accepted = false; return; }
-            if (wheelRow !== row) { wheelRow = row; wheelRemainder = 0; }
-            const step = Behavior.wheelCycle(axis === Qt.Vertical ? angle.y : angle.x,
-                axis === Qt.Vertical ? pixel.y : pixel.x, wheelRemainder);
-            wheelRemainder = step.remainder;
-            if (step.direction) taskSource.item.cycle(row, step.direction);
+            const direction = Behavior.wheelCycle(axis === Qt.Vertical ? angle.y : angle.x,
+                axis === Qt.Vertical ? pixel.y : pixel.x);
+            if (direction) taskSource.item.cycle(row, direction);
             event.accepted = true;
             return;
         }

@@ -47,12 +47,9 @@ function middle(model, row, action, roles) {
     else if (action === 3 && model.data(index, roles.minimizable)) model.requestToggleMinimized(index);
 }
 
-// Discrete wheel events select one window regardless of configured wheel speed.
-// Only continuous pixel scrolling needs accumulation to avoid rapid cycling.
-function wheelCycle(angle, pixels, remainder) {
-    if (!pixels) return {direction: angle === 0 ? 0 : (angle > 0 ? -1 : 1), remainder: 0};
-    const total = (remainder * pixels < 0 ? 0 : remainder) + pixels;
-    return Math.abs(total) >= 40
-        ? {direction: total > 0 ? -1 : 1, remainder: total % 40}
-        : {direction: 0, remainder: total};
+// Window selection is a discrete action, not distance-based scrolling. Some
+// input paths provide both deltas; neither should impose a multi-event threshold.
+function wheelCycle(angle, pixels) {
+    const amount = angle || pixels;
+    return amount === 0 ? 0 : (amount > 0 ? -1 : 1);
 }

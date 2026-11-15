@@ -74,9 +74,10 @@ the adjusted longitudinal offset. Capsule-only dodge and rounded blur are unchan
 
 Actual overflow always takes priority, preserving synthesized wheel, touchpad and
 both-axis scrolling. Without overflow, optional cycling requires the pointer over
-an icon. Each nonzero discrete wheel event selects one window, independent of its angle
-magnitude (and configured wheel speed). Continuous pixel input accumulates to 40 logical pixels,
-with at most one activation per input event. Diagonal events are handled once.
+an icon. Each nonzero wheel event selects one window immediately, including pixel-only and
+combined angle/pixel events. Angle direction takes precedence when supplied; there
+is no distance accumulator for discrete window selection. At most one activation
+is requested per event. Diagonal events are handled once.
 No timer, animation-frame scan or background polling is introduced.
 
 Attention uses TasksModel.anyTaskDemandsAttention as a separate optional controller

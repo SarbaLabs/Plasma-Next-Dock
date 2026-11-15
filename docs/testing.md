@@ -591,3 +591,20 @@ requires maintainer confirmation; this runner uses Qt 6.8.2 offscreen.
 Result: build, all 14 locally runnable CTest entries (28.09 s), staged installation
 and whitespace validation pass. Native D-Bus test remains the runner limitation
 already documented above; no test is disabled in CI or the installation script.
+
+### Pixel/combined wheel input follow-up
+
+The maintainer still reports 2–3 notches after the first wheel change. That change
+only removed the threshold for angle-only events: nonzero pixelDelta still selected
+the accumulated path, including events carrying both kinds of delta. No raw event
+capture from the maintainer is available, so this is the remaining code-path defect,
+not a claim about the exact device's event payload.
+
+Remove distance accumulation from window selection entirely. Each nonzero angular,
+pixel-only or combined event requests one adjacent window; zero events do nothing.
+Overflow continues using its existing distance-based scrolling path. Regressions
+now cover all three event forms with small and large magnitudes in both directions;
+the previous tests covered angle-only and deliberately retained pixel accumulation.
+Desktop wheel behavior remains to be rechecked, including continuous touchpads.
+Validation: build and all 14 locally runnable CTest entries pass (26.83 s, Qt 6.8.2
+software/offscreen). Native D-Bus test has the same documented runner restriction.

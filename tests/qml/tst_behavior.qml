@@ -23,20 +23,17 @@ TestCase {
         verify(divided.length <= 984);
     }
     function test_oneWheelEventPerWindow() {
-        // A lower wheel speed must not require multiple notches for one action.
-        for (const amount of [15, 40, 60, 120, 240]) {
-            compare(Behavior.wheelCycle(amount, 0, 0), {direction: -1, remainder: 0});
-            compare(Behavior.wheelCycle(-amount, 0, 0), {direction: 1, remainder: 0});
+        // Cover angle-only, pixel-only AND combined events, including small deltas.
+        // The previous implementation still accumulated combined/pixel input.
+        for (const amount of [1, 15, 40, 60, 120, 240]) {
+            compare(Behavior.wheelCycle(amount, 0), -1);
+            compare(Behavior.wheelCycle(-amount, 0), 1);
+            compare(Behavior.wheelCycle(0, amount), -1);
+            compare(Behavior.wheelCycle(0, -amount), 1);
+            compare(Behavior.wheelCycle(amount, 10), -1);
+            compare(Behavior.wheelCycle(-amount, -10), 1);
         }
-        compare(Behavior.wheelCycle(0, 0, 20).direction, 0);
-        let remainder = 0;
-        for (let i = 0; i < 3; ++i) {
-            const step = Behavior.wheelCycle(0, 10, remainder);
-            compare(step.direction, 0); remainder = step.remainder;
-        }
-        compare(Behavior.wheelCycle(0, 10, remainder), {direction: -1, remainder: 0});
-        compare(Behavior.wheelCycle(0, -10, 30), {direction: 0, remainder: -10});
-        compare(Behavior.wheelCycle(0, -80, 0), {direction: 1, remainder: 0});
+        compare(Behavior.wheelCycle(0, 0), 0);
     }
     function test_nativeActionRouting() {
         const roles = {active: "active", minimized: "minimized", minimizable: "minimizable", closable: "closable"};
