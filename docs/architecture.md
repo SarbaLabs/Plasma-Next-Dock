@@ -337,3 +337,9 @@ logical pointer index only for changed positions or real window entry, not child
 hover re-delivery during bounce. The previous root HoverHandler is removed; native
 menu/tooltip/audio input routing remains intact. Target/window changes detach the
 observer. New task delegates enable zoom interpolation only after initialization.
+
+The magnification anchor retains its delegate/service identity and fractional
+position, not only a numeric model row. Index changes remap it without consulting
+animated geometry. A replacement delegate recovers the service anchor and snaps
+its initial zoom before enabling interpolation; real pointer movement replaces the
+anchor. This prevents first-window proxy transitions briefly reducing icon size.

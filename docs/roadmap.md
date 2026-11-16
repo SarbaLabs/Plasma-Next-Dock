@@ -241,3 +241,8 @@ The edge click lane was accepted. Follow-up feedback isolates residual shrinkage
 to cursor crossing the moving icon edge and initial launcher replacement. Window
 pointer observation and initialization without a zoom transition address those
 cases; live CachyOS validation is still pending.
+
+The maintainer accepted stationary-pointer bounce tracking; only the first-window
+size dip remained. Follow-up model-transition tests exposed a numeric row anchor
+surviving a launcher move/replacement. Retain service identity and the fractional
+hover position through that transition. This last correction awaits desktop testing.

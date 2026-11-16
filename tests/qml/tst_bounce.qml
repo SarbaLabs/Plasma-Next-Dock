@@ -125,6 +125,38 @@ TestCase {
             mouseMove(this, 990, 790);
         }
     }
+    function test_launchRowMovePreservesZoom() {
+        const source = findChild(dock.item, "taskSourceLoader");
+        source.source = Qt.resolvedUrl("LaunchingTasks.qml");
+        tryCompare(source, "status", Loader.Ready);
+        try {
+            wait(100);
+            const slot = findChild(dock.item, "task0");
+            const icon = findChild(dock.item, "icon0");
+            mouseMove(icon, icon.width / 2, icon.height / 2);
+            wait(150);
+            const size = slot.size;
+            source.item.launchRequested(0);
+            // Native launch/startup/window proxies can remap rows while the
+            // cursor remains still. Follow the application, not its old row.
+            source.item.tasks.move(0, 1, 1);
+            wait(130);
+            fuzzyCompare(slot.size, size, 0.05);
+            // Replacement may also return at another row, in a separate model event.
+            source.item.tasks.remove(1);
+            source.item.tasks.insert(0, {display: "Window", decoration: "folder", LauncherUrl: "applications:One.desktop", IsWindow: true});
+            wait(1); // Flush queued model reconciliation, not a zoom transition.
+            const replacement = findChild(dock.item, "task0");
+            fuzzyCompare(replacement.size, size, 0.05);
+            const other = findChild(dock.item, "icon2");
+            mouseMove(other, other.width / 2, other.height / 2);
+            wait(150);
+            verify(replacement.size < size - 5, "Real movement must release the retained application anchor");
+        } finally {
+            source.source = "qrc:/qml/DemoTasks.qml";
+            mouseMove(this, 990, 790);
+        }
+    }
     function test_lifecycle() {
         const component = Qt.createComponent("qrc:/qml/TaskBounce.qml");
         compare(component.status, Component.Ready, component.errorString());

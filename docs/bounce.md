@@ -122,3 +122,18 @@ from a construction-time zero. Existing click lanes and animation settings remai
 unchanged. Automated checks now place a stationary cursor just inside the icon's
 outward edge, run a middle-click bounce past it on all four edges, assert a stable
 logical pointer and retained zoom, then verify a true exit restores resting size.
+
+### First-window row identity
+
+Window-level pointer tracking and the edge lane were accepted by the maintainer.
+A remaining first-window dip prompted a model-transition regression test: moving
+an application from row 0 to row 1 reduced its icon from 60 to 46.8 px with the
+cursor stationary. A subsequent replacement at a different row also initialized
+at the old numeric hover distance (49.2 px instead of 60 px).
+
+Main now retains the hovered delegate, launcher service key and fractional hover
+position. Model index changes remap the logical anchor to that application;
+replacement delegates recover it by service key and initialize their zoom directly
+before painting. Real pointer movement chooses a fresh anchor normally. No timer,
+new setting, input-region change or alteration to bounce phases is introduced.
+The regression test also checks that moving to another icon releases the anchor.

@@ -97,6 +97,30 @@ Item {
     readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
     readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
     property real pointerIndex: -10
+    property var pointerTask: null
+    property string pointerKey: ""
+    property real pointerFraction: 0
+    // Native proxies may move or replace the launcher while starting its first
+    // window. Keep the hover anchor on that service until real pointer movement.
+    function remapPointer() {
+        if (!hovering || dragging) return;
+        let slot = pointerTask;
+        if (!slot || slot.index < 0 || repeater.itemAt(slot.index) !== slot) {
+            slot = null;
+            if (pointerKey) {
+                for (let i = 0; i < repeater.count; ++i) {
+                    const candidate = repeater.itemAt(i);
+                    if (candidate && candidate.launchKey === pointerKey) { slot = candidate; break; }
+                }
+            }
+        }
+        if (slot) {
+            const replacement = slot !== pointerTask;
+            pointerTask = slot;
+            pointerIndex = slot.index + pointerFraction;
+            if (replacement) slot.restoreZoom();
+        }
+    }
     property bool hovering: dockController.pointerHovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
@@ -118,6 +142,9 @@ Item {
                 fraction = (reverseLayout ? -delta : delta) / (slot.size + taskRow.spacing);
             }
         }
+        pointerTask = nearest < 0 ? null : repeater.itemAt(nearest);
+        pointerKey = pointerTask ? pointerTask.launchKey : "";
+        pointerFraction = fraction;
         pointerIndex = nearest < 0 ? -10 : nearest + fraction;
     }
     function syncGeometry() {
@@ -225,13 +252,20 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
+                onCountChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
                     required property int index
                     required property var model
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
+                    function restoreZoom() {
+                        // A replacement can arrive at a different row. Reconcile
+                        // its initial size before painting, without a shrink/grow.
+                        componentReady = false;
+                        animatedFactor = Qt.binding(() => slot.factor);
+                        componentReady = true;
+                    }
                     property bool componentReady: false
                     property real animatedFactor: factor
                     property real reportedFactor: 0
@@ -245,7 +279,12 @@ Item {
                     property alias inputItem: inputLane
                     readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
                     onPinnedChanged: root.queueDivider()
-                    onIndexChanged: root.queueDivider()
+                    onIndexChanged: {
+                        root.queueDivider();
+                        if (root.pointerTask === slot && index >= 0 && root.hovering && !root.dragging)
+                            root.pointerIndex = index + root.pointerFraction;
+                        Qt.callLater(root.remapPointer);
+                    }
                     readonly property string launchKey: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
                     property int launchToken: -1
                     function resumeLaunchFeedback() {
@@ -255,8 +294,8 @@ Item {
                         launchToken = pending.token;
                         bounce.launch();
                     }
-                    onLaunchKeyChanged: Qt.callLater(root.resumeLaunchFeedback)
-                    Component.onCompleted: { componentReady = true; root.queueDivider(); Qt.callLater(root.resumeLaunchFeedback); }
+                    onLaunchKeyChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
+                    Component.onCompleted: { componentReady = true; root.queueDivider(); Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
                     readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
                     readonly property real iconOffset: root.reverseLayout ? 0 : extra
                     width: size + extra

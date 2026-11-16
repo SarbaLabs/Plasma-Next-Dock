@@ -666,3 +666,18 @@ installation, shell syntax and whitespace checks pass. Native D-Bus coverage ret
 the previously documented local restriction and remains enabled in CI. These tests
 do not constitute Qt 6.12/KWin desktop acceptance: recheck the maintainer's exact
 first-launch and low-on-icon middle-click scenarios, plus menus/audio/preview/glow.
+
+## First-window identity anchor — 2026-11-16
+
+Added a failing-before/passing-after test for a stationary hovered application
+moving between model rows during launch: before correction, 60 px became 46.8 px.
+The combined move/replacement case returned at 49.2 px instead of 60 px even after
+queued reconciliation. Retaining service identity/fraction and initializing the
+replacement at the reconciled anchor fixes both synthetic cases. The test checks
+that genuine pointer movement still selects a new application normally.
+
+Build and all 14 locally runnable CTest entries pass (51.47 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged installation, shell syntax and whitespace checks pass.
+Native D-Bus coverage retains the previously documented local restriction. The
+maintainer has accepted the previous pointer/click fixes; the exact first-window
+transition on CachyOS/Qt 6.12 still needs rechecking. No live KWin result is claimed.

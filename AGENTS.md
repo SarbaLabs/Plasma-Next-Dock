@@ -99,3 +99,6 @@
   input region. Do not restore child hover as its source or consume mouse events.
   Duplicate coordinates/animation hover delivery must not recalculate pointerIndex.
   Initialize replacement delegate zoom before enabling its Behavior transition.
+- Model row changes must remap the hovered service identity/fraction rather than
+  leaving zoom on a stale row. Reconcile replacement zoom before painting; never
+  derive this identity remap from animated icon positions.
