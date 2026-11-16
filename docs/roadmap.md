@@ -228,3 +228,11 @@ native Test Bounce Animation action. Preserve behavior filters, separator, immed
 wheel cycling, status integrations, indicator anchors, blur and capsule-only dodge.
 See bounce.md for defaults and pending desktop acceptance. General settings cleanup,
 packaging and optional autostart remain outside this stage; no automatic merge.
+
+## 2026-11-16 — Bounce interaction refinement
+
+The maintainer confirmed bounce playback but reported lost edge clicks and zoom
+flicker during launches/animation. PR #10 now uses stable per-task edge input
+lanes, coalesces transient model counts before sizing and retains launch feedback
+by service identity through delegate replacement. CachyOS acceptance of these
+corrections remains pending; do not merge automatically.

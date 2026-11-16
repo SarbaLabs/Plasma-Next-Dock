@@ -624,3 +624,24 @@ cannot start in this runner (`Failed to open socket: Operation not permitted`);
 it remains enabled in CI and ./install.sh. No Qt 6.12 or live KWin result is claimed.
 See bounce.md for the CachyOS acceptance checklist, particularly real launch/attention
 notifications, interaction feel, popup placement and hide/reveal behavior.
+
+## Stable bounce interaction — 2026-11-16
+
+PR #10 feedback: clicks were bound to moving icon bounds and the native input mask
+followed those bounds, allowing animation to remove the cursor from the surface.
+Use stable task lanes through to the physical edge. Coalesce transient row counts
+before canvas resizing, and recover finite launch feedback by service URL after
+launcher/startup/window delegate replacement.
+
+Added synthetic edge primary/middle clicks on four edges and both directions,
+stationary-pointer magnification during bounce, unchanged input bounds during
+animation, synchronous delegate replacement with no canvas resize, and correct
+launch identity (no bounce on a neighboring row). Existing drag, menu, audio/status,
+preview, separator, adaptive layout and rendering tests remain enabled.
+
+Build and all 14 locally runnable CTest entries pass (42.59 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). No TypeError/ReferenceError in the final test log. Staged
+installation, shell syntax and whitespace checks pass. The native D-Bus test is
+excluded locally due to the previously documented socket restriction, not disabled
+in the project. Tests are synthetic; actual Wayland input-region behavior and the
+maintainer's live launcher transition still require the checks in bounce.md.

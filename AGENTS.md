@@ -90,6 +90,7 @@
   bindings when applying saved launcher order.
 
 - Bounce is an inward icon offset, never a capsule/indicator transform. Reserve
-  its maximum headroom before animation; keep input geometry attached to the icon.
+  its maximum headroom before animation. Keep each task input lane stable across
+  bounce, extended to the physical edge; never attach clicks to a moving icon.
   Use native startup/attention roles and persistent menu targets, finite launch/test
   cycles, and no polling. Suppress bounce during drag, previews and hide requests.

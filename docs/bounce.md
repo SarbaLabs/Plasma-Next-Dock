@@ -35,8 +35,12 @@ rebound is 30% of the main jump.
 AdaptiveLayout reserves maximum bounce headroom in the drawing surface before
 animation begins. Amplitude scales with adaptive icon shrinking. The visible
 capsule, end padding, separator, indicators and dodge geometry do not bounce or
-grow during animation. Native input geometry follows the moved icons via the
-existing geometry update path; badges and preview anchors follow the actual icon.
+grow during animation. Native input geometry uses the same per-task lane as primary/middle clicks,
+context targeting, drag hit testing and wheel cycling. Each lane spans the current
+longitudinal icon bounds and the full inward bounce envelope through to the physical
+screen edge. Bounce never moves this hit target or rebuilds its mask each frame.
+Inter-task gaps and separators remain distinct; overflow clips to the canvas.
+Badges and preview anchors continue to follow the actual icon.
 
 Bounce stops at rest while dragging, while an interactive preview is displayed,
 or while the controller requests native hiding. Attention resumes when suppression
@@ -46,10 +50,16 @@ policy intent, not an exact visibility notification. The separate revealAttentio
 setting controls whether an attention request brings the dock back.
 
 Launch signals from LiveTasks and native context-menu new-instance actions are
-queued to the current delegate, after menu/preview dismissal. Native startup role
+retained by launcher URL and dispatched after menu/preview dismissal. Native startup role
 changes cover externally initiated launches when KDE reports them. Repeated launch
-notifications do not restart a running bounce. Delegate destruction owns animation
-cleanup; no global task cache, timer or polling loop is introduced. Disabled/idle
+notifications do not restart a running bounce. Synchronous row-count changes are coalesced before adaptive surface sizing, so a
+launcher/window replacement cannot briefly shrink and regrow the canvas.
+A bounded table (at most 64 service identities) lets a replacement startup/window
+delegate recover the pending launch feedback rather than dropping a queued call to
+a destroyed launcher. Entries expire after the configured finite sequence duration,
+are pruned on launch and never trigger an unrelated row. A replacement starts its
+own finite sequence; no timer or polling loop is introduced. Delegate destruction
+still owns animation cleanup. Disabled/idle
 components do not animate or update geometry.
 
 ## Provenance and installation
@@ -79,3 +89,17 @@ Validate on CachyOS/KWin:
 
 Offscreen software rendering cannot validate compositor visibility, live startup
 notifications or the feel of the animation under Wayland.
+
+## Interaction correction — 2026-11-16
+
+Maintainer video exposed lost clicks below moving icons and hover/zoom flicker
+when an icon bounced away from the cursor. The original TapHandlers and Wayland
+mask both followed the icon. Stable edge lanes now decouple interaction from that
+visual animation. Launch feedback also survives synchronous model replacement.
+
+Recheck primary/middle clicks with the pointer held against the physical edge,
+between the icon and capsule, and on the icon itself. Launch a closed application,
+then another instance, without moving the pointer. Zoom should remain active;
+leaving the complete task/capsule/edge input region should still reset it. Repeat
+on all four edges with reversed order and overflow; verify audio mute controls
+still take priority and tooltips remain anchored to the visible icon.

@@ -10,7 +10,7 @@ effect is required by this first prototype.
 Three geometries have different responsibilities:
 
 1. **Canvas:** accommodates the maximum magnified icon height and task strip.
-2. **Input region:** rounded capsule plus the currently rendered icon rectangles,
+2. **Input region:** rounded capsule plus task interaction lanes extended to the physical edge,
    intersected with canvas bounds. Transparent margins do not receive pointer input
    under Qt Wayland's QWindow mask implementation.
 3. **Dodge region:** the rounded visible capsule translated into output coordinates.
@@ -294,8 +294,8 @@ The default keeps the former two-icon-equivalent reserve.
 hoverLift (0–64 logical px, default 0) adds an inward offset using the same animated
 weight, independent of zoom amplitude. It works even at 100% magnification. Extra
 headroom is reserved before hovering, participates in adaptive fitting, and never
-changes the resting capsule or dodge region. Input and preview anchors follow the
-actual lifted icon. Indicators remain in their separate resting lane.
+changes the resting capsule or dodge region. Input lanes cover the complete lift/bounce envelope to the physical edge; preview
+anchors follow the actual lifted icon. Indicators remain in their separate resting lane.
 
 ## Application status adapters
 
@@ -322,7 +322,8 @@ cycling. Attention is an independent opt-in hide inhibitor. See behavior.md.
 
 TaskBounce produces a normalized jump/rebound offset; Main adds it to icon hover
 lift along the inward cross-axis. AdaptiveLayout reserves maximum headroom before
-animation. Indicators and capsule stay in their resting geometry. Existing icon
-input rectangles follow the animated y coordinate and preserve capsule-only dodge.
+animation. Indicators and capsule stay in their resting geometry. Task input
+lanes cover the reserved bounce envelope through to the physical edge without
+following the animated y coordinate. Dodge remains capsule-only.
 Native task startup/attention roles and launch requests drive animations; disabled,
 dragging, hidden-policy and preview states stop them at rest. See bounce.md.
