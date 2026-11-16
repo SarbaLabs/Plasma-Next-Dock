@@ -268,3 +268,12 @@ hiding them or taking service ownership away from Plasma.
 - Custom renderer and preview now share the explicit active Qt SystemPalette
   highlight, rather than separate Kirigami attached palette bindings.
 - Previous frame envelope sizing is retained; desktop color confirmation pending.
+
+## 2026-11-16 — PR #10 accepted; external drag and application chooser
+
+The maintainer confirmed the final highlight/palette correction and merged PR #10.
+Branch feature/external-drag-and-drop starts from main b35d1c00f823f6cfc0245976480cba1634b3b48f.
+Add a searchable installed application chooser, external launcher pinning, document
+URL dispatch to native tasks and delayed activation while dragging. Desktop source
+interoperability remains pending. See external-drops.md for scope and continuation.
+Optional autostart, multiple docks/screens and general settings cleanup remain later.

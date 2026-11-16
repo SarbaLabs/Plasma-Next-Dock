@@ -250,6 +250,15 @@ TestCase {
                 const indicator = findChild(dock.item, "dockIndicators0");
                 const bar = findChild(dock.item, "capsuleBackground");
                 const lane = findChild(dock.item, "taskInput0");
+                // Wait for zoom to settle before measuring bounce-only movement.
+                // A fixed delay can sample one remaining frame under CI load.
+                tryVerify(() => {
+                    for (let i = 0; ; ++i) {
+                        const slot = findChild(dock.item, "task" + i);
+                        if (!slot) return true;
+                        if (Math.abs(slot.animatedFactor - slot.factor) > 0.00001) return false;
+                    }
+                });
                 const hitRect = lane.mapToItem(dock.item, Qt.rect(0, 0, lane.width, lane.height));
                 const origin = icon.mapToItem(dock.item, 0, 0);
                 const anchor = indicator.mapToItem(dock.item, 0, 0);

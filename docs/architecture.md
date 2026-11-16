@@ -343,3 +343,12 @@ position, not only a numeric model row. Index changes remap it without consultin
 animated geometry. A replacement delegate recovers the service anchor and snaps
 its initial zoom before enabling interpolation; real pointer movement replaces the
 anchor. This prevents first-window proxy transitions briefly reducing icon size.
+
+## Installed applications and external drag
+
+LauncherResolver is shared as an API by the settings and dock engines. It queries
+KDE's installed service catalog and canonicalizes launcher identity without loading
+arbitrary desktop entries. ExternalDrop owns only drag reception and a single-shot
+activation timer; a separate persistent MenuTarget protects against row reuse.
+Native TasksModel handles pinning and opening URLs. See external-drops.md for the
+accepted URL policy, UI behavior, limitations and desktop validation checklist.

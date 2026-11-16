@@ -11,7 +11,7 @@ Plasma panel causing premature window avoidance.
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
-Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings, the separator and immediate wheel cycling have been accepted. Icon bounce is now awaiting desktop validation. It does not modify Plasma or KWin, install a
+Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings, the separator and immediate wheel cycling have been accepted. Icon bounce, hover highlighting and the active indicator palette have been accepted. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -49,6 +49,24 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 Configurable launch/attention bounce and the native **Test Bounce Animation** action
 are available under Configure → Behavior → Icon bounce. See [bounce settings and
 validation](docs/bounce.md) and the remaining [roadmap](docs/roadmap.md).
+
+## Adding applications and external drops
+
+Configure → Appearance and launchers → Add an application opens a searchable list
+of installed applications. Names and icons come from KDE's application catalog.
+Launcher changes are immediate; duplicates are not added.
+
+Drag an installed application from a launcher/file manager onto the dock to pin it.
+The drop position selects a slot relative to pinned applications in manual sorting;
+other sort modes retain their own ordering. Drop documents or supported URLs onto
+an application to ask KDE to open them with it. Hold a document over a running task
+for 650 ms to activate its window without minimizing it. A group activates its first
+child; selecting a specific group member during dragging is not implemented yet.
+
+Only installed application launchers can be pinned by drop. Mixed launcher/document
+drops and uninstalled .desktop files are rejected. No file is moved or copied.
+See [external drop architecture and acceptance](docs/external-drops.md). Real Wayland
+source interoperability remains under desktop validation.
 
 ## Task behavior
 

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#include "launcherresolver.h"
 #include "dockhost.h"
 #include "icons.h"
 #include <QCommandLineParser>
@@ -79,6 +80,7 @@ int main(int argc, char **argv)
     configEngine.rootContext()->setContextObject(configTranslations);
     QQmlEngine::setContextForObject(configTranslations, configEngine.rootContext());
     configEngine.rootContext()->setContextProperty("dockSettings", &settings);
+    configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
     auto outputs = [&] {
         QStringList names{QString()};
         for (auto *s : app.screens()) names << s->name();

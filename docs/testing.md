@@ -746,3 +746,26 @@ active indicator with the configuration preview, including an accent change.
 Follow-up validation: build, all 14 locally runnable CTest entries (53.94 seconds),
 staged installation, shell syntax and whitespace checks passed. D-Bus exclusion
 and live Wayland/theme limitations remain as documented above.
+
+## External drops and application chooser
+
+Added isolated installed-application fixtures, searchable chooser coverage, canonical
+alias deduplication, native launcher insertion/persistence, insertion geometry on all
+four edges in both directions, document routing, deferred activation/invalidation/
+cancellation and synthetic native Qt drag enter/move/drop/leave delivery. No test
+launches the maintainer's applications or writes their settings.
+
+An existing bounce test sampled unfinished zoom under load; it now waits for the
+zoom factors to settle before asserting bounce-only stationarity. The original
+geometry assertions remain intact. Intermediate full runs also encountered timing
+failures in old launch-animation tests; the isolated bounce suite passed. Record
+CI and actual Wayland validation separately from synthetic event acceptance.
+
+Remaining desktop checks are in external-drops.md. In particular, synthetic Qt drag
+events cannot prove cross-process Wayland serials/permissions or that an application
+accepts every supplied document type. Native application-status still requires the
+CI/user D-Bus session unavailable in this runner.
+
+Final local result: clean build, 14/14 runnable CTest entries passed in 57.05 s
+(Qt 6.8.2 / Plasma 6.3, offscreen/software), staged installation and shell/whitespace
+checks passed. The native D-Bus status test remains enabled for CI and the user.
