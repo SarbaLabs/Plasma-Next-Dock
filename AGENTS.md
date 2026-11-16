@@ -88,3 +88,17 @@
 - Settings drafts must contain only their own keys: never overwrite launcher
   changes made while the configuration window is open. Preserve selected sort
   bindings when applying saved launcher order.
+
+- Bounce is an inward icon offset, never a capsule/indicator transform. Reserve
+  its maximum headroom before animation. Keep each task input lane stable across
+  bounce, extended to the physical edge; never attach clicks to a moving icon.
+  Use native startup/attention roles and persistent menu targets, finite launch/test
+  cycles, and no polling. Suppress bounce during drag, previews and hide requests.
+
+- Magnification uses DockController's window pointer observer and the existing
+  input region. Do not restore child hover as its source or consume mouse events.
+  Duplicate coordinates/animation hover delivery must not recalculate pointerIndex.
+  Initialize replacement delegate zoom before enabling its Behavior transition.
+- Model row changes must remap the hovered service identity/fraction rather than
+  leaving zoom on a stale row. Reconcile replacement zoom before painting; never
+  derive this identity remap from animated icon positions.

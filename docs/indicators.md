@@ -127,3 +127,32 @@ Frame-sampled tests reproduce the original bottom/right Custom failures and
 verify stable cross-axis coordinates during growth and shrinkage on all four
 edges, for Custom and native Plasma strips. Recheck this correction on CachyOS,
 including configured state sizes, scrolling and adaptive fit.
+
+## Hover highlight and standalone palette
+
+`iconHoverHighlight` defaults to true and is available under Indicators in every
+mode. It drives Kirigami.Icon.active, the same native icon effect used by Plasma's
+task manager. Disabling it only removes icon brightening; zoom, bounce, native
+frames and glow keep their own settings. No shader or color extraction is added.
+
+Native task backgrounds expand inward to enclose magnification, hover lift and
+bounce. Their panel-facing edge remains at the resting indicator lane; the capsule,
+input region and dodge geometry do not change. Existing theme hover/state prefixes
+remain in use. Themes retain control over the artwork and its opacity.
+
+CustomIndicators reads SystemPalette.highlight with SystemPalette.Active, shared
+by the dock and settings preview. Forcing Kirigami.Theme.Active on the dock subtree
+alone did not resolve the darker color reported on the maintainer's desktop. The
+accent no longer comes from that window-specific attached theme. Qt updates the
+system palette on color-scheme changes. Configured inactive-segment opacity,
+separate unfocused color and minimized desaturation still apply independently.
+
+Desktop validation: compare an active task with the active preview segment, then
+check inactive tasks with their configured opacity. Check native frames during
+zoom/lift/bounce on each edge and with the user's Plasma theme.
+
+Icon brightening, native frame hover and glow color selection share the window-level
+pointerTask/hovering state used by magnification. A HoverHandler below the icon
+could lose hover delivery to Plasma ToolTipArea above it, despite still being inside
+the task lane. No additional input grab or overlay is introduced; tooltip and click
+routing remain unchanged.

@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <QTest>
 #include <QSignalSpy>
+#include <QMouseEvent>
 
 class WindowModel : public QAbstractListModel
 {
@@ -27,6 +28,40 @@ class CoreTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void windowPointerIgnoresChildHoverAndRepeatedPositions() {
+        QQuickWindow window;
+        window.resize(400, 200);
+        window.show();
+        QCoreApplication::processEvents();
+        DockController dock(&window);
+        dock.setPointerTarget(window.contentItem());
+        dock.setGeometry(QRectF(50, 140, 300, 50), 10, {QRectF(100, 70, 60, 130)});
+        QSignalSpy moves(&dock, &DockController::pointerPositionChanged);
+        const auto move = [&](QPointF position) {
+            QMouseEvent event(QEvent::MouseMove, position, position, Qt::NoButton, Qt::MiddleButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(&window, &event);
+        };
+        move(QPointF(130, 125));
+        QVERIFY(dock.pointerHovered());
+        QCOMPARE(moves.count(), 1);
+        // Qt Quick's geometry-triggered hover re-delivery is not a physical exit.
+        QEvent hoverLeave(QEvent::HoverLeave);
+        QCoreApplication::sendEvent(&window, &hoverLeave);
+        move(QPointF(130, 125));
+        QVERIFY(dock.pointerHovered());
+        QCOMPARE(moves.count(), 1);
+        move(QPointF(130, 199.75)); // Fractional HiDPI edge coordinates stay inside.
+        QVERIFY(dock.pointerHovered());
+        move(QPointF(20, 20)); // Transparent interior margin is not hover.
+        QVERIFY(!dock.pointerHovered());
+        move(QPointF(130, 125));
+        QEvent leave(QEvent::Leave);
+        QCoreApplication::sendEvent(&window, &leave);
+        QVERIFY(!dock.pointerHovered());
+        dock.setPointerTarget(nullptr);
+        move(QPointF(130, 125));
+        QVERIFY(!dock.pointerHovered());
+    }
     void persistentMenuTarget() {
         QStandardItemModel model;
         model.setItemRoleNames({{Qt::DisplayRole, "display"}});

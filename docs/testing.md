@@ -608,3 +608,141 @@ the previous tests covered angle-only and deliberately retained pixel accumulati
 Desktop wheel behavior remains to be rechecked, including continuous touchpads.
 Validation: build and all 14 locally runnable CTest entries pass (26.83 s, Qt 6.8.2
 software/offscreen). Native D-Bus test has the same documented runner restriction.
+
+## Icon bounce — 2026-11-15
+
+Base: accepted/merged PR #9; feature/icon-bounce. Added focused animation lifecycle
+checks (finite completion, repeated attention, clearing attention, disabling,
+startup and suppression), four-edge inward bounds under simultaneous 48 px bounce,
+zoom and 32 px lift, unchanged capsule/indicator coordinates, tiny-output fitting,
+settings persistence/validation/draft handling and native menu test-action dispatch.
+
+Build and all 14 locally runnable CTest entries pass (30.60 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged executable, desktop entry and French catalog install
+successfully; shell syntax and whitespace checks pass. The native D-Bus test still
+cannot start in this runner (`Failed to open socket: Operation not permitted`);
+it remains enabled in CI and ./install.sh. No Qt 6.12 or live KWin result is claimed.
+See bounce.md for the CachyOS acceptance checklist, particularly real launch/attention
+notifications, interaction feel, popup placement and hide/reveal behavior.
+
+## Stable bounce interaction — 2026-11-16
+
+PR #10 feedback: clicks were bound to moving icon bounds and the native input mask
+followed those bounds, allowing animation to remove the cursor from the surface.
+Use stable task lanes through to the physical edge. Coalesce transient row counts
+before canvas resizing, and recover finite launch feedback by service URL after
+launcher/startup/window delegate replacement.
+
+Added synthetic edge primary/middle clicks on four edges and both directions,
+stationary-pointer magnification during bounce, unchanged input bounds during
+animation, synchronous delegate replacement with no canvas resize, and correct
+launch identity (no bounce on a neighboring row). Existing drag, menu, audio/status,
+preview, separator, adaptive layout and rendering tests remain enabled.
+
+Build and all 14 locally runnable CTest entries pass (42.59 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). No TypeError/ReferenceError in the final test log. Staged
+installation, shell syntax and whitespace checks pass. The native D-Bus test is
+excluded locally due to the previously documented socket restriction, not disabled
+in the project. Tests are synthetic; actual Wayland input-region behavior and the
+maintainer's live launcher transition still require the checks in bounce.md.
+
+## Residual zoom during bounce — 2026-11-16
+
+The maintainer accepted edge clicks but isolated a remaining zoom dip to the
+outward edge of a moving icon crossing the cursor; clicks further outward at the
+indicator/physical edge did not reproduce it. Initial launcher replacement also
+briefly shrank the icon. Earlier edge-lane tests did not cover that crossing.
+
+Add a four-edge test with a stationary cursor initially inside the icon, middle
+click, verified icon/cursor crossing, stable logical pointer and retained zoom,
+followed by genuine departure/resting-size recovery. Replacement tests now check
+the zoom factor immediately, rather than after a settling delay. Native controller
+tests cover window-level pointer events, ignored child hover/repeated positions,
+true departure, transparent margins, fractional edge coordinates and detachment.
+
+Build and all 14 locally runnable CTest entries pass (48.96 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). No TypeError/ReferenceError in the final test log. Staged
+installation, shell syntax and whitespace checks pass. Native D-Bus coverage retains
+the previously documented local restriction and remains enabled in CI. These tests
+do not constitute Qt 6.12/KWin desktop acceptance: recheck the maintainer's exact
+first-launch and low-on-icon middle-click scenarios, plus menus/audio/preview/glow.
+
+## First-window identity anchor — 2026-11-16
+
+Added a failing-before/passing-after test for a stationary hovered application
+moving between model rows during launch: before correction, 60 px became 46.8 px.
+The combined move/replacement case returned at 49.2 px instead of 60 px even after
+queued reconciliation. Retaining service identity/fraction and initializing the
+replacement at the reconciled anchor fixes both synthetic cases. The test checks
+that genuine pointer movement still selects a new application normally.
+
+Build and all 14 locally runnable CTest entries pass (51.47 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged installation, shell syntax and whitespace checks pass.
+Native D-Bus coverage retains the previously documented local restriction. The
+maintainer has accepted the previous pointer/click fixes; the exact first-window
+transition on CachyOS/Qt 6.12 still needs rechecking. No live KWin result is claimed.
+
+## TaskStatus context teardown — 2026-11-16
+
+The maintainer accepted the bounce/zoom behavior and reported runtime diagnostics.
+A new fixture creates TaskStatus in a child QQmlContext, deletes the context before
+queued initialization and defers object destruction. Against the previous QML it
+reproduces the exact `TaskStatus.qml:66: ReferenceError: statusSupport is not defined`
+warning; failOnWarning makes the regression fail. With owned single-shot queues,
+five successive teardown cases pass without ReferenceError/TypeError.
+
+Build and all 14 locally runnable CTest entries pass (58.88 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged installation, shell syntax and whitespace checks pass.
+The native D-Bus test retains the documented runner restriction and remains enabled
+in CI. KDE Unity/JobViewServer ownership warnings are documented separately in
+application-status.md and are not suppressed. Real desktop diagnostic confirmation
+is still left to the maintainer.
+
+## Hover highlight and indicator polish (icon-bounce branch)
+
+Added automated checks for default-on/persistent icon hover highlighting, immediate
+disable/re-enable while hovered, inward native frame expansion on all four edges
+with a fixed outward edge, and active indicator palette selection inside an
+inactive parent. Existing inactive opacity/color tests remain unchanged.
+
+The isolated Indicators-only invocation does not initialize the Plasma theme
+through Main and fails the existing group-symbol natural-size check in this runner;
+the complete hover-and-render suite is the authoritative themed integration run.
+No production check was weakened. The hover toggle test explicitly restores the
+bottom edge/direction before pointer synthesis to avoid prior test geometry.
+
+Manual acceptance on CachyOS:
+
+- In every indicator mode, hover icons, toggle Highlight icons on hover off/on,
+  and restart the dock to verify persistence. Repeat during zoom and bounce.
+- In Plasma mode, verify the task background stays visible behind magnified/lifted
+  icons on all edges; the outward indicator edge must remain stationary.
+- In Custom mode, compare the focused task's accent with the active preview
+  segment. Inactive opacity, custom unfocused color and minimized desaturation
+  must continue to work. Change the system accent and repeat.
+- Check the user's theme, HiDPI, tooltips, native menus, edge clicks and hide/reveal.
+  Offscreen tests do not validate these live compositor/theme combinations.
+
+Validation result: build and all 14 locally runnable CTest entries passed in
+54.26 seconds (Qt 6.8.2 / Plasma 6.3, offscreen/software). No TypeError or
+ReferenceError in the final log. Staged installation, install.sh syntax and
+whitespace checks passed. Native application-status remains enabled in the
+project/CI but excluded locally because this runner prohibits D-Bus sockets.
+
+### Hover delivery and accent follow-up
+
+The new test_hoverAcrossIconAndTooltip fails with the preceding implementation:
+icon.active becomes false when the synthesized pointer crosses from the edge lane
+onto the icon's ToolTipArea. It passes after the fix on all four edges and checks
+both native frame hover and icon highlighting. The palette regression also verifies
+that an ancestor's dark Kirigami highlight cannot change the Custom renderer's
+explicit active SystemPalette accent, and that dock/preview colors match.
+
+Manual check: cross slowly from the edge lane through the bottom/middle/top of an
+icon, allow its tooltip to appear, and move to neighboring icons. The highlight and
+Plasma hover frame should remain active on the current task. Compare the Custom
+active indicator with the configuration preview, including an accent change.
+
+Follow-up validation: build, all 14 locally runnable CTest entries (53.94 seconds),
+staged installation, shell syntax and whitespace checks passed. D-Bus exclusion
+and live Wayland/theme limitations remain as documented above.

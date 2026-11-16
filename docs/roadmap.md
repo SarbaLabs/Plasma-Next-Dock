@@ -218,3 +218,53 @@ Branch `feature/behavior-and-separator` adds the agreed behavior settings and na
 pinned/unpinned boundary. See behavior.md for defaults, architecture and acceptance.
 No bounce, autostart, release or broad settings cleanup is included. Bounce remains
 the next agreed stage. Desktop acceptance of this branch is pending.
+
+## 2026-11-15 — Behavior accepted; icon bounce
+
+The maintainer confirmed the final wheel correction and merged PR #9. Base main:
+6ef8c889f50d8bcb95dcc575675b6aa66b2f5ea8 (tree 3df1146a42c345ec4153b7f92aafc28127218819).
+Branch feature/icon-bounce adds configurable launch/attention feedback and the
+native Test Bounce Animation action. Preserve behavior filters, separator, immediate
+wheel cycling, status integrations, indicator anchors, blur and capsule-only dodge.
+See bounce.md for defaults and pending desktop acceptance. General settings cleanup,
+packaging and optional autostart remain outside this stage; no automatic merge.
+
+## 2026-11-16 — Bounce interaction refinement
+
+The maintainer confirmed bounce playback but reported lost edge clicks and zoom
+flicker during launches/animation. PR #10 now uses stable per-task edge input
+lanes, coalesces transient model counts before sizing and retains launch feedback
+by service identity through delegate replacement. CachyOS acceptance of these
+corrections remains pending; do not merge automatically.
+
+The edge click lane was accepted. Follow-up feedback isolates residual shrinkage
+to cursor crossing the moving icon edge and initial launcher replacement. Window
+pointer observation and initialization without a zoom transition address those
+cases; live CachyOS validation is still pending.
+
+The maintainer accepted stationary-pointer bounce tracking; only the first-window
+size dip remained. Follow-up model-transition tests exposed a numeric row anchor
+surviving a launcher move/replacement. Retain service identity and the fractional
+hover position through that transition. This last correction awaits desktop testing.
+
+The maintainer confirmed bounce, click lanes and first-window zoom now work.
+A final diagnostic cleanup addresses TaskStatus work queued beyond delegate context
+lifetime; the distinct KDE service-registration warnings are documented without
+hiding them or taking service ownership away from Plasma.
+
+### Icon-bounce branch: hover polish
+
+- Added default-on native icon hover highlight with an Indicators toggle.
+- Expanded task decorations inward while preserving the outward indicator anchor.
+- Selected the active palette explicitly for the non-focusable dock's indicators.
+- Added persistence, hover toggle, four-edge frame envelope and palette coverage.
+- User-theme appearance and CachyOS Wayland rendering remain manual acceptance.
+
+### Follow-up from desktop hover/color feedback
+
+- Reproduced icon/frame hover loss when crossing into the tooltip area; a four-edge
+  pointer regression fails before and passes after replacing child hover delivery
+  with the existing window-level logical task anchor.
+- Custom renderer and preview now share the explicit active Qt SystemPalette
+  highlight, rather than separate Kirigami attached palette bindings.
+- Previous frame envelope sizing is retained; desktop color confirmation pending.

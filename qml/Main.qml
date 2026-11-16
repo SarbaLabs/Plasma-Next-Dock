@@ -32,15 +32,20 @@ Item {
     function queueDivider() { Qt.callLater(refreshDivider); }
     readonly property bool hasDivider: dockOptions.showSeparator !== false && dividerIndex >= 0
     readonly property real dividerSpan: hasDivider ? 12 * fitScale : 0
+    readonly property real bounceHeight: dockOptions.bounceEnabled === false ? 0
+        : (dockOptions.bounceHeight > 0 ? dockOptions.bounceHeight : Math.min(10, Math.max(6, Math.round(dockOptions.iconSize * 0.18))))
     readonly property bool vertical: dockOptions.edge >= 2
-    readonly property var layoutMetrics: Adaptive.metrics(repeater.count, dockOptions.iconSize,
+    // Coalesce launcher-to-window row replacement before resizing the surface.
+    property int layoutCount: 0
+    function syncTaskCount() { layoutCount = repeater.count; }
+    readonly property var layoutMetrics: Adaptive.metrics(layoutCount, dockOptions.iconSize,
         dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
         vertical ? outputSize.width : outputSize.height,
         dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
         dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
-        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0)
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0, bounceHeight)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -56,7 +61,7 @@ Item {
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
     function refreshHover() {
-        dockController.setHovered(pointer.hovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
+        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -71,8 +76,9 @@ Item {
         let distance = Infinity;
         for (let i = 0; i < repeater.count; ++i) {
             const slot = repeater.itemAt(i);
-            const p = slot.iconItem.mapFromItem(root, position.x, position.y);
-            if (!nearest && p.x >= 0 && p.y >= 0 && p.x < slot.iconItem.width && p.y < slot.iconItem.height) return i;
+            if (!slot) continue;
+            const p = slot.inputItem.mapFromItem(root, position.x, position.y);
+            if (!nearest && p.x >= 0 && p.y >= 0 && p.x < slot.inputItem.width && p.y < slot.inputItem.height) return i;
             const center = slot.iconItem.mapToItem(root, slot.iconItem.width / 2, slot.iconItem.height / 2);
             const delta = Math.abs(vertical ? position.y - center.y : position.x - center.x);
             if (nearest && delta < distance) { distance = delta; result = i; }
@@ -91,7 +97,31 @@ Item {
     readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
     readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
     property real pointerIndex: -10
-    property bool hovering: pointer.hovered
+    property var pointerTask: null
+    property string pointerKey: ""
+    property real pointerFraction: 0
+    // Native proxies may move or replace the launcher while starting its first
+    // window. Keep the hover anchor on that service until real pointer movement.
+    function remapPointer() {
+        if (!hovering || dragging) return;
+        let slot = pointerTask;
+        if (!slot || slot.index < 0 || repeater.itemAt(slot.index) !== slot) {
+            slot = null;
+            if (pointerKey) {
+                for (let i = 0; i < repeater.count; ++i) {
+                    const candidate = repeater.itemAt(i);
+                    if (candidate && candidate.launchKey === pointerKey) { slot = candidate; break; }
+                }
+            }
+        }
+        if (slot) {
+            const replacement = slot !== pointerTask;
+            pointerTask = slot;
+            pointerIndex = slot.index + pointerFraction;
+            if (replacement) slot.restoreZoom();
+        }
+    }
+    property bool hovering: dockController.pointerHovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
     readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
@@ -112,6 +142,9 @@ Item {
                 fraction = (reverseLayout ? -delta : delta) / (slot.size + taskRow.spacing);
             }
         }
+        pointerTask = nearest < 0 ? null : repeater.itemAt(nearest);
+        pointerKey = pointerTask ? pointerTask.launchKey : "";
+        pointerFraction = fraction;
         pointerIndex = nearest < 0 ? -10 : nearest + fraction;
     }
     function syncGeometry() {
@@ -119,21 +152,48 @@ Item {
         for (let i = 0; i < repeater.count; ++i) {
             const slot = repeater.itemAt(i);
             if (!slot) continue;
-            const p = slot.iconItem.mapToItem(root, 0, 0);
-            icons.push(Qt.rect(p.x, p.y, slot.iconItem.width, slot.iconItem.height));
+            icons.push(slot.inputItem.mapToItem(root, Qt.rect(0, 0, slot.inputItem.width, slot.inputItem.height)));
         }
         dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.effectiveRadius, icons, dockOptions.edge);
     }
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
     onHeightChanged: queueGeometry()
-    Component.onCompleted: queueGeometry()
+    Component.onCompleted: { dockController.setPointerTarget(root); queueGeometry(); }
 
     Loader {
         id: taskSource
         objectName: "taskSourceLoader"
         source: dockOptions.demo ? "DemoTasks.qml" : "LiveTasks.qml"
         onStatusChanged: if (status === Loader.Error) Qt.exit(1)
+    }
+    // KDE can replace a launcher delegate with a startup/window delegate during
+    // requestActivate(). Retain finite feedback by service identity, never row.
+    property var launchFeedback: ({})
+    property int launchSerial: 0
+    function rememberLaunch(slot) {
+        if (!slot || dockOptions.bounceEnabled === false || dockOptions.bounceOnLaunch === false) return;
+        if (!slot.launchKey) { Qt.callLater(() => { if (slot) slot.triggerLaunchBounce(); }); return; }
+        const now = Date.now();
+        const entries = {};
+        const keys = Object.keys(launchFeedback).filter(key => launchFeedback[key].until > now).slice(-63);
+        for (const key of keys) entries[key] = launchFeedback[key];
+        const duration = 910 * 100 / Math.max(50, Math.min(200, dockOptions.bounceSpeed || 100))
+            * Math.max(1, Math.min(5, dockOptions.bounceCount || 3));
+        entries[slot.launchKey] = {token: ++launchSerial, until: now + duration};
+        launchFeedback = entries;
+        Qt.callLater(resumeLaunchFeedback);
+    }
+    function resumeLaunchFeedback() {
+        for (let i = 0; i < repeater.count; ++i) {
+            const slot = repeater.itemAt(i);
+            if (slot) slot.resumeLaunchFeedback();
+        }
+    }
+    Connections {
+        target: taskSource.item
+        ignoreUnknownSignals: true
+        function onLaunchRequested(row) { root.rememberLaunch(repeater.itemAt(row)); }
     }
     CapsuleBackground {
         id: bar
@@ -149,8 +209,8 @@ Item {
         customBorderColor: dockOptions.borderUseTheme !== false ? Kirigami.Theme.disabledTextColor : dockOptions.borderColor
         isVertical: root.vertical
         glowEnabled: dockOptions.glow
-        glowPosition: Qt.point(pointer.point.position.x - bar.x, pointer.point.position.y - bar.y)
-        glowHovering: pointer.hovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
+        glowPosition: Qt.point(dockController.pointerPosition.x - bar.x, dockController.pointerPosition.y - bar.y)
+        glowHovering: dockController.pointerHovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
         glowColor: root.applicationColor
         glowRadius: root.maximum
         onRadiusChanged: root.queueGeometry()
@@ -192,13 +252,23 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
+                onCountChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
                     required property int index
                     required property var model
+                    readonly property bool taskHovered: root.hovering && !root.dragging && root.pointerTask === slot
+                    onTaskHoveredChanged: if (taskHovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
+                    function restoreZoom() {
+                        // A replacement can arrive at a different row. Reconcile
+                        // its initial size before painting, without a shrink/grow.
+                        componentReady = false;
+                        animatedFactor = Qt.binding(() => slot.factor);
+                        componentReady = true;
+                    }
+                    property bool componentReady: false
                     property real animatedFactor: factor
                     property real reportedFactor: 0
                     onAnimatedFactorChanged: {
@@ -208,15 +278,31 @@ Item {
                     Component.onDestruction: root.animatedWeight -= reportedFactor
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias iconItem: icon
+                    property alias inputItem: inputLane
                     readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
                     onPinnedChanged: root.queueDivider()
-                    onIndexChanged: root.queueDivider()
-                    Component.onCompleted: root.queueDivider()
+                    onIndexChanged: {
+                        root.queueDivider();
+                        if (root.pointerTask === slot && index >= 0 && root.hovering && !root.dragging)
+                            root.pointerIndex = index + root.pointerFraction;
+                        Qt.callLater(root.remapPointer);
+                    }
+                    readonly property string launchKey: String(model.LauncherUrlWithoutIcon || model.LauncherUrl || "")
+                    property int launchToken: -1
+                    function resumeLaunchFeedback() {
+                        if (!root) return;
+                        const pending = root.launchFeedback[launchKey];
+                        if (!pending || pending.until <= Date.now() || pending.token === launchToken) return;
+                        launchToken = pending.token;
+                        bounce.launch();
+                    }
+                    onLaunchKeyChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
+                    Component.onCompleted: { componentReady = true; root.queueDivider(); Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
                     readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
                     readonly property real iconOffset: root.reverseLayout ? 0 : extra
                     width: size + extra
                     height: viewport.height
-                    Behavior on animatedFactor { NumberAnimation { duration: 90 } }
+                    Behavior on animatedFactor { enabled: slot.componentReady; NumberAnimation { duration: 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     // Follow the slot along the dock, but keep the capsule's
@@ -242,9 +328,25 @@ Item {
                             tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                             edge: dockOptions.edge
                             padding: root.taskPadding
-                            hovered: iconHover.hovered
+                            hovered: slot.taskHovered
+                            decorationExtent: icon.height + icon.lift + bounce.offset
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
+                    }
+                    function triggerTestBounce() { bounce.test(); }
+                    function triggerLaunchBounce() { bounce.launch(); }
+                    TaskBounce {
+                        id: bounce
+                        objectName: "taskBounce" + slot.index
+                        animationsEnabled: dockOptions.bounceEnabled !== false
+                        launchEnabled: dockOptions.bounceOnLaunch !== false
+                        attentionEnabled: dockOptions.bounceOnAttention !== false
+                        attention: !!slot.model.IsDemandingAttention
+                        startup: !!slot.model.IsStartup
+                        suspended: root.dragging || previewPanel.displayed || dockController.hideRequested
+                        amplitude: root.bounceHeight * root.fitScale
+                        speed: dockOptions.bounceSpeed || 100
+                        repetitions: dockOptions.bounceCount || 3
                     }
                     TaskStatus {
                         id: taskStatus
@@ -257,21 +359,17 @@ Item {
                         audioEnabled: dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false
                         launcherEnabled: dockOptions.showBadges !== false || dockOptions.showProgress !== false
                     }
-                    Kirigami.Icon {
-                        id: icon
-                        objectName: "icon" + slot.index
-                        width: slot.size; height: width
+                    // A task owns its full inward animation envelope down to the
+                    // physical screen edge. Bounce never moves its hit target.
+                    Item {
+                        id: inputLane
+                        objectName: "taskInput" + slot.index
                         x: slot.iconOffset
-                        // After a clockwise rotation, local bottom is the screen's left.
-                        readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding + lift
-                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift
-                        rotation: root.vertical ? -90 : 0
-                        source: slot.model.decoration
-                        opacity: root.dragIndex === slot.index ? 0.65 : 1
-                        roundToIconSize: false
+                        width: slot.size
+                        height: root.edgeSpacing + root.taskPadding + slot.size + icon.lift + bounce.amplitude
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? 0 : slot.height - height
                         onYChanged: root.queueGeometry()
+                        onHeightChanged: root.queueGeometry()
                         TapHandler {
                             enabled: !overlays.audioHovered
                             onTapped: {
@@ -284,14 +382,27 @@ Item {
                             }
                         }
                         TapHandler {
+                            objectName: "middleClick" + slot.index
                             acceptedButtons: Qt.MiddleButton
                             enabled: !dockOptions.demo && !overlays.audioHovered && dockOptions.middleClick > 0
                             onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
                         }
-                        HoverHandler {
-                            id: iconHover
-                            onHoveredChanged: if (hovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
-                        }
+                    }
+                    Kirigami.Icon {
+                        id: icon
+                        objectName: "icon" + slot.index
+                        width: slot.size; height: width
+                        x: slot.iconOffset
+                        // After a clockwise rotation, local bottom is the screen's left.
+                        readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
+                            ? root.edgeSpacing + root.taskPadding + lift + bounce.offset
+                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift - bounce.offset
+                        rotation: root.vertical ? -90 : 0
+                        source: slot.model.decoration
+                        opacity: root.dragIndex === slot.index ? 0.65 : 1
+                        roundToIconSize: false
+                        active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
                         PlasmaCore.ToolTipArea {
                             id: taskTip
                             property bool forceWindows: false
@@ -349,7 +460,7 @@ Item {
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {
                             source: slot.model.decoration
-                            onPaletteChanged: if (iconHover.hovered) root.applicationColor = dominant
+                            onPaletteChanged: if (slot.taskHovered) root.applicationColor = dominant
                         }
                     }
                     Rectangle {
@@ -443,16 +554,20 @@ Item {
         id: contextMenu
         objectName: "dockMenu"
         onOpenedChanged: root.refreshHover()
+        onTestBounceRequested: row => {
+            previewPanel.dismiss();
+            const slot = repeater.itemAt(row);
+            if (slot) slot.triggerTestBounce();
+        }
     }
     Controls.Label {
         anchors.centerIn: bar
         visible: repeater.count === 0
         text: qsTr("Plasma Next Dock")
     }
-    HoverHandler {
-        id: pointer
-        blocking: false
-        onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: root.refreshHover()
+    Connections {
+        target: dockController
+        function onPointerPositionChanged() { root.updatePointer(dockController.pointerPosition); }
+        function onPointerHoveredChanged() { root.refreshHover(); }
     }
 }

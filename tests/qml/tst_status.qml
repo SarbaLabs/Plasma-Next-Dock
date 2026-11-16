@@ -54,6 +54,13 @@ TestCase {
         tryCompare(status, "streams", []);
         status.destroy(); audio.destroy(); model.destroy(); a.destroy(); b.destroy();
     }
+    function test_contextRemovedBeforeSmartInitialization() {
+        failOnWarning(/ReferenceError|TypeError/);
+        for (let i = 0; i < 5; ++i) {
+            verify(testEnvironment.detachStatusContext());
+            wait(30);
+        }
+    }
     function test_taskRemovedBeforeQueuedRefresh() {
         failOnWarning(/TypeError/);
         const a = streamFactory.createObject(test);

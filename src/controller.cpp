@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include <QMouseEvent>
+#include <QEnterEvent>
+#include <QtMath>
 
 DockController::DockController(QQuickWindow *window, QObject *parent)
     : QObject(parent), m_window(window)
@@ -7,6 +10,70 @@ DockController::DockController(QQuickWindow *window, QObject *parent)
     m_leaveTimer.setSingleShot(true);
     m_leaveTimer.setInterval(180);
     connect(&m_leaveTimer, &QTimer::timeout, this, &DockController::evaluate);
+}
+// Observe window events before Qt Quick routes hover through moving tooltip/icon
+// items. Never grab or consume input, and never query the global cursor in a timer.
+void DockController::setPointerTarget(QQuickItem *target)
+{
+    if (m_pointerTarget == target) return;
+    for (const auto &connection : m_pointerConnections) disconnect(connection);
+    m_pointerConnections.clear();
+    m_pointerTarget = target;
+    attachPointerWindow(target ? target->window() : nullptr);
+    if (!target) return;
+    m_pointerConnections << connect(target, &QQuickItem::windowChanged, this, &DockController::attachPointerWindow)
+        << connect(target, &QObject::destroyed, this, [this] { attachPointerWindow(nullptr); });
+}
+void DockController::attachPointerWindow(QQuickWindow *window)
+{
+    if (m_pointerWindow) m_pointerWindow->removeEventFilter(this);
+    m_pointerWindow = window;
+    m_pointerPresent = false;
+    updatePointerHover();
+    if (window) window->installEventFilter(this);
+}
+bool DockController::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched != m_pointerWindow || !m_pointerTarget) return false;
+    QPointF position;
+    bool positional = false;
+    switch (event->type()) {
+    case QEvent::Enter:
+        position = static_cast<QEnterEvent *>(event)->position();
+        positional = true;
+        break;
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+        position = static_cast<QMouseEvent *>(event)->position();
+        positional = true;
+        break;
+    case QEvent::Leave:
+    case QEvent::Hide:
+        m_pointerPresent = false;
+        updatePointerHover();
+        break;
+    default: break;
+    }
+    if (positional) {
+        m_pointerPresent = true;
+        const auto local = m_pointerTarget->mapFromScene(position);
+        // Geometry-only hover re-delivery must not feed animated slot positions
+        // back into the magnification falloff. Only a changed position does so.
+        const bool moved = local != m_pointerPosition;
+        m_pointerPosition = local;
+        updatePointerHover();
+        if (moved || event->type() == QEvent::Enter) Q_EMIT pointerPositionChanged();
+    }
+    return false;
+}
+void DockController::updatePointerHover()
+{
+    const bool hovered = m_pointerPresent && m_pointerTarget
+        && m_lastInput.contains(QPoint(qFloor(m_pointerPosition.x()), qFloor(m_pointerPosition.y())));
+    if (hovered == m_pointerHovered) return;
+    m_pointerHovered = hovered;
+    Q_EMIT pointerHoveredChanged();
 }
 void DockController::setModel(QAbstractItemModel *model)
 {
@@ -36,13 +103,15 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
 {
     QList<QRectF> iconRects;
     for (const auto &icon : icons) iconRects << icon.toRectF();
-    if (m_window) {
-        const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects, QRect(QPoint(), m_window->size()), static_cast<DockGeometry::Edge>(edge));
+    const QSize bounds = m_pointerTarget ? m_pointerTarget->size().toSize()
+        : (m_window ? m_window->size() : QSize());
+    const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects,
+        QRect(QPoint(), bounds), static_cast<DockGeometry::Edge>(edge));
+    if (input != m_lastInput) {
+        m_lastInput = input;
         // Under Qt Wayland this is the surface input region, not a rendering clip.
-        if (input != m_lastInput) {
-            m_lastInput = input;
-            m_window->setMask(input);
-        }
+        if (m_window) m_window->setMask(input);
+        updatePointerHover();
     }
     if (rect == m_capsule && radius == m_radius) return;
     m_capsule = rect;

@@ -7,6 +7,32 @@ class SettingsTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void hoverHighlightPersistence() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QVERIFY(settings.values()["iconHoverHighlight"].toBool());
+        QVERIFY(settings.apply({{"iconHoverHighlight", false}}));
+        QVERIFY(!DockSettings(file).values()["iconHoverHighlight"].toBool());
+    }
+    void bouncePersistence() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QVERIFY(settings.values()["bounceEnabled"].toBool());
+        QCOMPARE(settings.values()["bounceHeight"].toInt(), 0);
+        QVERIFY(settings.apply({{"bounceEnabled", false}, {"bounceOnLaunch", false},
+            {"bounceOnAttention", false}, {"bounceHeight", 24}, {"bounceSpeed", 150}, {"bounceCount", 4}}));
+        const auto values = DockSettings(file).values();
+        QVERIFY(!values["bounceEnabled"].toBool());
+        QVERIFY(!values["bounceOnLaunch"].toBool());
+        QVERIFY(!values["bounceOnAttention"].toBool());
+        QCOMPARE(values["bounceHeight"].toInt(), 24);
+        QCOMPARE(values["bounceSpeed"].toInt(), 150);
+        QCOMPARE(values["bounceCount"].toInt(), 4);
+        const auto clean = DockSettings::normalized({{"bounceHeight", 1000}, {"bounceSpeed", 0}, {"bounceCount", 99}});
+        QCOMPARE(clean["bounceHeight"].toInt(), 64);
+        QCOMPARE(clean["bounceSpeed"].toInt(), 50);
+        QCOMPARE(clean["bounceCount"].toInt(), 5);
+    }
     void behaviorRoundTrip() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);

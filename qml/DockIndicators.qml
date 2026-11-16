@@ -15,6 +15,11 @@ Item {
     property int edge: 0
     property real padding: 10
     property bool hovered: false
+    // Background follows the inward icon envelope; the outward edge stays fixed.
+    property real decorationExtent: edge < 2 ? height : width
+    readonly property real decorationExtra: Math.max(0, decorationExtent - (edge < 2 ? height : width))
+    Kirigami.Theme.inherit: false
+    Kirigami.Theme.colorGroup: Kirigami.Theme.Active
     property color dominantColor: "transparent"
     readonly property int mode: Logic.mode(configuration)
     readonly property bool running: !!task.IsWindow || !!task.IsGroupParent
@@ -27,8 +32,11 @@ Item {
     readonly property real framePadX: edge < 2 ? padding / 2 : padding
     readonly property real framePadY: edge < 2 ? padding : padding / 2
     Loader {
-        x: -root.framePadX; y: -root.framePadY
-        width: root.width + 2 * root.framePadX; height: root.height + 2 * root.framePadY
+        objectName: "taskDecoration"
+        x: -root.framePadX - (root.edge === 3 ? root.decorationExtra : 0)
+        y: -root.framePadY - (root.edge === 0 ? root.decorationExtra : 0)
+        width: root.width + 2 * root.framePadX + (root.edge >= 2 ? root.decorationExtra : 0)
+        height: root.height + 2 * root.framePadY + (root.edge < 2 ? root.decorationExtra : 0)
         active: root.decorations
         sourceComponent: KSvg.FrameSvgItem { imagePath: "widgets/tasks"; prefix: root.prefixes }
     }
@@ -42,6 +50,7 @@ Item {
         anchors.fill: parent
         active: root.mode === 2 && root.running && Logic.flag(root.configuration, "customIndicatorsEnabled", true)
         sourceComponent: CustomIndicators {
+            objectName: "customTaskIndicators"
             configuration: root.configuration
             effectiveEdge: root.edge
             horizontalPadding: root.padding; verticalPadding: root.padding
@@ -49,7 +58,6 @@ Item {
             activeIndex: state.activeIndex
             minimizedWindows: state.minimizedWindows
             hovered: root.hovered
-            accentColor: Kirigami.Theme.highlightColor
             dominantColor: root.dominantColor
             readonly property IndicatorTaskState state: IndicatorTaskState {
                 tasksModel: root.tasksModel

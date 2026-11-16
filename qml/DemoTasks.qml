@@ -5,10 +5,10 @@ Item {
     function activate(index) {} // Deliberately inert: --demo never starts applications.
     ListModel {
         id: tasks
-        ListElement { decoration: "system-file-manager"; display: "Files"; HasLauncher: false; IsLauncher: false; IsWindow: false; IsActive: false }
-        ListElement { decoration: "internet-web-browser"; display: "Browser"; HasLauncher: false; IsLauncher: false; IsWindow: false; IsActive: false }
-        ListElement { decoration: "utilities-terminal"; display: "Terminal"; HasLauncher: false; IsLauncher: false; IsWindow: false; IsActive: false }
-        ListElement { decoration: "accessories-text-editor"; display: "Editor"; HasLauncher: false; IsLauncher: false; IsWindow: false; IsActive: false }
-        ListElement { decoration: "systemsettings"; display: "Settings"; HasLauncher: false; IsLauncher: false; IsWindow: false; IsActive: false }
+        ListElement { decoration: "system-file-manager"; display: "Files"; HasLauncher: false; IsLauncher: false; IsStartup: false; IsDemandingAttention: false; IsWindow: false; IsActive: false }
+        ListElement { decoration: "internet-web-browser"; display: "Browser"; HasLauncher: false; IsLauncher: false; IsStartup: false; IsDemandingAttention: false; IsWindow: false; IsActive: false }
+        ListElement { decoration: "utilities-terminal"; display: "Terminal"; HasLauncher: false; IsLauncher: false; IsStartup: false; IsDemandingAttention: false; IsWindow: false; IsActive: false }
+        ListElement { decoration: "accessories-text-editor"; display: "Editor"; HasLauncher: false; IsLauncher: false; IsStartup: false; IsDemandingAttention: false; IsWindow: false; IsActive: false }
+        ListElement { decoration: "systemsettings"; display: "Settings"; HasLauncher: false; IsLauncher: false; IsStartup: false; IsDemandingAttention: false; IsWindow: false; IsActive: false }
     }
 }

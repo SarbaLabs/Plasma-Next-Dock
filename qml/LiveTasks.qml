@@ -30,9 +30,16 @@ Item {
         tasks.syncLaunchers();
         dockSettings.saveLaunchers(tasks.launcherList);
     }
-    function activate(index) { Behavior.primary(tasks, index, options.minimizeActive === true, actionRoles); }
+    signal launchRequested(int row)
+    function activate(index) {
+        if (tasks.data(tasks.makeModelIndex(index), TaskManager.AbstractTasksModel.IsLauncher)) launchRequested(index);
+        Behavior.primary(tasks, index, options.minimizeActive === true, actionRoles);
+    }
     function cycle(index, direction) { return Behavior.cycle(tasks, index, direction, options.skipMinimized !== false, actionRoles); }
-    function middle(index) { Behavior.middle(tasks, index, options.middleClick || 0, actionRoles); }
+    function middle(index) {
+        if (options.middleClick === 1) launchRequested(index);
+        Behavior.middle(tasks, index, options.middleClick || 0, actionRoles);
+    }
     function pinned(url) { return tasks.launcherPosition(url) >= 0; }
     function togglePinned(url) {
         if (pinned(url)) tasks.requestRemoveLauncher(url);

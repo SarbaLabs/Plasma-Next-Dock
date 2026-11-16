@@ -11,7 +11,7 @@ Plasma panel causing premature window avoidance.
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
-Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings and the pinned/unpinned separator are now awaiting desktop validation. It does not modify Plasma or KWin, install a
+Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings, the separator and immediate wheel cycling have been accepted. Icon bounce is now awaiting desktop validation. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -46,8 +46,9 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Adaptive icon/capsule sizing and wheel/trackpad scrolling when the minimum size is reached.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
-This stage intentionally does **not** yet port bounce. It remains
-available in Plasma macOS Dock while this new host is validated. See the [roadmap](docs/roadmap.md).
+Configurable launch/attention bounce and the native **Test Bounce Animation** action
+are available under Configure → Behavior → Icon bounce. See [bounce settings and
+validation](docs/bounce.md) and the remaining [roadmap](docs/roadmap.md).
 
 ## Task behavior
 
