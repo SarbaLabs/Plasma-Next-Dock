@@ -246,3 +246,8 @@ The maintainer accepted stationary-pointer bounce tracking; only the first-windo
 size dip remained. Follow-up model-transition tests exposed a numeric row anchor
 surviving a launcher move/replacement. Retain service identity and the fractional
 hover position through that transition. This last correction awaits desktop testing.
+
+The maintainer confirmed bounce, click lanes and first-window zoom now work.
+A final diagnostic cleanup addresses TaskStatus work queued beyond delegate context
+lifetime; the distinct KDE service-registration warnings are documented without
+hiding them or taking service ownership away from Plasma.

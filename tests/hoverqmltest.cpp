@@ -20,6 +20,7 @@
 #include "settings.h"
 #include <QtQuickTest/quicktest.h>
 #include <QQmlContext>
+#include <QQmlComponent>
 #include <QQmlEngine>
 #include <QIcon>
 #include <QTemporaryDir>
@@ -60,6 +61,20 @@ class Setup : public QObject
     PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE bool detachStatusContext() {
+        auto *context = new QQmlContext(m_engine->rootContext());
+        QQmlComponent component(m_engine, QUrl(QStringLiteral("qrc:/qml/TaskStatus.qml")));
+        auto *status = component.createWithInitialProperties({
+            {QStringLiteral("task"), QVariantMap{{QStringLiteral("LauncherUrl"), QStringLiteral("applications:test.desktop")}}},
+            {QStringLiteral("taskIndex"), 0}}, context);
+        if (!status) { delete context; return false; }
+        QQmlEngine::setObjectOwnership(status, QQmlEngine::CppOwnership);
+        status->setParent(this);
+        // Model delegates can lose their context before deferred QObject deletion.
+        delete context;
+        status->deleteLater();
+        return true;
+    }
     Q_INVOKABLE bool publishLauncher(const QVariantMap &properties) {
         auto message = QDBusMessage::createSignal("/test/launcher", "com.canonical.Unity.LauncherEntry", "Update");
         message << QStringLiteral("application://First.desktop") << properties;

@@ -105,3 +105,25 @@ actual Plasma 6.8 build. The native test still exercises the installed KDE type.
 
 References: KDE libplasma PlasmaMacros.cmake (plasma_add_applet), plasma-desktop
 applets/taskmanager/CMakeLists.txt and smartlauncheritem.h, consulted 2026-11-15.
+
+## Runtime diagnostics and delegate teardown
+
+The installed KDE smart-launcher backend attempts to own `com.canonical.Unity`;
+when another process owns it, it logs `Failed to register unity service` but
+continues listening for launcher updates. Its JobsModel similarly tries to register
+`org.kde.JobViewServer`/`org.kde.kuiserver`. Plasma is normally their owner, so a
+standalone client can log the JobViewServer registration warning. Do not kill or
+replace Plasma's services or suppress entire logging categories. Unity updates
+remain listenable; ownership-dependent native job reporting is not guaranteed in
+a separate dock process. These warnings alone do not indicate a bounce failure.
+
+Upstream references:
+- KDE/plasma-desktop: applets/taskmanager/smartlauncherbackend.cpp, setupUnity().
+- KDE/plasma-workspace: libnotificationmanager/jobsmodel_p.cpp, init().
+
+`TaskStatus.qml: ReferenceError: statusSupport is not defined` is different: a
+queued JavaScript load could run after its task delegate's QQmlContext was deleted.
+TaskStatus now uses owned, zero-delay, single-shot queues for stream refresh and
+smart-launcher loading. They coalesce updates and are cancelled with the delegate;
+they are not polling timers. No native registration policy or diagnostic filtering
+is changed. Existing helper provisioning and modern/legacy module fallback remain.

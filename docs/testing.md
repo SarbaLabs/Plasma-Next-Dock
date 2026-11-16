@@ -681,3 +681,19 @@ offscreen/software). Staged installation, shell syntax and whitespace checks pas
 Native D-Bus coverage retains the previously documented local restriction. The
 maintainer has accepted the previous pointer/click fixes; the exact first-window
 transition on CachyOS/Qt 6.12 still needs rechecking. No live KWin result is claimed.
+
+## TaskStatus context teardown — 2026-11-16
+
+The maintainer accepted the bounce/zoom behavior and reported runtime diagnostics.
+A new fixture creates TaskStatus in a child QQmlContext, deletes the context before
+queued initialization and defers object destruction. Against the previous QML it
+reproduces the exact `TaskStatus.qml:66: ReferenceError: statusSupport is not defined`
+warning; failOnWarning makes the regression fail. With owned single-shot queues,
+five successive teardown cases pass without ReferenceError/TypeError.
+
+Build and all 14 locally runnable CTest entries pass (58.88 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). Staged installation, shell syntax and whitespace checks pass.
+The native D-Bus test retains the documented runner restriction and remains enabled
+in CI. KDE Unity/JobViewServer ownership warnings are documented separately in
+application-status.md and are not suppressed. Real desktop diagnostic confirmation
+is still left to the maintainer.

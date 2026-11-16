@@ -56,7 +56,13 @@ Item {
         streams = matches;
         player = nativeEnabled && players ? players.playerForLauncherUrl(launcherUrl, Number(task.AppPid) || 0) : null;
     }
-    function schedule() { Qt.callLater(refresh); }
+    // Owned one-shot queues are cancelled with the delegate/context. A bare
+    // callLater closure can outlive its TasksModel delegate's QML context.
+    function schedule() { refreshQueue.restart(); }
+    function scheduleSmart() { smartQueue.restart(); }
+    Timer { id: refreshQueue; interval: 0; repeat: false; onTriggered: root.refresh() }
+    Timer { id: smartQueue; interval: 0; repeat: false; onTriggered: root.loadSmart() }
+    Component.onDestruction: { refreshQueue.stop(); smartQueue.stop(); }
     function loadSmart() {
         if (smart) { smart.destroy(); smart = null; }
         smartError = "";
@@ -73,16 +79,16 @@ Item {
         if (!smart)
             smartError = statusSupport.smartLauncherLoadError() + "\n" + modernError + "\n" + component.errorString();
     }
-    onLauncherUrlChanged: { schedule(); Qt.callLater(loadSmart); }
+    onLauncherUrlChanged: { schedule(); scheduleSmart(); }
     onTasksModelChanged: schedule()
     onTaskChanged: schedule()
     onTaskIndexChanged: schedule()
     onAudioChanged: schedule()
     onAudioEnabledChanged: schedule()
     onPlayersChanged: schedule()
-    onNativeEnabledChanged: { schedule(); Qt.callLater(loadSmart); }
-    onLauncherEnabledChanged: Qt.callLater(loadSmart)
-    Component.onCompleted: { schedule(); Qt.callLater(loadSmart); }
+    onNativeEnabledChanged: { schedule(); scheduleSmart(); }
+    onLauncherEnabledChanged: scheduleSmart()
+    Component.onCompleted: { schedule(); scheduleSmart(); }
     Connections {
         target: root.audio
         function onStreamsChanged() { root.schedule(); }
