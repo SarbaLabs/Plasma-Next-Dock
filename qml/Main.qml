@@ -327,6 +327,7 @@ Item {
                             edge: dockOptions.edge
                             padding: root.taskPadding
                             hovered: iconHover.hovered
+                            decorationExtent: icon.height + icon.lift + bounce.offset
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
                     }
@@ -403,6 +404,7 @@ Item {
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
+                        active: dockOptions.iconHoverHighlight !== false && iconHover.hovered
                         PlasmaCore.ToolTipArea {
                             id: taskTip
                             property bool forceWindows: false

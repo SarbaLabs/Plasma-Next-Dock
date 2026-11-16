@@ -127,3 +127,25 @@ Frame-sampled tests reproduce the original bottom/right Custom failures and
 verify stable cross-axis coordinates during growth and shrinkage on all four
 edges, for Custom and native Plasma strips. Recheck this correction on CachyOS,
 including configured state sizes, scrolling and adaptive fit.
+
+## Hover highlight and standalone palette
+
+`iconHoverHighlight` defaults to true and is available under Indicators in every
+mode. It drives Kirigami.Icon.active, the same native icon effect used by Plasma's
+task manager. Disabling it only removes icon brightening; zoom, bounce, native
+frames and glow keep their own settings. No shader or color extraction is added.
+
+Native task backgrounds expand inward to enclose magnification, hover lift and
+bounce. Their panel-facing edge remains at the resting indicator lane; the capsule,
+input region and dodge geometry do not change. Existing theme hover/state prefixes
+remain in use. Themes retain control over the artwork and its opacity.
+
+The indicator subtree explicitly uses Kirigami's Active color group: the standalone
+layer-shell window deliberately never takes keyboard focus, which must not select
+the inactive palette for all indicators. Custom indicators therefore use the same
+active accent palette as the settings preview. Configured inactive-segment opacity,
+separate unfocused color and minimized desaturation still apply independently.
+
+Desktop validation: compare an active task with the active preview segment, then
+check inactive tasks with their configured opacity. Check native frames during
+zoom/lift/bounce on each edge and with the user's Plasma theme.

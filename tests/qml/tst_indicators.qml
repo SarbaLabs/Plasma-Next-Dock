@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import QtQuick
 import QtTest
+import org.kde.kirigami as Kirigami
 import "qrc:/qml" as Dock
 import "qrc:/qml/code/IndicatorLogic.js" as Logic
 
@@ -79,6 +80,38 @@ TestCase {
         item.task = {IsWindow: false, IsGroupParent: false};
         compare(item.windowCount, 0);
         verify(!item.groupSymbol);
+    }
+    function test_decorationEnvelopeAndActivePalette() {
+        const component = Qt.createComponent("qrc:/qml/DockIndicators.qml");
+        compare(component.status, Component.Ready, component.errorString());
+        const item = createTemporaryObject(component, testCase, {width: 40, height: 40,
+            configuration: {indicatorMode: 1}, task: {IsWindow: true, IsActive: true},
+            tasksModel: fakeModel, taskIndex: 2});
+        verify(item !== null);
+        for (let edge = 0; edge < 4; ++edge) {
+            item.edge = edge;
+            item.decorationExtent = 40;
+            const frame = findChild(item, "taskDecoration");
+            const resting = Qt.rect(frame.x, frame.y, frame.width, frame.height);
+            item.hovered = true;
+            item.decorationExtent = 80;
+            compare(edge < 2 ? frame.height : frame.width, (edge < 2 ? resting.height : resting.width) + 40);
+            if (edge === 0) compare(frame.y + frame.height, resting.y + resting.height);
+            if (edge === 1) compare(frame.y, resting.y);
+            if (edge === 2) compare(frame.x, resting.x);
+            if (edge === 3) compare(frame.x + frame.width, resting.x + resting.width);
+            verify(frame.item !== null);
+            item.hovered = false;
+        }
+        testCase.Kirigami.Theme.colorGroup = Kirigami.Theme.Inactive;
+        item.configuration = {indicatorMode: 2, indicatorAnimations: false};
+        const custom = findChild(item, "customTaskIndicators");
+        verify(custom !== null);
+        compare(item.Kirigami.Theme.colorGroup, Kirigami.Theme.Active);
+        compare(custom.baseColor, item.Kirigami.Theme.highlightColor);
+        tryCompare(custom, "activeIndex", 0);
+        compare(Logic.segmentColor(custom.baseColor, true, false, false, {}), custom.baseColor);
+        testCase.Kirigami.Theme.colorGroup = Kirigami.Theme.Active;
     }
     function test_modesAndDefaults() {
         compare(Logic.mode({}), 0);

@@ -697,3 +697,34 @@ The native D-Bus test retains the documented runner restriction and remains enab
 in CI. KDE Unity/JobViewServer ownership warnings are documented separately in
 application-status.md and are not suppressed. Real desktop diagnostic confirmation
 is still left to the maintainer.
+
+## Hover highlight and indicator polish (icon-bounce branch)
+
+Added automated checks for default-on/persistent icon hover highlighting, immediate
+disable/re-enable while hovered, inward native frame expansion on all four edges
+with a fixed outward edge, and active indicator palette selection inside an
+inactive parent. Existing inactive opacity/color tests remain unchanged.
+
+The isolated Indicators-only invocation does not initialize the Plasma theme
+through Main and fails the existing group-symbol natural-size check in this runner;
+the complete hover-and-render suite is the authoritative themed integration run.
+No production check was weakened. The hover toggle test explicitly restores the
+bottom edge/direction before pointer synthesis to avoid prior test geometry.
+
+Manual acceptance on CachyOS:
+
+- In every indicator mode, hover icons, toggle Highlight icons on hover off/on,
+  and restart the dock to verify persistence. Repeat during zoom and bounce.
+- In Plasma mode, verify the task background stays visible behind magnified/lifted
+  icons on all edges; the outward indicator edge must remain stationary.
+- In Custom mode, compare the focused task's accent with the active preview
+  segment. Inactive opacity, custom unfocused color and minimized desaturation
+  must continue to work. Change the system accent and repeat.
+- Check the user's theme, HiDPI, tooltips, native menus, edge clicks and hide/reveal.
+  Offscreen tests do not validate these live compositor/theme combinations.
+
+Validation result: build and all 14 locally runnable CTest entries passed in
+54.26 seconds (Qt 6.8.2 / Plasma 6.3, offscreen/software). No TypeError or
+ReferenceError in the final log. Staged installation, install.sh syntax and
+whitespace checks passed. Native application-status remains enabled in the
+project/CI but excluded locally because this runner prohibits D-Bus sockets.

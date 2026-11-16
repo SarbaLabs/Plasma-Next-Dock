@@ -16,6 +16,7 @@ QQC2.ScrollView {
     }
     readonly property bool custom: cfg_indicatorMode === 2
     readonly property bool customEnabled: custom && cfg_customIndicatorsEnabled
+    property alias cfg_iconHoverHighlight: iconHoverHighlightControl.checked
     property alias cfg_indicatorMode: indicatorModeControl.currentIndex
     property alias cfg_nativeGroupIndicator: nativeGroupIndicatorControl.currentIndex
     property alias cfg_taskDecorations: taskDecorationsControl.currentIndex
@@ -50,6 +51,7 @@ QQC2.ScrollView {
     property alias cfg_indicatorColorSource: indicatorColorSourceControl.currentIndex
     property color cfg_indicatorCustomColor: "#3daee9"
     readonly property var previewConfiguration: ({
+        iconHoverHighlight: cfg_iconHoverHighlight,
         indicatorMode: cfg_indicatorMode,
         nativeGroupIndicator: cfg_nativeGroupIndicator,
         taskDecorations: cfg_taskDecorations,
@@ -96,6 +98,11 @@ QQC2.ScrollView {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: i18n("Mode default keeps macOS unchanged. Plasma enables native task frames and the group symbol. Overrides apply only to this dock.")
+        }
+        QQC2.CheckBox {
+            id: iconHoverHighlightControl
+            text: i18n("Highlight icons on hover")
+            checked: true
         }
         QQC2.ComboBox {
             implicitWidth: Kirigami.Units.gridUnit * 16

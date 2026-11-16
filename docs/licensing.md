@@ -120,3 +120,8 @@ media controls and tests use GPL-2.0-or-later.
 The source file's Eike Hein (2012–2013) and Nate Graham (2024) notices are retained.
 Standalone lifecycle, configuration, headroom and tests are new project code;
 no plasmoid host, popup delegate or compositor implementation is imported.
+
+Hover highlight uses the installed Kirigami.Icon.active API, as observed in KDE
+plasma-desktop applets/taskmanager/qml/Task.qml. No new source or artwork is copied.
+The existing task prefix order was checked against qml/code/TaskTools.js; theme
+assets remain runtime dependencies.

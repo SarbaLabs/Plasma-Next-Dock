@@ -28,7 +28,7 @@ QVariantMap DockSettings::defaults()
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
         {"indicatorUnfocusedColorEnabled", false},
         {"indicatorUnfocusedColor", "#3daee9"},
-        {"indicatorMode", 0},
+        {"indicatorMode", 0}, {"iconHoverHighlight", true},
         {"nativeGroupIndicator", 0},
         {"taskDecorations", 0},
         {"customIndicatorsEnabled", true},
@@ -70,7 +70,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         result[key] = !ok || !std::isfinite(value) ? defaults()[key]
             : QVariant(integer ? std::round(std::clamp(value, low, high)) : std::clamp(value, low, high));
     };
-    for (const auto &key : {"bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "groupApplications", "minimizeActive", "skipMinimized", "filterDesktop",
+    for (const auto &key : {"iconHoverHighlight", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "groupApplications", "minimizeActive", "skipMinimized", "filterDesktop",
                            "filterActivity", "filterScreen", "onlyMinimized", "showSeparator", "revealAttention"})
         result[key] = result[key].toBool();
     for (const auto &[key, maximum] : {std::pair{"taskSort", 4}, {"groupClick", 2},

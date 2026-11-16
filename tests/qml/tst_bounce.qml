@@ -10,6 +10,25 @@ TestCase {
     SignalSpy { id: widthSpy; target: dock.item; signalName: "widthChanged" }
     SignalSpy { id: heightSpy; target: dock.item; signalName: "heightChanged" }
     function init() { dock.active = false; dock.active = true; tryCompare(dock, "status", Loader.Ready); }
+    function test_hoverHighlightToggle() {
+        testEnvironment.setEdge(0);
+        testEnvironment.behaviorOptions({layoutDirection: 1, iconHoverHighlight: true});
+        mouseMove(this, 990, 790);
+        wait(150);
+        const lane = findChild(dock.item, "taskInput0");
+        const icon = findChild(dock.item, "icon0");
+        verify(lane && icon);
+        testEnvironment.behaviorOptions({iconHoverHighlight: true});
+        const point = lane.mapToItem(dock.item, lane.width / 2, lane.height - 1);
+        mouseMove(dock.item, point.x, point.y);
+        tryCompare(icon, "active", true);
+        testEnvironment.behaviorOptions({iconHoverHighlight: false});
+        tryCompare(icon, "active", false);
+        testEnvironment.behaviorOptions({iconHoverHighlight: true});
+        tryCompare(icon, "active", true);
+        mouseMove(this, 990, 790);
+        tryCompare(icon, "active", false);
+    }
     function test_edgeLaneClicksAndReplacement() {
         tryCompare(dock, "status", Loader.Ready);
         const source = findChild(dock.item, "taskSourceLoader");

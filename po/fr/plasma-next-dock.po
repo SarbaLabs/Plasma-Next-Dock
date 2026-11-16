@@ -524,3 +524,6 @@ msgstr "Répétitions au lancement et pour le test :"
 
 msgid "Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it."
 msgstr "Le rebond d’attention se répète jusqu’à acquittement. Il est suspendu lorsque le dock est masqué, pendant un déplacement ou lorsque les aperçus sont ouverts. Utilisez le menu contextuel de l’application pour le tester."
+
+msgid "Highlight icons on hover"
+msgstr "Mettre les icônes en surbrillance au survol"

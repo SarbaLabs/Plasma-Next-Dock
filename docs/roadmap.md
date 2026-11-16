@@ -251,3 +251,11 @@ The maintainer confirmed bounce, click lanes and first-window zoom now work.
 A final diagnostic cleanup addresses TaskStatus work queued beyond delegate context
 lifetime; the distinct KDE service-registration warnings are documented without
 hiding them or taking service ownership away from Plasma.
+
+### Icon-bounce branch: hover polish
+
+- Added default-on native icon hover highlight with an Indicators toggle.
+- Expanded task decorations inward while preserving the outward indicator anchor.
+- Selected the active palette explicitly for the non-focusable dock's indicators.
+- Added persistence, hover toggle, four-edge frame envelope and palette coverage.
+- User-theme appearance and CachyOS Wayland rendering remain manual acceptance.

@@ -7,6 +7,13 @@ class SettingsTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void hoverHighlightPersistence() {
+        QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
+        DockSettings settings(file);
+        QVERIFY(settings.values()["iconHoverHighlight"].toBool());
+        QVERIFY(settings.apply({{"iconHoverHighlight", false}}));
+        QVERIFY(!DockSettings(file).values()["iconHoverHighlight"].toBool());
+    }
     void bouncePersistence() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);
