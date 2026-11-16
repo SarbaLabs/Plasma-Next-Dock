@@ -363,7 +363,6 @@ QQC2.ScrollView {
                 horizontalPadding: 12; verticalPadding: 12
                 minimizedWindows: [true, false, false, false, false, false]
                 hovered: previewHover.hovered
-                accentColor: Kirigami.Theme.highlightColor
                 HoverHandler { id: previewHover }
                 Text {
                     anchors.centerIn: parent

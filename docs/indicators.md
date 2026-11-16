@@ -140,12 +140,19 @@ bounce. Their panel-facing edge remains at the resting indicator lane; the capsu
 input region and dodge geometry do not change. Existing theme hover/state prefixes
 remain in use. Themes retain control over the artwork and its opacity.
 
-The indicator subtree explicitly uses Kirigami's Active color group: the standalone
-layer-shell window deliberately never takes keyboard focus, which must not select
-the inactive palette for all indicators. Custom indicators therefore use the same
-active accent palette as the settings preview. Configured inactive-segment opacity,
+CustomIndicators reads SystemPalette.highlight with SystemPalette.Active, shared
+by the dock and settings preview. Forcing Kirigami.Theme.Active on the dock subtree
+alone did not resolve the darker color reported on the maintainer's desktop. The
+accent no longer comes from that window-specific attached theme. Qt updates the
+system palette on color-scheme changes. Configured inactive-segment opacity,
 separate unfocused color and minimized desaturation still apply independently.
 
 Desktop validation: compare an active task with the active preview segment, then
 check inactive tasks with their configured opacity. Check native frames during
 zoom/lift/bounce on each edge and with the user's Plasma theme.
+
+Icon brightening, native frame hover and glow color selection share the window-level
+pointerTask/hovering state used by magnification. A HoverHandler below the icon
+could lose hover delivery to Plasma ToolTipArea above it, despite still being inside
+the task lane. No additional input grab or overlay is introduced; tooltip and click
+routing remain unchanged.

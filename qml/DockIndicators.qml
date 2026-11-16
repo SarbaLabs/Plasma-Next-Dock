@@ -58,7 +58,6 @@ Item {
             activeIndex: state.activeIndex
             minimizedWindows: state.minimizedWindows
             hovered: root.hovered
-            accentColor: Kirigami.Theme.highlightColor
             dominantColor: root.dominantColor
             readonly property IndicatorTaskState state: IndicatorTaskState {
                 tasksModel: root.tasksModel

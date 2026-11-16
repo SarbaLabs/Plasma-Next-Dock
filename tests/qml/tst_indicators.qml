@@ -10,6 +10,7 @@ TestCase {
     name: "Indicators"
     when: windowShown
     width: 200; height: 150
+    SystemPalette { id: activePalette; colorGroup: SystemPalette.Active }
     Component { id: indicator; Dock.CustomIndicators { width: 40; height: 40; configuration: ({}); windowCount: 3; activeIndex: 1 } }
     Component { id: state; Dock.IndicatorTaskState { tasksModel: fakeModel; taskIndex: 2; minimizedRole: 9; enabled: true; grouped: true; windowCount: 100; limit: 4 } }
     QtObject {
@@ -108,7 +109,12 @@ TestCase {
         const custom = findChild(item, "customTaskIndicators");
         verify(custom !== null);
         compare(item.Kirigami.Theme.colorGroup, Kirigami.Theme.Active);
-        compare(custom.baseColor, item.Kirigami.Theme.highlightColor);
+        compare(custom.baseColor, activePalette.highlight);
+        // A window/ancestor-specific Kirigami palette must not darken the accent.
+        item.Kirigami.Theme.highlightColor = "#110011";
+        compare(custom.baseColor, activePalette.highlight);
+        const preview = createTemporaryObject(indicator, testCase);
+        compare(custom.baseColor, preview.baseColor);
         tryCompare(custom, "activeIndex", 0);
         compare(Logic.segmentColor(custom.baseColor, true, false, false, {}), custom.baseColor);
         testCase.Kirigami.Theme.colorGroup = Kirigami.Theme.Active;

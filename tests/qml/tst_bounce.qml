@@ -10,6 +10,28 @@ TestCase {
     SignalSpy { id: widthSpy; target: dock.item; signalName: "widthChanged" }
     SignalSpy { id: heightSpy; target: dock.item; signalName: "heightChanged" }
     function init() { dock.active = false; dock.active = true; tryCompare(dock, "status", Loader.Ready); }
+    function test_hoverAcrossIconAndTooltip() {
+        testEnvironment.behaviorOptions({layoutDirection: 1, iconHoverHighlight: true, indicatorMode: 1});
+        for (let edge = 0; edge < 4; ++edge) {
+            testEnvironment.setEdge(edge);
+            mouseMove(this, 990, 790);
+            wait(150);
+            const lane = findChild(dock.item, "taskInput0");
+            const icon = findChild(dock.item, "icon0");
+            const indicators = findChild(dock.item, "dockIndicators0");
+            const p = lane.mapToItem(dock.item, lane.width / 2, edge === 1 || edge === 3 ? 1 : lane.height - 1);
+            mouseMove(dock.item, p.x, p.y);
+            tryCompare(icon, "active", true);
+            wait(150);
+            for (const fraction of [0.9, 0.5, 0.1]) {
+                const q = icon.mapToItem(dock.item, icon.width / 2, icon.height * fraction);
+                mouseMove(dock.item, q.x, q.y);
+                wait(40);
+                compare(icon.active, true, "Icon hover must survive tooltip hit testing");
+                compare(indicators.hovered, true);
+            }
+        }
+    }
     function test_hoverHighlightToggle() {
         testEnvironment.setEdge(0);
         testEnvironment.behaviorOptions({layoutDirection: 1, iconHoverHighlight: true});

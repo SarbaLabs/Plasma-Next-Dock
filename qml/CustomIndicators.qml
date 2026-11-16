@@ -18,7 +18,10 @@ Item {
     property int activeIndex: -1
     property var minimizedWindows: []
     property bool hovered: false
-    property color accentColor: "#3daee9"
+    // A dock never takes focus. Read the active system palette explicitly,
+    // independently of Kirigami themes attached to its window or ancestors.
+    SystemPalette { id: activePalette; colorGroup: SystemPalette.Active }
+    property color accentColor: activePalette.highlight
     property color dominantColor: "transparent"
     readonly property int edge: Logic.edge(configuration, effectiveEdge)
     readonly property bool vertical: edge >= 2

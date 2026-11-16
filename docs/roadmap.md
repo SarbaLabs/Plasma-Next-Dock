@@ -259,3 +259,12 @@ hiding them or taking service ownership away from Plasma.
 - Selected the active palette explicitly for the non-focusable dock's indicators.
 - Added persistence, hover toggle, four-edge frame envelope and palette coverage.
 - User-theme appearance and CachyOS Wayland rendering remain manual acceptance.
+
+### Follow-up from desktop hover/color feedback
+
+- Reproduced icon/frame hover loss when crossing into the tooltip area; a four-edge
+  pointer regression fails before and passes after replacing child hover delivery
+  with the existing window-level logical task anchor.
+- Custom renderer and preview now share the explicit active Qt SystemPalette
+  highlight, rather than separate Kirigami attached palette bindings.
+- Previous frame envelope sizing is retained; desktop color confirmation pending.

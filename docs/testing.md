@@ -728,3 +728,21 @@ Validation result: build and all 14 locally runnable CTest entries passed in
 ReferenceError in the final log. Staged installation, install.sh syntax and
 whitespace checks passed. Native application-status remains enabled in the
 project/CI but excluded locally because this runner prohibits D-Bus sockets.
+
+### Hover delivery and accent follow-up
+
+The new test_hoverAcrossIconAndTooltip fails with the preceding implementation:
+icon.active becomes false when the synthesized pointer crosses from the edge lane
+onto the icon's ToolTipArea. It passes after the fix on all four edges and checks
+both native frame hover and icon highlighting. The palette regression also verifies
+that an ancestor's dark Kirigami highlight cannot change the Custom renderer's
+explicit active SystemPalette accent, and that dock/preview colors match.
+
+Manual check: cross slowly from the edge lane through the bottom/middle/top of an
+icon, allow its tooltip to appear, and move to neighboring icons. The highlight and
+Plasma hover frame should remain active on the current task. Compare the Custom
+active indicator with the configuration preview, including an accent change.
+
+Follow-up validation: build, all 14 locally runnable CTest entries (53.94 seconds),
+staged installation, shell syntax and whitespace checks passed. D-Bus exclusion
+and live Wayland/theme limitations remain as documented above.

@@ -258,6 +258,8 @@ Item {
                     objectName: "task" + index
                     required property int index
                     required property var model
+                    readonly property bool taskHovered: root.hovering && !root.dragging && root.pointerTask === slot
+                    onTaskHoveredChanged: if (taskHovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
                     function restoreZoom() {
                         // A replacement can arrive at a different row. Reconcile
@@ -326,7 +328,7 @@ Item {
                             tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                             edge: dockOptions.edge
                             padding: root.taskPadding
-                            hovered: iconHover.hovered
+                            hovered: slot.taskHovered
                             decorationExtent: icon.height + icon.lift + bounce.offset
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
@@ -385,10 +387,6 @@ Item {
                             enabled: !dockOptions.demo && !overlays.audioHovered && dockOptions.middleClick > 0
                             onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
                         }
-                        HoverHandler {
-                            id: iconHover
-                            onHoveredChanged: if (hovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
-                        }
                     }
                     Kirigami.Icon {
                         id: icon
@@ -404,7 +402,7 @@ Item {
                         source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         roundToIconSize: false
-                        active: dockOptions.iconHoverHighlight !== false && iconHover.hovered
+                        active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
                         PlasmaCore.ToolTipArea {
                             id: taskTip
                             property bool forceWindows: false
@@ -462,7 +460,7 @@ Item {
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {
                             source: slot.model.decoration
-                            onPaletteChanged: if (iconHover.hovered) root.applicationColor = dominant
+                            onPaletteChanged: if (slot.taskHovered) root.applicationColor = dominant
                         }
                     }
                     Rectangle {
