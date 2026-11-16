@@ -103,3 +103,22 @@ then another instance, without moving the pointer. Zoom should remain active;
 leaving the complete task/capsule/edge input region should still reset it. Repeat
 on all four edges with reversed order and overflow; verify audio mute controls
 still take priority and tooltips remain anchored to the visible icon.
+
+### Remaining zoom correction
+
+The maintainer confirmed the edge lane but reported a remaining zoom dip when the
+animated icon's outward edge crossed the cursor, and once on initial launch.
+DockController now observes Enter/Leave and mouse position events on the dock
+window before Qt Quick routes them through moving child items. Hover is tested
+against the existing input region; duplicate positions and child hover changes
+do not recalculate the logical pointer index. Real departure still resets zoom.
+The observer consumes no events, uses no polling/global cursor query, and is
+detached when its target/window changes. Glow uses the same position but remains
+clipped and enabled only inside the visible capsule.
+
+New task delegates initialize their zoom factor before enabling its transition.
+Replacing a launcher thus starts at the current hover size instead of animating
+from a construction-time zero. Existing click lanes and animation settings remain
+unchanged. Automated checks now place a stationary cursor just inside the icon's
+outward edge, run a middle-click bounce past it on all four edges, assert a stable
+logical pointer and retained zoom, then verify a true exit restores resting size.

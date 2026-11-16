@@ -645,3 +645,24 @@ installation, shell syntax and whitespace checks pass. The native D-Bus test is
 excluded locally due to the previously documented socket restriction, not disabled
 in the project. Tests are synthetic; actual Wayland input-region behavior and the
 maintainer's live launcher transition still require the checks in bounce.md.
+
+## Residual zoom during bounce — 2026-11-16
+
+The maintainer accepted edge clicks but isolated a remaining zoom dip to the
+outward edge of a moving icon crossing the cursor; clicks further outward at the
+indicator/physical edge did not reproduce it. Initial launcher replacement also
+briefly shrank the icon. Earlier edge-lane tests did not cover that crossing.
+
+Add a four-edge test with a stationary cursor initially inside the icon, middle
+click, verified icon/cursor crossing, stable logical pointer and retained zoom,
+followed by genuine departure/resting-size recovery. Replacement tests now check
+the zoom factor immediately, rather than after a settling delay. Native controller
+tests cover window-level pointer events, ignored child hover/repeated positions,
+true departure, transparent margins, fractional edge coordinates and detachment.
+
+Build and all 14 locally runnable CTest entries pass (48.96 s, Qt 6.8.2 / Plasma 6.3,
+offscreen/software). No TypeError/ReferenceError in the final test log. Staged
+installation, shell syntax and whitespace checks pass. Native D-Bus coverage retains
+the previously documented local restriction and remains enabled in CI. These tests
+do not constitute Qt 6.12/KWin desktop acceptance: recheck the maintainer's exact
+first-launch and low-on-icon middle-click scenarios, plus menus/audio/preview/glow.

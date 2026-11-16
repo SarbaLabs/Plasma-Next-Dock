@@ -61,7 +61,7 @@ Item {
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
     function refreshHover() {
-        dockController.setHovered(pointer.hovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
+        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -97,7 +97,7 @@ Item {
     readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
     readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
     property real pointerIndex: -10
-    property bool hovering: pointer.hovered
+    property bool hovering: dockController.pointerHovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
     readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
@@ -132,7 +132,7 @@ Item {
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
     onHeightChanged: queueGeometry()
-    Component.onCompleted: queueGeometry()
+    Component.onCompleted: { dockController.setPointerTarget(root); queueGeometry(); }
 
     Loader {
         id: taskSource
@@ -182,8 +182,8 @@ Item {
         customBorderColor: dockOptions.borderUseTheme !== false ? Kirigami.Theme.disabledTextColor : dockOptions.borderColor
         isVertical: root.vertical
         glowEnabled: dockOptions.glow
-        glowPosition: Qt.point(pointer.point.position.x - bar.x, pointer.point.position.y - bar.y)
-        glowHovering: pointer.hovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
+        glowPosition: Qt.point(dockController.pointerPosition.x - bar.x, dockController.pointerPosition.y - bar.y)
+        glowHovering: dockController.pointerHovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
         glowColor: root.applicationColor
         glowRadius: root.maximum
         onRadiusChanged: root.queueGeometry()
@@ -232,6 +232,7 @@ Item {
                     required property int index
                     required property var model
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
+                    property bool componentReady: false
                     property real animatedFactor: factor
                     property real reportedFactor: 0
                     onAnimatedFactorChanged: {
@@ -255,12 +256,12 @@ Item {
                         bounce.launch();
                     }
                     onLaunchKeyChanged: Qt.callLater(root.resumeLaunchFeedback)
-                    Component.onCompleted: { root.queueDivider(); Qt.callLater(root.resumeLaunchFeedback); }
+                    Component.onCompleted: { componentReady = true; root.queueDivider(); Qt.callLater(root.resumeLaunchFeedback); }
                     readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
                     readonly property real iconOffset: root.reverseLayout ? 0 : extra
                     width: size + extra
                     height: viewport.height
-                    Behavior on animatedFactor { NumberAnimation { duration: 90 } }
+                    Behavior on animatedFactor { enabled: slot.componentReady; NumberAnimation { duration: 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     // Follow the slot along the dock, but keep the capsule's
@@ -525,10 +526,9 @@ Item {
         visible: repeater.count === 0
         text: qsTr("Plasma Next Dock")
     }
-    HoverHandler {
-        id: pointer
-        blocking: false
-        onPointChanged: root.updatePointer(point.position)
-        onHoveredChanged: root.refreshHover()
+    Connections {
+        target: dockController
+        function onPointerPositionChanged() { root.updatePointer(dockController.pointerPosition); }
+        function onPointerHoveredChanged() { root.refreshHover(); }
     }
 }

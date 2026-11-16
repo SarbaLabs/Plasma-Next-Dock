@@ -94,3 +94,8 @@
   bounce, extended to the physical edge; never attach clicks to a moving icon.
   Use native startup/attention roles and persistent menu targets, finite launch/test
   cycles, and no polling. Suppress bounce during drag, previews and hide requests.
+
+- Magnification uses DockController's window pointer observer and the existing
+  input region. Do not restore child hover as its source or consume mouse events.
+  Duplicate coordinates/animation hover delivery must not recalculate pointerIndex.
+  Initialize replacement delegate zoom before enabling its Behavior transition.

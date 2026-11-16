@@ -54,8 +54,13 @@ TestCase {
                     // Replace the clicked delegate synchronously as a native
                     // launcher/startup/window transition can do during activation.
                     source.item.replaceOnLaunch = true;
+                    const previousSize = slot.size;
                     widthSpy.clear(); heightSpy.clear();
                     mouseClick(dock.item, p.x, p.y, Qt.LeftButton);
+                    slot = findChild(dock.item, "task0");
+                    fuzzyCompare(slot.size, previousSize, 0.05, "Replacement preserves visible zoom immediately");
+                    fuzzyCompare(slot.animatedFactor, slot.factor, 0.001,
+                        "Replacement initializes at the current zoom, not at zero");
                     wait(30);
                     compare(widthSpy.count, 0, "Replacement must not resize the surface");
                     compare(heightSpy.count, 0, "Replacement must not resize the surface");
@@ -72,6 +77,50 @@ TestCase {
         } finally {
             source.source = "qrc:/qml/DemoTasks.qml";
             testEnvironment.behaviorOptions({layoutDirection: 0, bounceHeight: 0, hoverLift: 0, bounceCount: 3});
+            testEnvironment.setEdge(0);
+            mouseMove(this, 990, 790);
+        }
+    }
+    function test_stationaryPointerBelowBouncingIcon() {
+        const source = findChild(dock.item, "taskSourceLoader");
+        source.source = Qt.resolvedUrl("LaunchingTasks.qml");
+        tryCompare(source, "status", Loader.Ready);
+        try {
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                testEnvironment.behaviorOptions({bounceHeight: 48, hoverLift: 0, bounceCount: 1});
+                mouseMove(this, 990, 790); wait(150);
+                const slot = findChild(dock.item, "task0");
+                const icon = findChild(dock.item, "icon0");
+                const lane = findChild(dock.item, "taskInput0");
+                mouseMove(icon, icon.width / 2, icon.height / 2); wait(150);
+                const middle = findChild(lane, "middleClick0"); middle.enabled = true;
+                // Upright icon coordinates: just inside its outward edge.
+                const p = edge === 0 ? Qt.point(icon.width / 2, icon.height - 2)
+                    : edge === 1 ? Qt.point(icon.width / 2, 2)
+                    : edge === 2 ? Qt.point(2, icon.height / 2) : Qt.point(icon.width - 2, icon.height / 2);
+                const fixed = icon.mapToItem(dock.item, p.x, p.y);
+                mouseMove(dock.item, fixed.x, fixed.y); wait(150);
+                mouseClick(dock.item, fixed.x, fixed.y, Qt.MiddleButton);
+                const logicalPosition = dock.item.pointerIndex;
+                const bounce = findChild(dock.item, "taskBounce0");
+                let crossed = false;
+                for (let frame = 0; frame < 20; ++frame) {
+                    wait(16);
+                    const local = icon.mapFromItem(dock.item, fixed.x, fixed.y);
+                    if (local.x < 0 || local.y < 0 || local.x >= icon.width || local.y >= icon.height) crossed = true;
+                    verify(dock.item.hovering, "Moving icon must not end surface hover");
+                    compare(dock.item.pointerIndex, logicalPosition, "Geometry must not move the logical pointer");
+                    verify(slot.size > dock.item.base + 10);
+                }
+                verify(crossed, "Exercise the icon moving past the stationary cursor");
+                bounce.stop();
+                mouseMove(this, 990, 790);
+                tryCompare(slot, "size", dock.item.base);
+            }
+        } finally {
+            source.source = "qrc:/qml/DemoTasks.qml";
+            testEnvironment.behaviorOptions({bounceHeight: 0, hoverLift: 0, bounceCount: 3});
             testEnvironment.setEdge(0);
             mouseMove(this, 990, 790);
         }

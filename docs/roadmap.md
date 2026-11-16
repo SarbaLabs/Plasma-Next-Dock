@@ -236,3 +236,8 @@ flicker during launches/animation. PR #10 now uses stable per-task edge input
 lanes, coalesces transient model counts before sizing and retains launch feedback
 by service identity through delegate replacement. CachyOS acceptance of these
 corrections remains pending; do not merge automatically.
+
+The edge click lane was accepted. Follow-up feedback isolates residual shrinkage
+to cursor crossing the moving icon edge and initial launcher replacement. Window
+pointer observation and initialization without a zoom transition address those
+cases; live CachyOS validation is still pending.

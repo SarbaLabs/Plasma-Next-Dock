@@ -327,3 +327,13 @@ lanes cover the reserved bounce envelope through to the physical edge without
 following the animated y coordinate. Dodge remains capsule-only.
 Native task startup/attention roles and launch requests drive animations; disabled,
 dragging, hidden-policy and preview states stop them at rest. See bounce.md.
+
+### Window-level magnification input
+
+DockController observes the dock QQuickWindow's pointer events without consuming
+them. Its target item maps window coordinates into the dock; hover is membership
+in the same region used by the Wayland input mask. Main updates magnification's
+logical pointer index only for changed positions or real window entry, not child
+hover re-delivery during bounce. The previous root HoverHandler is removed; native
+menu/tooltip/audio input routing remains intact. Target/window changes detach the
+observer. New task delegates enable zoom interpolation only after initialization.
