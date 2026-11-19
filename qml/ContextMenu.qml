@@ -14,6 +14,9 @@ import org.kde.plasma.private.mpris as Mpris
 Item {
     id: controller
     property var activeMenu: null
+    property Item audioTarget: null
+    readonly property bool hasTaskAudio: !!audioTarget && menuTarget.valid
+        && audioTarget.taskIndex === menuTarget.index.row && audioTarget.streams.length > 0
     property var source: null
     property string launcherUrl: ""
     property bool allPlaces: false
@@ -44,7 +47,13 @@ Item {
         function onShowAllPlaces() {
             controller.allPlaces = true;
             // The old menu must finish handling its action before being destroyed.
-            Qt.callLater(controller.buildAndOpen);
+            const oldMenu = controller.activeMenu;
+            const status = controller.audioTarget;
+            Qt.callLater(() => {
+                if (oldMenu !== controller.activeMenu || !menuTarget.valid) return;
+                controller.audioTarget = status;
+                controller.buildAndOpen();
+            });
         }
     }
     function get(role) { return menuTarget.data(role); }
@@ -102,9 +111,10 @@ Item {
         return true;
     }
     function close() { if (activeMenu) activeMenu.close(); }
-    function showAt(point, taskSource, row) {
+    function showAt(point, taskSource, row, status = null) {
         close();
         source = taskSource;
+        audioTarget = status;
         menuTarget.bind(source ? source.tasks : null, row);
         launcherUrl = menuTarget.valid ? String(get("LauncherUrlWithoutIcon") || get("LauncherUrl") || "") : "";
         allPlaces = false;
@@ -118,6 +128,12 @@ Item {
             PlasmaExtras.Menu.RightPosedTopAlignedPopup, PlasmaExtras.Menu.LeftPosedTopAlignedPopup];
         const menu = menuFactory.createObject(controller, {visualParent: anchorItem, placement: placements[dockOptions.edge]});
         activeMenu = menu;
+        menu.statusChanged.connect(() => {
+            if (menu.status === PlasmaExtras.Menu.Closed) Qt.callLater(() => {
+                if (menu === activeMenu && menu.status === PlasmaExtras.Menu.Closed)
+                    controller.audioTarget = null;
+            });
+        });
         if (launcherUrl.length) {
             const places = applicationMenus.placesActions(launcherUrl, allPlaces, menu);
             const recent = places.length ? [] : applicationMenus.recentDocumentActions(launcherUrl, menu);
@@ -130,6 +146,12 @@ Item {
                 for (const action of actions) menu.addMenuItem(actionItem(menu, action));
             }
             addMedia(menu);
+        }
+        if (audioTarget) {
+            const mute = add(menu, kde("@option:check inmenu, no separate unmute action", "Mute"), "audio-volume-muted",
+                () => { if (hasTaskAudio) audioTarget.muteToggle(); }, true, false);
+            mute.visible = Qt.binding(() => controller.hasTaskAudio);
+            mute.checked = Qt.binding(() => controller.hasTaskAudio && controller.audioTarget.muted);
         }
         if (menuTarget.valid && get("CanLaunchNewInstance"))
             add(menu, kde("action:inmenu", "Open New Window"), "window-new", () => request("requestNewInstance"));
@@ -195,10 +217,29 @@ Item {
             ["&Fullscreen", "view-fullscreen", "requestToggleFullScreen", "IsFullScreenable", "IsFullScreen"],
             ["&Shade", "window-shade", "requestToggleShaded", "IsShadeable", "IsShaded"]
         ];
-        for (const command of commands)
+        for (const command of commands) {
+            if (typeof source.tasks[command[2]] !== "function") continue;
             add(more, kde("action:inmenu", command[0]), command[1], () => request(command[2]),
                 !command[3] || get(command[3]), command[4] ? get(command[4]) : undefined);
-        add(menu, get("IsGroupParent") ? kde("@action:inmenu", "&Close All") : kde("action:inmenu", "&Close"), "window-close", () => request("requestClose"), get("IsClosable"));
+        }
+        if (typeof source.tasks.requestToggleNoBorder === "function")
+            add(more, kde("@action:inmenu", "&No Titlebar and Frame"), "window",
+                () => request("requestToggleNoBorder"), get("CanSetNoBorder"), !!get("HasNoBorder"));
+        if (typeof source.tasks.requestToggleExcludeFromCapture === "function")
+            add(more, kde("@action:inmenu", "&Hide from Screencast"), "view-hidden",
+                () => request("requestToggleExcludeFromCapture"), true, !!get("IsExcludedFromCapture"));
+        if (dockOptions.groupApplications !== false && source.toggleGrouping && (get("AppId") || launcherUrl)) {
+            separator(more);
+            add(more, kde("@option:check inmenu", "Allow this program to be grouped"), "",
+                () => { if (menuTarget.valid) source.toggleGrouping(menuTarget.index); }, true, !!get("IsGroupable"));
+        }
+        const kills = menuTarget.killActions(menu);
+        if (kills.length) {
+            separator(more);
+            const destination = kills.length === 1 ? more : submenu(more, i18n("Kill"), "process-stop");
+            for (const action of kills) add(destination, action.text, "process-stop", () => action.trigger());
+        }
+        add(menu, get("IsGroupParent") ? kde("@action:inmenu", "&Close All") : kde("@action:inmenu", "&Close"), "window-close", () => request("requestClose"), get("IsClosable"));
     }
     function addMedia(menu) {
         if ((get("WinIdList") || []).length > 1) return;

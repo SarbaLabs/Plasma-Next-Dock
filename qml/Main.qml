@@ -15,7 +15,7 @@ Item {
     Mpris.Mpris2Model { id: statusPlayers }
     Loader {
         id: audioService
-        active: !dockOptions.demo && (dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false)
+        active: !dockOptions.demo && (dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false || !!contextMenu.audioTarget)
         source: active ? "AudioService.qml" : ""
     }
     readonly property bool reverseLayout: Behavior.reversed(dockOptions.layoutDirection || 0, vertical, Qt.application.layoutDirection === Qt.RightToLeft)
@@ -285,6 +285,7 @@ Item {
                     }
                     Component.onDestruction: root.animatedWeight -= reportedFactor
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
+                    property alias menuStatus: taskStatus
                     property alias previewOwner: taskTip
                     property alias iconItem: icon
                     property alias inputItem: inputLane
@@ -365,7 +366,7 @@ Item {
                         audio: audioService.item
                         players: statusPlayers
                         nativeEnabled: !dockOptions.demo
-                        audioEnabled: dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false
+                        audioEnabled: dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false || contextMenu.audioTarget === taskStatus
                         launcherEnabled: dockOptions.showBadges !== false || dockOptions.showProgress !== false
                     }
                     // A task owns its full inward animation envelope down to the
@@ -556,7 +557,8 @@ Item {
             }
             const anchor = Interaction.menuAnchor(dockOptions.edge,
                 Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
-            contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row);
+            contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
+                               row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
         }
     }
     ExternalDrop {

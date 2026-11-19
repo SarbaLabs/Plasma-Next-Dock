@@ -71,7 +71,15 @@ PlasmaExtras and MPRIS are installed Plasma runtime modules. On CachyOS the READ
 lists the package command; install.sh remains the complete build/test/install path.
 The application remains standalone, with no installed plasmoid/native QML plugin.
 
-This stage does not add task grouping, per-stream volume/mute integration, bounce,
-window thumbnails or the old dock's blur/indicator systems. Those require their
-own model/UI work. Native task operations and media control still need live KDE
-Wayland validation; headless fixtures are not proof of compositor behavior.
+## Audio, grouping and force quit
+
+Mute toggles the streams matched by the task's audio indicator. It is available
+even when the indicator is hidden. More offers per-application grouping when
+the dock groups windows. Each dock saves its own exceptions. More also offers
+the native frame and screencast visibility controls on supported Plasma versions.
+
+More → Kill immediately sends SIGKILL to the selected process. Windows sharing
+that process close together. If a group contains multiple eligible processes,
+choose a window title and PID from the submenu. Actions retain a Linux pidfd
+and recheck their task index before sending the signal. Launchers and windows
+without a usable PID have no Kill action.

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "applicationmenubackend.h"
+#include "menutarget.h"
+#include <QStandardItemModel>
 #include <KConfigGroup>
 #include <KFilePlacesModel>
 #include <KService>
@@ -87,6 +89,49 @@ private Q_SLOTS:
         QCOMPARE(QProcess::execute(QStringLiteral(DOCK_KBUILDSYCOCA), {QStringLiteral("--noincremental")}), 0);
         launcher = QUrl::fromLocalFile(path);
         QVERIFY(KService::serviceByDesktopPath(path));
+    }
+
+    void killTargetsOnlyCapturedProcesses()
+    {
+        QProcess first, second;
+        for (QProcess *process : {&first, &second}) {
+            process->start("sleep", {"60"});
+            QVERIFY(process->waitForStarted());
+        }
+        enum { Window = Qt::UserRole, Group, Pid };
+        QStandardItemModel model;
+        model.setItemRoleNames({{Window, "IsWindow"}, {Group, "IsGroupParent"}, {Pid, "AppPid"}});
+        auto *group = new QStandardItem("Group");
+        group->setData(true, Group);
+        model.appendRow(group);
+        auto add = [&](qint64 pid) {
+            auto *window = new QStandardItem(QString::number(pid));
+            window->setData(true, Window);
+            window->setData(pid, Pid);
+            group->appendRow(window);
+            return window;
+        };
+        auto *original = add(first.processId());
+        add(first.processId());
+        add(second.processId());
+        MenuTarget target;
+        target.bind(&model, 0);
+        QObject owner;
+        const auto actions = target.killActions(&owner);
+        QCOMPARE(actions.size(), 2);
+        original->setData(second.processId(), Pid);
+        actions[0].value<QAction *>()->trigger();
+        QVERIFY(!first.waitForFinished(50));
+        QVERIFY(!second.waitForFinished(50));
+        actions[1].value<QAction *>()->trigger();
+        QVERIFY(second.waitForFinished());
+        QCOMPARE(second.exitStatus(), QProcess::CrashExit);
+        model.removeRow(0);
+        actions[0].value<QAction *>()->trigger();
+        QVERIFY(!first.waitForFinished(50));
+        QVERIFY(target.killActions(&owner).isEmpty());
+        first.terminate();
+        QVERIFY(first.waitForFinished());
     }
 
     void desktopActionsAndLifetime()

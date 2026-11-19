@@ -862,3 +862,7 @@ All 15 CTest entries passed. The preview-model test uses an isolated D-Bus
 session to verify target switching, repeated requests, stale cleanup from
 another dock and cleanup on destruction. The settings tests cover independent
 persistence and loading the checkbox after Apply.
+
+## Task menus on Plasma 6.8.3 Wayland
+
+Compared the dock with the panel task manager using an application with two windows and two audio streams. Toggling Mute changed both streams in PulseAudio. Disabling grouping separated the windows and survived restarting the dock. Enabling it regrouped them. After suspending the disposable application with SIGSTOP, More → Kill terminated it with SIGKILL and removed both windows. The native menu backend test also exercises two distinct processes and stale menu targets.
