@@ -18,8 +18,11 @@ public:
     bool failed() const { return m_failed; }
     bool hasWarnings() const { return m_warnings; }
     QQuickView *view() { return &m_view; }
-private:
+private Q_SLOTS:
     void position();
+private:
+    void updateReservation();
+    std::unique_ptr<QQuickWindow> m_reservation;
     DockSettings *m_settings;
     QScreen *m_screen;
     bool m_demo;

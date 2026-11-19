@@ -208,6 +208,17 @@ private Q_SLOTS:
             QCOMPARE(DockSettings::normalized(values), values);
         }
     }
+    void visibilityAndAlignmentPersistence() {
+        QCOMPARE(DockSettings::normalized({{"dodge", false}})["visibilityMode"].toInt(), 3);
+        QCOMPARE(DockSettings::normalized({{"dodge", true}})["visibilityMode"].toInt(), 2);
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        QVERIFY(DockSettings(file).apply({{"visibilityMode", 0}, {"dockAlignment", 2}, {"alignmentMargin", 64}}));
+        const auto restored = DockSettings(file).values();
+        QCOMPARE(restored["visibilityMode"].toInt(), 0);
+        QCOMPARE(restored["dockAlignment"].toInt(), 2);
+        QCOMPARE(restored["alignmentMargin"].toInt(), 64);
+    }
     void backgroundPersistence() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);

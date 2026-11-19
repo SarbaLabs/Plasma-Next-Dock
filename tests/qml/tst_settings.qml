@@ -12,6 +12,16 @@ TestCase {
         window.openSettings();
         const screen = findChild(window, "screenControl");
         const edge = findChild(window, "edgeControl");
+        const alignment = findChild(window, "dockAlignmentControl");
+        const visibility = findChild(window, "visibilityModeControl");
+        compare(alignment.currentIndex, 1);
+        alignment.currentIndex = 2;
+        edge.currentIndex = 2;
+        compare(alignment.textAt(2), i18n("Bottom"));
+        compare(alignment.currentIndex, 2);
+        edge.currentIndex = 0;
+        compare(alignment.textAt(2), i18n("Right"));
+        visibility.currentIndex = 0;
         verify(screen.implicitWidth > 0 && edge.implicitWidth > 0);
         verify(screen.textAt(1).includes("DP-1") && screen.textAt(1).includes("AOC 2590G4"));
         verify(screen.textAt(2).startsWith("DP-2") && screen.textAt(2).endsWith("…"));

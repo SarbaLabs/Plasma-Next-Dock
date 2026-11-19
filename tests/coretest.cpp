@@ -140,7 +140,22 @@ private Q_SLOTS:
         QCOMPARE(DockGeometry::surface(screen, size, DockGeometry::Top).top(), screen.top());
         QCOMPARE(DockGeometry::surface(screen, size, DockGeometry::Left).left(), screen.left());
         QCOMPARE(DockGeometry::surface(screen, size, DockGeometry::Right).right(), screen.right());
+        for (auto edge : {DockGeometry::Bottom, DockGeometry::Top, DockGeometry::Left, DockGeometry::Right}) {
+            const QRect start = DockGeometry::surface(screen, size, edge, DockGeometry::Start);
+            const QRect end = DockGeometry::surface(screen, size, edge, DockGeometry::End);
+            QCOMPARE(edge < DockGeometry::Left ? start.left() : start.top(), edge < DockGeometry::Left ? screen.left() : screen.top());
+            QCOMPARE(edge < DockGeometry::Left ? end.right() : end.bottom(), edge < DockGeometry::Left ? screen.right() : screen.bottom());
+        }
         QVERIFY(screen.contains(DockGeometry::surface(screen, QSize(9000,9000), DockGeometry::Bottom)));
+    }
+    void alignmentMarginStaysOnTheSelectedEnd() {
+        using namespace DockGeometry;
+        const QSize output(600, 400), canvas(560, 300);
+        QCOMPARE(alignmentMargins(output, canvas, Bottom, Start, 32), QMargins(32, 0, 0, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Top, End, 80), QMargins(0, 0, 40, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Right, Start, 64), QMargins(0, 64, 0, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Left, End, 80), QMargins(0, 0, 0, 80));
+        QCOMPARE(alignmentMargins(output, canvas, Right, Center, 64), QMargins());
     }
     void roundedContactAndInputAreIndependentOfCanvas() {
         const QRectF bar(100, 100, 300, 50);
@@ -216,7 +231,20 @@ private Q_SLOTS:
         QTest::qWait(1); QVERIFY(!dock.overlapping());
         model.window = true; model.changed();
         QTRY_VERIFY(dock.hideRequested());
-        dock.setDodgeEnabled(false);
+        dock.setVisibility(DockGeometry::WindowsGoBelow);
+        QVERIFY(!dock.hideRequested());
+    }
+    void autoHideWithoutOverlap() {
+        DockController dock;
+        dock.setVisibility(DockGeometry::AutoHide);
+        QVERIFY(!dock.hideRequested());
+        dock.setEdgeAvailable(true);
+        QVERIFY(dock.hideRequested());
+        dock.setHovered(true);
+        QVERIFY(!dock.hideRequested());
+        dock.setHovered(false);
+        QTRY_VERIFY(dock.hideRequested());
+        dock.setVisibility(DockGeometry::DodgeWindows);
         QVERIFY(!dock.hideRequested());
     }
     void coalescesAndHandlesModelLifetime() {

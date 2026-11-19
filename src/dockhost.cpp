@@ -22,6 +22,12 @@ template<typename T> static void selectOutput(T *window, QScreen *screen)
 {
     if constexpr (requires { window->setScreen(screen); }) window->setScreen(screen);
 }
+static LayerShellQt::Window::Anchor edgeAnchor(DockGeometry::Edge edge)
+{
+    using Layer = LayerShellQt::Window;
+    constexpr Layer::Anchor anchors[] = {Layer::AnchorBottom, Layer::AnchorTop, Layer::AnchorLeft, Layer::AnchorRight};
+    return anchors[edge];
+}
 DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland)
     : m_settings(settings), m_screen(screen), m_demo(demo),
       m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_controller(&m_view), m_backgroundEffects(&m_view)
@@ -41,9 +47,6 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
         layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityNone);
         layer->setScope(QStringLiteral("plasma-next-dock"));
         layer->setExclusiveZone(-1);
-        const LayerShellQt::Window::Anchor anchors[] = {LayerShellQt::Window::AnchorBottom,
-            LayerShellQt::Window::AnchorTop, LayerShellQt::Window::AnchorLeft, LayerShellQt::Window::AnchorRight};
-        layer->setAnchors(anchors[m_edge]);
         layer->setCloseOnDismissed(true);
         m_screenEdge = std::make_unique<ScreenEdge>(&m_view, m_edge);
         m_controller.setEdgeAvailable(m_screenEdge->available());
@@ -77,6 +80,10 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     connect(m_view.engine(), &QQmlEngine::exit, qApp, &QCoreApplication::exit);
     m_view.setSource(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
     m_failed |= m_view.status() == QQuickView::Error;
+    if (m_view.rootObject()) {
+        connect(m_view.rootObject(), SIGNAL(reservedThicknessChanged()), this, SLOT(position()));
+        connect(m_view.rootObject(), SIGNAL(effectiveAlignmentMarginChanged()), this, SLOT(position()));
+    }
     position();
     if (!m_failed) m_view.show();
 }
@@ -91,13 +98,69 @@ void DockHost::update(bool settingsOpen)
     m_view.rootContext()->setContextProperty("dockOptions", options);
     m_backgroundEffects.configure(options);
     if (m_screenEdge) m_screenEdge->setAnimated(options["revealAnimation"].toBool());
-    m_controller.setDodgeEnabled(!m_demo && options["dodge"].toBool() && !settingsOpen);
+    const auto mode = static_cast<DockGeometry::Visibility>(options["visibilityMode"].toInt());
+    m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::WindowsGoBelow : mode);
+    position();
 }
 void DockHost::position()
 {
-    const QRect rect = DockGeometry::surface(m_screen->geometry(), m_view.size(), m_edge);
+    const auto alignment = static_cast<DockGeometry::Alignment>(m_settings->values()["dockAlignment"].toInt());
+    const QRect output = m_screen->geometry();
+    const int margin = m_view.rootObject() ? m_view.rootObject()->property("effectiveAlignmentMargin").toInt() : 0;
+    const auto margins = DockGeometry::alignmentMargins(output.size(), m_view.size(), m_edge, alignment, margin);
+    const QRect rect = DockGeometry::surface(output.marginsRemoved(margins), m_view.size(), m_edge, alignment);
     m_controller.setSurfaceOrigin(rect.topLeft());
-    if (qGuiApp->platformName().startsWith("wayland")) desiredSize(LayerShellQt::Window::get(&m_view), rect.size());
+    if (m_surfacePosition) {
+        using Layer = LayerShellQt::Window;
+        auto *layer = Layer::get(&m_view);
+        Layer::Anchors anchors = edgeAnchor(m_edge);
+        if (alignment == DockGeometry::Start) anchors |= m_edge < DockGeometry::Left ? Layer::AnchorLeft : Layer::AnchorTop;
+        if (alignment == DockGeometry::End) anchors |= m_edge < DockGeometry::Left ? Layer::AnchorRight : Layer::AnchorBottom;
+        if (layer->anchors() != anchors) {
+            layer->setAnchors(anchors);
+            m_view.update();
+        }
+        if (layer->margins() != margins) {
+            layer->setMargins(margins);
+            m_view.update();
+        }
+        desiredSize(layer, rect.size());
+        updateReservation();
+    }
     if (m_surfacePosition) m_surfacePosition->setOrigin(rect.topLeft());
     else m_view.setPosition(rect.topLeft());
+}
+
+void DockHost::updateReservation()
+{
+    if (m_demo || m_settings->values()["visibilityMode"].toInt() != DockGeometry::AlwaysVisible || !m_view.rootObject()) {
+        m_reservation.reset();
+        return;
+    }
+    // Keep the visual surface on the physical output edge even when other
+    // panels reserve space. A separate single-edge surface has an unambiguous
+    // exclusive edge, including on earlier layer-shell protocol versions.
+    using Layer = LayerShellQt::Window;
+    if (!m_reservation) {
+        m_reservation = std::make_unique<QQuickWindow>();
+        m_reservation->setScreen(m_screen);
+        m_reservation->setFlags(Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput);
+        m_reservation->setColor(Qt::transparent);
+        auto *layer = Layer::get(m_reservation.get());
+        selectOutput(layer, m_screen);
+        layer->setLayer(Layer::LayerBottom);
+        layer->setAnchors(edgeAnchor(m_edge));
+        layer->setScope(QStringLiteral("plasma-next-dock-reservation"));
+        layer->setKeyboardInteractivity(Layer::KeyboardInteractivityNone);
+    }
+    auto *layer = Layer::get(m_reservation.get());
+    const QSize size = m_edge < DockGeometry::Left ? QSize(m_screen->size().width(), 1) : QSize(1, m_screen->size().height());
+    m_reservation->resize(size);
+    desiredSize(layer, size);
+    const int thickness = m_view.rootObject()->property("reservedThickness").toInt();
+    if (layer->exclusionZone() != thickness) {
+        layer->setExclusiveZone(thickness);
+        m_reservation->update();
+    }
+    m_reservation->show();
 }

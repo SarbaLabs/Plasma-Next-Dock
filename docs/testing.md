@@ -887,3 +887,19 @@ Four simultaneous test docks used a yellow desktop-side stop and a blue
 screen-edge stop at a 72% midpoint. Wayland screenshots showed the blue along
 the physical edge in all four orientations. The same docks were switched to
 Liquid Glass with system blur to check the reflected highlight on each edge.
+
+## Visibility and alignment on KWin Wayland
+
+A maximized Qt test window on the VM measured 1920 × 1022 before reservation,
+1920 × 953 with the bottom dock always visible, and 1920 × 1022 after switching
+to Windows go below. The 69-pixel reservation included the eight-pixel gap.
+At 2× magnification the outside end stayed fixed at both bottom corners. A
+vertical dock aligned at the bottom hid without overlap and was recalled by
+pushing the pointer against the left edge. Tests used a temporary profile.
+Applying top alignment and Always visible directly in Settings moved the left
+dock to the upper end. A newly maximized test window measured 1851 × 1022,
+confirming the same 69-pixel reservation on the horizontal axis.
+
+A left-edge dock aligned at the top with a 64 px margin began at y=64,
+below the existing Plasma panel, and kept that end fixed when hovering its
+first icon at 2× zoom. A bottom-right dock was also checked with a 96 px margin.

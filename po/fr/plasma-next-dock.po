@@ -698,3 +698,33 @@ msgstr "Utiliser le flou système"
 
 msgid "Gradient midpoint (% toward screen edge):"
 msgstr "Milieu du dégradé (% vers le bord de l’écran) :"
+
+msgid "Dock alignment:"
+msgstr "Alignement du dock :"
+
+msgid "Visibility:"
+msgstr "Visibilité :"
+
+msgid "Always visible"
+msgstr "Toujours visible"
+
+msgid "Auto hide"
+msgstr "Masquer automatiquement"
+
+msgid "Dodge windows"
+msgstr "Éviter les fenêtres"
+
+msgid "Windows go below"
+msgstr "Les fenêtres se placent en dessous"
+
+msgid "Left margin (px):"
+msgstr "Marge gauche (px) :"
+
+msgid "Right margin (px):"
+msgstr "Marge droite (px) :"
+
+msgid "Top margin (px):"
+msgstr "Marge supérieure (px) :"
+
+msgid "Bottom margin (px):"
+msgstr "Marge inférieure (px) :"

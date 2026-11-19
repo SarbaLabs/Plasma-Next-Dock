@@ -35,7 +35,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
@@ -172,7 +172,13 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         result[key] = result[key].toBool();
     result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
-    result["glow"] = result["glow"].toBool(); result["dodge"] = result["dodge"].toBool();
+    result["glow"] = result["glow"].toBool();
+    if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 3;
+    number("visibilityMode", 0, 3, true);
+    number("dockAlignment", 0, 2, true);
+    number("alignmentMargin", 0, 512, true);
+    result["dodge"] = result["visibilityMode"].toInt() == 2;
+
     for (const auto *key : {"groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})
         result[key] = result[key].toStringList();
     QStringList launchers;
@@ -189,6 +195,8 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
 static QVariantMap mergeChanges(QVariantMap merged, const QVariantMap &changes)
 {
     for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
+    if (changes.contains("dodge") && !changes.contains("visibilityMode"))
+        merged["visibilityMode"] = changes["dodge"].toBool() ? 2 : 3;
     if (changes.contains("radius")) {
         for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"})
             if (!changes.contains(key)) merged[key] = changes["radius"];
