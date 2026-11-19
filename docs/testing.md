@@ -788,3 +788,20 @@ component completion, the first layer-shell request and KWin configure both
 measured 99 × 254. A live capture on CachyOS showed the complete fourth icon and
 the rounded end of the capsule. The adaptive layout regression test reads the
 task count immediately after loading, before queued model changes can settle.
+
+## Optional login startup (2026-11-19)
+
+On CachyOS Plasma Wayland, the French checkbox was initially clear. With an
+isolated XDG configuration copied from the four-launcher setup, checking it and
+applying created the user symlink. Reopening the dock with the same configuration
+showed the checked state. A second login invocation exited successfully and left
+the original PID holding the runtime lock. Clearing the checkbox and applying
+removed the link. The regular dock was then restored with all four launchers.
+
+In a temporary prefix containing spaces, desktop-file-validate accepted the login
+template. The systemd XDG autostart generator produced one matching user service
+while enabled. Reinstalling retained the link. Uninstall removed it and running
+the generator again produced no matching service. The settings-persistence test
+also covers missing templates, conflicting files, repeated enable/disable, and
+demo isolation. All 15 CTest entries passed. An actual KDE logout/login cycle
+with the option enabled and then disabled remains a manual acceptance check.

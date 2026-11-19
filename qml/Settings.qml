@@ -27,6 +27,8 @@ Controls.ApplicationWindow {
     }
     property string launcherError: ""
     function openSettings() {
+        login.checked = login.saved = dockSettings.startsAtLogin();
+        loginError.visible = false;
         const v = dockSettings.values;
         edge.currentIndex = v.edge;
         screen.currentIndex = Math.max(0, outputNames.indexOf(v.screen));
@@ -57,7 +59,8 @@ Controls.ApplicationWindow {
     footer: Controls.DialogButtonBox {
         objectName: "settingsButtons"
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
-        onApplied: dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
+        onApplied: {
+            if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
@@ -65,7 +68,12 @@ Controls.ApplicationWindow {
             showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))
+            radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))) return;
+            if (login.checked !== login.saved) {
+                loginError.visible = !dockSettings.setStartAtLogin(login.checked);
+                login.checked = login.saved = dockSettings.startsAtLogin();
+            }
+        }
         onRejected: window.close()
     }
     header: Controls.TabBar {
@@ -86,6 +94,21 @@ Controls.ApplicationWindow {
             Kirigami.FormLayout {
                 Layout.fillWidth: true
                 Layout.margins: 16
+                Controls.CheckBox {
+                    id: login
+                    objectName: "startAtLoginControl"
+                    property bool saved: false
+                    enabled: dockSettings.loginAvailable
+                    text: i18n("Start Plasma Next Dock at login")
+                }
+                Controls.Label {
+                    id: loginError
+                    visible: false
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    color: Kirigami.Theme.negativeTextColor
+                    text: i18n("Could not update the login entry. Check the dock installation and your autostart directory.")
+                }
                 Controls.Label { text: i18n("Position and appearance"); font.bold: true; Kirigami.FormData.isSection: true }
                 Controls.ComboBox {
                     id: screen

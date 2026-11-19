@@ -292,3 +292,10 @@ output management; neither is implemented by this branch.
 
 The initial canvas now includes the tasks available at component completion.
 The four-launcher left-edge layout was verified on KWin. See [startup measurements](testing.md#initial-launcher-layout-on-kwin-2026-11-19).
+
+## Optional login startup (2026-11-19)
+
+The settings checkbox enables per-user KDE session startup. The install script
+preserves the user's choice on updates. See [validation and the remaining login
+check](testing.md#optional-login-startup-2026-11-19). Multiple independent docks
+and output assignment are the next planned feature after desktop acceptance.
