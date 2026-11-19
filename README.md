@@ -289,6 +289,8 @@ by its maintainer; test limitations are recorded explicitly.
 
 ## Native context menus and language
 
+Tasks with audio offer Mute. In More, you can change grouping for one application or use Kill to force a blocked process to quit.
+
 The dock uses `PlasmaExtras.Menu` / `MenuItem`, the same components as Plasma's
 Icons-Only Task Manager. These wrap Qt Widgets menus, so appearance comes from
 KDE platform integration and the selected application widget style/color scheme.

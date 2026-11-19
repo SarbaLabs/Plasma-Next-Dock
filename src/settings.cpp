@@ -35,7 +35,8 @@ QVariantMap DockSettings::defaults()
         {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
-        {"groupApplications", true}, {"taskSort", 0}, {"groupClick", 0},
+        {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
+        {"groupingLauncherUrlBlacklist", QStringList{}}, {"taskSort", 0}, {"groupClick", 0},
         {"minimizeActive", false}, {"middleClick", 0}, {"wheelAction", 0}, {"skipMinimized", true},
         {"filterDesktop", true}, {"filterActivity", true}, {"filterScreen", false}, {"onlyMinimized", false},
         {"layoutDirection", 0}, {"showSeparator", true}, {"revealAttention", false},
@@ -146,6 +147,8 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool(); result["dodge"] = result["dodge"].toBool();
+    for (const auto *key : {"groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})
+        result[key] = result[key].toStringList();
     QStringList launchers;
     for (const auto &entry : result["launchers"].toStringList()) {
         const QUrl url(entry);

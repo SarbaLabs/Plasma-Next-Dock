@@ -324,3 +324,7 @@ ungrouped windows on a vertical dock; see [testing](testing.md#external-drag-scr
 Hovering a window card uses the KWin Highlight Window effect to reveal the
 corresponding window on the desktop. A per-dock setting controls the feature.
 Focus preservation and restoration were verified on the live Wayland desktop.
+
+## Task menu comparison
+
+The task menu now includes native frame and capture controls, per-dock application grouping exceptions, audio mute and both process-specific Kill and group-wide Kill All actions.

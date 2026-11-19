@@ -43,6 +43,24 @@ TestCase {
         compare(bounceSpy.count, 1);
         compare(bounceSpy.signalArguments[0][0], 0);
     }
+    Item {
+        id: audioFixture
+        property int taskIndex: 0
+        property var streams: [1, 2]
+        property bool muted: false
+        function muteToggle() { muted = !muted; }
+    }
+    function test_audioMenuTargetsMatchingRow() {
+        loader.item.showAt(Qt.point(100, 100), source, 0, audioFixture);
+        tryCompare(loader.item, "visibleMenu", true);
+        verify(loader.item.hasTaskAudio);
+        verify(testEnvironment.clickMenu("Mute"));
+        compare(audioFixture.muted, true);
+        audioFixture.taskIndex = 1;
+        compare(loader.item.hasTaskAudio, false);
+        audioFixture.taskIndex = 0;
+        audioFixture.muted = false;
+    }
     function test_nativePinAndUnpin() {
         loader.item.showAt(Qt.point(100, 100), source, 0);
         tryCompare(loader.item, "visibleMenu", true);

@@ -49,6 +49,15 @@ Item {
         tasks.launcherList = dockSettings.values.launchers;
         return false;
     }
+    function toggleGrouping(index) {
+        tasks.requestToggleGrouping(index);
+        const saved = dockSettings.apply({groupingAppIdBlacklist: tasks.groupingAppIdBlacklist,
+                                          groupingLauncherUrlBlacklist: tasks.groupingLauncherUrlBlacklist});
+        if (!saved) {
+            tasks.groupingAppIdBlacklist = Qt.binding(() => source.options.groupingAppIdBlacklist || []);
+            tasks.groupingLauncherUrlBlacklist = Qt.binding(() => source.options.groupingLauncherUrlBlacklist || []);
+        }
+    }
     function pinned(url) { return tasks.launcherPosition(url) >= 0; }
     function togglePinned(url) {
         if (pinned(url)) tasks.requestRemoveLauncher(url);
@@ -60,6 +69,8 @@ Item {
     TaskManager.TasksModel {
         id: tasks
         groupMode: source.options.groupApplications !== false ? TaskManager.TasksModel.GroupApplications : TaskManager.TasksModel.GroupDisabled
+        groupingAppIdBlacklist: source.options.groupingAppIdBlacklist || []
+        groupingLauncherUrlBlacklist: source.options.groupingLauncherUrlBlacklist || []
         groupInline: false
         groupingWindowTasksThreshold: -1
         sortMode: source.selectedSort

@@ -584,3 +584,15 @@ msgstr "%1 : %2"
 
 msgid "Highlight the window on the desktop when hovering over its preview"
 msgstr "Mettre la fenêtre en évidence sur le bureau au survol de sa miniature"
+
+msgid "Kill"
+msgstr "Tuer"
+
+msgid "%1 (PID %2)"
+msgstr "%1 (PID %2)"
+
+msgid "Could not force the application to quit."
+msgstr "Impossible de forcer l’arrêt de l’application."
+
+msgid "Kill All"
+msgstr "Tout tuer"

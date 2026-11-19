@@ -15,6 +15,7 @@ public:
     QModelIndex index() const { return m_index; }
     bool valid() const { return m_index.isValid(); }
     Q_INVOKABLE void bind(QAbstractItemModel *model, int row);
+    Q_INVOKABLE QVariantMap killActions(QObject *owner) const;
     Q_INVOKABLE QVariant data(const QString &role) const;
 Q_SIGNALS:
     void changed();
