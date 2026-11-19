@@ -287,3 +287,8 @@ no additional installation or desktop retest is required for that update. PR #11
 is prepared for manual merge, not recorded as merged until the maintainer does so.
 The next proposed stage remains optional autostart, followed by multiple docks and
 output management; neither is implemented by this branch.
+
+## First-launch clipping (2026-11-19)
+
+The initial canvas now includes the tasks available at component completion.
+The four-launcher left-edge layout was verified on KWin. See [startup measurements](testing.md#initial-launcher-layout-on-kwin-2026-11-19).
