@@ -39,23 +39,31 @@ QVariant MenuTarget::data(const QString &role) const
     return {};
 }
 
-QVariantList MenuTarget::killActions(QObject *owner) const
+QVariantMap MenuTarget::killActions(QObject *owner) const
 {
     QVariantList actions;
-    if (!owner || !valid()) return actions;
+    if (!owner || !valid()) return {};
     const auto roles = m_model->roleNames();
     const int pidRole = roles.key("AppPid", -1);
     const int windowRole = roles.key("IsWindow", -1);
     const bool group = data("IsGroupParent").toBool();
     const int count = group ? m_model->rowCount(m_index) : 1;
     QSet<int> seen;
+    bool wholeGroup = group && count > 1;
     for (int row = 0; row < count; ++row) {
         const QPersistentModelIndex window = group ? m_model->index(row, 0, m_index) : QModelIndex(m_index);
         const int pid = window.data(pidRole).toInt();
-        if (!window.data(windowRole).toBool() || pid <= 1 || pid == getpid() || seen.contains(pid)) continue;
+        if (!window.data(windowRole).toBool() || pid <= 1 || pid == getpid()) {
+            wholeGroup = false;
+            continue;
+        }
+        if (seen.contains(pid)) continue;
         QDBusUnixFileDescriptor handle;
         handle.giveFileDescriptor(syscall(SYS_pidfd_open, pid, 0));
-        if (!handle.isValid() || syscall(SYS_pidfd_send_signal, handle.fileDescriptor(), 0, nullptr, 0) != 0) continue;
+        if (!handle.isValid() || syscall(SYS_pidfd_send_signal, handle.fileDescriptor(), 0, nullptr, 0) != 0) {
+            wholeGroup = false;
+            continue;
+        }
         seen.insert(pid);
         auto *action = new QAction(QIcon::fromTheme(QStringLiteral("process-stop")),
             i18n("%1 (PID %2)", window.data().toString().replace('&', "&&"), QString::number(pid)), owner);
@@ -68,5 +76,13 @@ QVariantList MenuTarget::killActions(QObject *owner) const
         actions << QVariant::fromValue(action);
     }
     if (actions.size() == 1) actions.first().value<QAction *>()->setText(i18n("Kill"));
-    return actions;
+    QVariantMap result{{QStringLiteral("processes"), actions}};
+    if (wholeGroup) {
+        auto *all = new QAction(i18n("Kill All"), owner);
+        connect(all, &QAction::triggered, this, [actions] {
+            for (const auto &process : actions) process.value<QAction *>()->trigger();
+        });
+        result.insert(QStringLiteral("all"), QVariant::fromValue(all));
+    }
+    return result;
 }

@@ -234,10 +234,14 @@ Item {
                 () => { if (menuTarget.valid) source.toggleGrouping(menuTarget.index); }, true, !!get("IsGroupable"));
         }
         const kills = menuTarget.killActions(menu);
-        if (kills.length) {
+        const processes = kills.processes || [];
+        if (processes.length) {
             separator(more);
-            const destination = kills.length === 1 ? more : submenu(more, i18n("Kill"), "process-stop");
-            for (const action of kills) add(destination, action.text, "process-stop", () => action.trigger());
+            if (processes.length > 1 || !kills.all) {
+                const destination = processes.length === 1 ? more : submenu(more, i18n("Kill"), "process-stop");
+                for (const action of processes) add(destination, action.text, "process-stop", () => action.trigger());
+            }
+            if (kills.all) add(more, kills.all.text, "process-stop", () => kills.all.trigger());
         }
         add(menu, get("IsGroupParent") ? kde("@action:inmenu", "&Close All") : kde("@action:inmenu", "&Close"), "window-close", () => request("requestClose"), get("IsClosable"));
     }

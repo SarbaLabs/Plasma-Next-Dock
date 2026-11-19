@@ -593,3 +593,6 @@ msgstr "%1 (PID %2)"
 
 msgid "Could not force the application to quit."
 msgstr "Impossible de forcer l’arrêt de l’application."
+
+msgid "Kill All"
+msgstr "Tout tuer"

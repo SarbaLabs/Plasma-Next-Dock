@@ -83,3 +83,6 @@ that process close together. If a group contains multiple eligible processes,
 choose a window title and PID from the submenu. Actions retain a Linux pidfd
 and recheck their task index before sending the signal. Launchers and windows
 without a usable PID have no Kill action.
+
+More → Kill All stops all captured processes in a group. It appears when all
+windows have eligible processes. A group sharing one process shows only Kill All.
