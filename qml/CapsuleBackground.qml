@@ -2,16 +2,13 @@
     SPDX-FileCopyrightText: 2024 Matt Anis
     SPDX-License-Identifier: GPL-2.0-or-later
 */
-
 import QtQuick
+import QtQuick.Shapes
 import org.kde.kirigami as Kirigami
-import "code/CapsuleGeometry.js" as Geometry
 
 Item {
     id: root
-
-    property real radius: 10
-    readonly property real effectiveRadius: Geometry.radius(width, height, true, radius)
+    property var corners: [10, 10, 10, 10]
     property bool glowEnabled: false
     property bool glowHovering: false
     property point glowPosition: Qt.point(width / 2, height / 2)
@@ -19,111 +16,95 @@ Item {
     property real glowIntensity: 1
     property real glowRadius: 70
     property real glowOpacity: 0.3
-    property int backgroundType: 0 // 0 = Solid, 1 = Transparent, 2 = Translucent, 3 = SystemBlur, 4 = LiquidGlass
+    property int backgroundType: 0
     property color customBackgroundColor: Kirigami.Theme.backgroundColor
+    property color lowerColor: Kirigami.Theme.highlightColor
     property int customBorderWidth: 1
     property color customBorderColor: Kirigami.Theme.disabledTextColor
-    property bool isVertical: false
+    property int edge: 0
+    readonly property bool isVertical: edge >= 2
+    // Both gradients run from the desktop-facing side toward the physical edge.
+    readonly property point desktopSide: Qt.point(edge === 2 ? width : 0, edge === 1 ? height : 0)
+    readonly property point screenSide: Qt.point(edge === 3 ? width : 0, edge === 0 ? height : 0)
+    property real midpoint: 0.5
+    property real tintOpacity: 1
+    property real topOpacity: 1
+    property real bottomOpacity: 1
+    property real borderOpacity: 1
+    readonly property var drawing: dockController.capsuleDrawing(Qt.size(width, height), corners, isVertical, customBorderWidth)
+    function tint(color, opacity) { return Qt.rgba(color.r, color.g, color.b, opacity * color.a); }
 
-    property real blurOpacity: 0.35
-
-    // The standalone host owns blur/contrast; this component only paints.
-
-    // ==========================================
-    // MODE 0: SOLID BACKGROUND
-    // ==========================================
-    Rectangle {
-        id: solidBackground
-        objectName: "solidBackground"
-        visible: root.backgroundType === 0
+    Shape {
+        id: base
         anchors.fill: parent
-        radius: root.effectiveRadius
-        color: root.customBackgroundColor
-        border.color: !glowLoader.active && root.customBorderWidth > 0 ? root.customBorderColor : "transparent"
-        border.width: root.customBorderWidth
-    }
-
-    // ==========================================
-    // MODE 2: TRANSLUCENT & MODE 3: SYSTEM BLUR
-    // (Translucent is pure QML tint; System Blur adds KWin blur behind it)
-    // ==========================================
-    Rectangle {
-        id: translucentOrBlurBackground
-        objectName: "tintedBackground"
-        visible: root.backgroundType === 2 || root.backgroundType === 3
-        anchors.fill: parent
-        radius: root.effectiveRadius
-        color: Qt.rgba(root.customBackgroundColor.r, root.customBackgroundColor.g, root.customBackgroundColor.b, root.blurOpacity)
-        border.color: !glowLoader.active && root.customBorderWidth > 0 ? root.customBorderColor : "transparent"
-        border.width: root.customBorderWidth
-    }
-
-    // ==========================================
-    // MODE 4: LIQUID GLASS
-    // ==========================================
-    Item {
-        id: liquidGlassContainer
-        objectName: "glassBackground"
-        visible: root.backgroundType === 4
-        anchors.fill: parent
-
-        // Single clean glass base rectangle with crisp border
-        Rectangle {
-            id: glassBase
-            anchors.fill: parent
-            radius: root.effectiveRadius
-            color: {
-                const isDark = Kirigami.Theme.backgroundColor.hslLightness < 0.5;
-                return isDark
-                    ? Qt.rgba(0.12, 0.12, 0.15, root.blurOpacity)
-                    : Qt.rgba(0.96, 0.97, 1.0, root.blurOpacity);
-            }
-            border.color: !glowLoader.active && root.customBorderWidth > 0 ? root.customBorderColor : "transparent"
-            border.width: root.customBorderWidth
+        preferredRendererType: Shape.CurveRenderer
+        containsMode: Shape.FillContains
+        ShapePath {
+            strokeWidth: -1
+            fillColor: root.tint(root.customBackgroundColor, root.tintOpacity)
+            fillGradient: root.backgroundType === 5 ? colors : null
+            PathSvg { path: root.drawing.fill }
         }
+    }
+    property alias fillShape: base
+    LinearGradient {
+        id: colors
+        x1: root.desktopSide.x; y1: root.desktopSide.y
+        x2: root.screenSide.x; y2: root.screenSide.y
+        GradientStop { id: start; position: 0; color: root.tint(root.customBackgroundColor, root.topOpacity) }
+        GradientStop {
+            position: root.midpoint
+            color: {
+                const a = start.color, b = end.color, sum = a.a + b.a;
+                if (!sum) return "transparent";
+                return Qt.rgba((a.r*a.a + b.r*b.a) / sum, (a.g*a.a + b.g*b.a) / sum,
+                               (a.b*a.a + b.b*b.a) / sum, sum / 2);
+            }
+        }
+        GradientStop { id: end; position: 1; color: root.tint(root.lowerColor, root.bottomOpacity) }
     }
     Loader {
         id: glowLoader
         objectName: "glowLoader"
         anchors.fill: parent
-        active: root.glowEnabled && root.backgroundType !== 1
+        active: root.glowEnabled && (root.backgroundType !== 0 || root.tintOpacity > 0)
         sourceComponent: CapsuleGlow {
-            cornerRadius: root.effectiveRadius
+            silhouette: root.drawing.fill
             pointerX: root.glowPosition.x
             pointerY: root.glowPosition.y
             glowRadius: Math.max(1, root.glowRadius)
-            intensity: Math.max(0, Math.min(2, root.glowIntensity))
-            strength: Math.max(0, Math.min(1, root.glowOpacity))
+            intensity: root.glowIntensity
+            strength: root.glowOpacity
             hovering: root.glowHovering
             glowColor: root.glowColor
         }
     }
-    // Gloss and border stay above the optional glow.
-    Item {
+    Shape {
         anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
         visible: root.backgroundType === 4
-        // Internal gloss sheen inset safely inside the border
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: Math.max(0, root.customBorderWidth)
-            radius: Math.max(0, root.effectiveRadius - root.customBorderWidth)
-            color: "transparent"
-            gradient: Gradient {
-                orientation: root.isVertical ? Gradient.Horizontal : Gradient.Vertical
-                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.16) }
-                GradientStop { position: 0.35; color: Qt.rgba(1, 1, 1, 0.04) }
-                GradientStop { position: 0.75; color: Qt.rgba(1, 1, 1, 0.01) }
-                GradientStop { position: 1.0; color: Qt.rgba(1, 1, 1, 0.06) }
+        ShapePath {
+            strokeWidth: -1
+            fillGradient: LinearGradient {
+                x1: root.desktopSide.x; y1: root.desktopSide.y
+                x2: root.screenSide.x; y2: root.screenSide.y
+                GradientStop { position: 0; color: "#29ffffff" }
+                GradientStop { position: 0.35; color: "#0affffff" }
+                GradientStop { position: 0.75; color: "#03ffffff" }
+                GradientStop { position: 1; color: "#0fffffff" }
             }
+            PathSvg { path: root.drawing.fill }
         }
     }
-    Rectangle {
+    Shape {
         anchors.fill: parent
-        visible: glowLoader.active && root.customBorderWidth > 0
-        radius: root.effectiveRadius
-        color: "transparent"
-        border.width: root.customBorderWidth
-        border.color: root.customBorderColor
+        preferredRendererType: Shape.CurveRenderer
+        visible: root.customBorderWidth > 0 && root.borderOpacity > 0
+        ShapePath {
+            strokeWidth: -1
+            fillRule: ShapePath.OddEvenFill
+            fillColor: root.tint(root.customBorderColor, root.borderOpacity)
+            PathSvg { path: root.drawing.outline }
+        }
     }
-
 }

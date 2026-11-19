@@ -29,14 +29,15 @@ public:
     void setEdgeAvailable(bool available);
     void setDodgeEnabled(bool enabled);
     void setSurfaceOrigin(QPoint origin);
-    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom);
+    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {});
+    Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void evaluate();
     Q_INVOKABLE void setAttention(bool attention);
 Q_SIGNALS:
     void pointerHoveredChanged();
     void pointerPositionChanged();
-    void capsuleChanged(QRectF capsule, qreal radius);
+    void capsuleChanged(const QPainterPath &path);
     void modelChanged();
     void stateChanged();
 private:
@@ -55,8 +56,7 @@ private:
     QList<QMetaObject::Connection> m_connections;
     QTimer m_leaveTimer;
     QPoint m_origin;
-    QRectF m_capsule;
-    qreal m_radius = 0;
+    QPainterPath m_shape;
     bool m_dodgeEnabled = true;
     bool m_edgeAvailable = false;
     bool m_hovered = false;

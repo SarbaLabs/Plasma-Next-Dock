@@ -5,7 +5,6 @@ import QtQuick.Window
 import org.kde.plasma.private.mpris as Mpris
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
-import "code/CapsuleGeometry.js" as Geometry
 import "code/InteractionGeometry.js" as Interaction
 import "code/AdaptiveLayout.js" as Adaptive
 import "code/TaskBehavior.js" as Behavior
@@ -39,8 +38,8 @@ Item {
     property int layoutCount: 0
     function syncTaskCount() { layoutCount = repeater.count; }
     readonly property var layoutMetrics: Adaptive.metrics(layoutCount, dockOptions.iconSize,
-        dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16,
-        vertical ? outputSize.width : outputSize.height,
+        dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16 - 2 * endClearance,
+        (vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
         dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
@@ -54,8 +53,8 @@ Item {
     readonly property real length: layoutMetrics.length
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
     readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
-    width: vertical ? depth : length
-    height: vertical ? length : depth
+    width: vertical ? depth + (dockOptions.borderWidth ?? 1) : length + 2 * endClearance
+    height: vertical ? length + 2 * endClearance : depth + (dockOptions.borderWidth ?? 1)
     property int dragIndex: -1
     readonly property bool dragging: dragIndex >= 0
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
@@ -154,7 +153,7 @@ Item {
             if (!slot) continue;
             icons.push(slot.inputItem.mapToItem(root, Qt.rect(0, 0, slot.inputItem.width, slot.inputItem.height)));
         }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), bar.effectiveRadius, icons, dockOptions.edge);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, icons, dockOptions.edge, bar.corners);
     }
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
@@ -202,6 +201,10 @@ Item {
         ignoreUnknownSignals: true
         function onLaunchRequested(row) { root.rememberLaunch(repeater.itemAt(row)); }
     }
+    DockPalette { id: dockPalette }
+    readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
+        dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
+    readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
     CapsuleBackground {
         id: bar
         objectName: "capsuleBackground"
@@ -209,18 +212,28 @@ Item {
         y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
         width: root.vertical ? root.barThickness : root.barLength
         height: root.vertical ? root.barLength : root.barThickness
-        radius: Geometry.radius(width, height, true, dockOptions.radius)
+        corners: root.corners
+        readonly property color defaultTint: backgroundType !== 4 ? Kirigami.Theme.backgroundColor
+            : Kirigami.Theme.backgroundColor.hslLightness < 0.5 ? "#1f1f26" : "#f5f7ff"
+        customBackgroundColor: backgroundType === 5
+            ? dockPalette.resolve(dockOptions.gradientTopRole, dockOptions.gradientTopColor, Kirigami.Theme.backgroundColor)
+            : dockPalette.resolve(dockOptions.backgroundRole, dockOptions.backgroundColor, defaultTint)
+        lowerColor: dockPalette.resolve(dockOptions.gradientBottomRole, dockOptions.gradientBottomColor, Kirigami.Theme.highlightColor)
+        topOpacity: dockOptions.gradientTopOpacity ?? 1
+        bottomOpacity: dockOptions.gradientBottomOpacity ?? 1
+        borderOpacity: dockOptions.borderOpacity ?? 1
         backgroundType: dockOptions.backgroundType === undefined ? 0 : dockOptions.backgroundType
-        blurOpacity: dockOptions.backgroundOpacity === undefined ? 0.35 : dockOptions.backgroundOpacity
+        tintOpacity: backgroundType === 4 ? (dockOptions.glassOpacity ?? 0.35) : (dockOptions.backgroundOpacity ?? 1)
+        midpoint: (dockOptions.gradientMidpoint ?? 50) / 100
         customBorderWidth: dockOptions.borderWidth === undefined ? 1 : dockOptions.borderWidth
-        customBorderColor: dockOptions.borderUseTheme !== false ? Kirigami.Theme.disabledTextColor : dockOptions.borderColor
-        isVertical: root.vertical
+        customBorderColor: dockPalette.resolve(dockOptions.borderRole, dockOptions.borderColor, Kirigami.Theme.disabledTextColor)
+        edge: dockOptions.edge
         glowEnabled: dockOptions.glow
         glowPosition: Qt.point(dockController.pointerPosition.x - bar.x, dockController.pointerPosition.y - bar.y)
-        glowHovering: dockController.pointerHovered && Geometry.containsPoint(width, height, effectiveRadius, glowPosition.x, glowPosition.y)
+        glowHovering: dockController.pointerHovered && fillShape.contains(glowPosition)
         glowColor: root.applicationColor
         glowRadius: root.maximum
-        onRadiusChanged: root.queueGeometry()
+        onCornersChanged: root.queueGeometry()
         onXChanged: root.queueGeometry()
         onYChanged: root.queueGeometry()
         onWidthChanged: root.queueGeometry()
@@ -232,8 +245,8 @@ Item {
         objectName: "taskViewport"
         width: root.length
         height: root.depth
-        x: root.vertical ? (root.width - width) / 2 : 0
-        y: root.vertical ? (root.height - height) / 2 : 0
+        x: (root.width - width) / 2 + (root.vertical ? (dockOptions.edge === 2 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
+        y: (root.height - height) / 2 + (!root.vertical ? (dockOptions.edge === 1 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
         rotation: root.vertical ? 90 : 0
         clip: true
         contentWidth: Math.max(width, taskRow.width + 2 * root.endPadding)
@@ -465,7 +478,7 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: (dockOptions.glow && bar.backgroundType !== 1) || (dockOptions.indicatorMode === 2
+                        active: (dockOptions.glow && (bar.backgroundType !== 0 || bar.tintOpacity > 0)) || (dockOptions.indicatorMode === 2
                             && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {

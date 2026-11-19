@@ -20,16 +20,15 @@ BackgroundEffects::~BackgroundEffects()
 }
 void BackgroundEffects::configure(const QVariantMap &options)
 {
-    const int mode = options.value("backgroundType", 0).toInt();
-    const bool enabled = mode == 3 || mode == 4;
+    const bool enabled = options.value("systemBlur").toBool();
     if (enabled == m_enabled) return;
     m_enabled = enabled;
     schedule();
 }
-void BackgroundEffects::setGeometry(QRectF capsule, qreal radius)
+void BackgroundEffects::setGeometry(const QPainterPath &capsule)
 {
-    if (capsule == m_capsule && radius == m_radius) return;
-    m_capsule = capsule; m_radius = radius;
+    if (capsule == m_capsule) return;
+    m_capsule = capsule;
     schedule();
 }
 void BackgroundEffects::schedule(bool restore)
@@ -76,7 +75,7 @@ void BackgroundEffects::apply()
 {
     if (!m_window || m_surfaceDestroyed) return;
     // An empty region means full-window blur to KWin, so never enable it.
-    const QRegion region = QRegion(DockGeometry::capsule(m_capsule, m_radius).toFillPolygon().toPolygon())
+    const QRegion region = QRegion(m_capsule.toFillPolygon().toPolygon())
         .intersected(QRect(QPoint(), m_window->size()));
     if (!m_enabled || region.isEmpty()) { clear(); return; }
     if (!m_window->isVisible() || !m_window->isExposed()) return;

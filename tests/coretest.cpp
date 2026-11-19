@@ -28,6 +28,18 @@ class CoreTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void signedCornersFollowTheDockAxis() {
+        const auto horizontal = DockGeometry::capsule({0, 0, 160, 40}, {12, 0, -15, -20}, false);
+        QVERIFY(!horizontal.contains({1, 1}));
+        QVERIFY(horizontal.contains({159, 1}));
+        QVERIFY(horizontal.contains({-8, 39}));
+        QVERIFY(!horizontal.contains({-8, 28}));
+        QVERIFY(horizontal.contains({165, 39}));
+        const auto vertical = DockGeometry::capsule({0, 0, 40, 160}, {-20, 0, 10, -20}, true);
+        QVERIFY(vertical.contains({1, -8}));
+        QVERIFY(!vertical.contains({14, -8}));
+        QVERIFY(vertical.contains({1, 168}));
+    }
     void windowPointerIgnoresChildHoverAndRepeatedPositions() {
         QQuickWindow window;
         window.resize(400, 200);

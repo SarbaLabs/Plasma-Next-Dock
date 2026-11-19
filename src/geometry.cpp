@@ -23,9 +23,54 @@ QPainterPath capsule(const QRectF &rect, qreal radius)
     path.addRoundedRect(rect, radius, radius);
     return path;
 }
-QRegion inputRegion(const QRectF &rect, qreal radius, const QList<QRectF> &icons, const QRect &bounds, Edge edge)
+// Physical corners are clockwise from top left. A negative corner extends
+// along the long axis, with its outer tip tangent to the screen edge.
+QPainterPath capsule(const QRectF &rect, const QList<qreal> &corners, bool vertical)
 {
-    QRegion region(capsule(rect, radius).toFillPolygon().toPolygon());
+    QPainterPath path;
+    if (rect.isEmpty() || corners.size() != 4) return path;
+    const qreal limit = std::min(rect.width(), rect.height()) / 2;
+    const QPointF origins[] = {rect.topLeft(), rect.topRight(), rect.bottomRight(), rect.bottomLeft()};
+    constexpr qreal k = 0.5522847498307936;
+    for (int i = 0; i < 4; ++i) {
+        const qreal r = std::clamp(corners[i], -limit, limit);
+        const QPointF h((i == 0 || i == 3 ? 1 : -1) * (vertical ? std::abs(r) : r), 0);
+        const QPointF v(0, (i < 2 ? 1 : -1) * (vertical ? r : std::abs(r)));
+        const QPointF first = i % 2 ? h : v, last = i % 2 ? v : h;
+        const auto origin = origins[i];
+        if (i == 0) path.moveTo(origin + first);
+        else path.lineTo(origin + first);
+        if (r) path.cubicTo(origin + first * (1-k), origin + last * (1-k), origin + last);
+    }
+    path.closeSubpath();
+    return path;
+}
+
+QString svgPath(const QPainterPath &path)
+{
+    QString svg;
+    auto point = [](const QPainterPath::Element &e) {
+        return QString::number(e.x, 'f', 3) + ' ' + QString::number(e.y, 'f', 3) + ' ';
+    };
+    for (int i = 0; i < path.elementCount(); ++i) {
+        auto e = path.elementAt(i);
+        if (e.isMoveTo()) {
+            if (i) svg += 'Z';
+            svg += 'M' + point(e);
+        } else if (e.isLineTo()) svg += 'L' + point(e);
+        else if (e.isCurveTo()) {
+            svg += 'C' + point(e);
+            svg += point(path.elementAt(++i));
+            svg += point(path.elementAt(++i));
+        }
+    }
+    if (!svg.isEmpty()) svg += 'Z';
+    return svg;
+}
+
+QRegion inputRegion(const QRectF &rect, qreal radius, const QList<QRectF> &icons, const QRect &bounds, Edge edge, const QPainterPath &shape)
+{
+    QRegion region((shape.isEmpty() ? capsule(rect, radius) : shape).toFillPolygon().toPolygon());
     if (!rect.isEmpty()) {
         // The entire recall span must receive pointer entry, including empty ends.
         // Keep at least one edge pixel even at zero spacing. A connector fills

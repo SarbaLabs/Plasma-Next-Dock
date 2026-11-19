@@ -34,7 +34,7 @@ private Q_SLOTS:
         connect(&controller, &DockController::capsuleChanged, &effects, &BackgroundEffects::setGeometry);
         const QRectF capsule(30.5, 80.5, 300, 50);
         controller.setGeometry(capsule, 10, {}, 0);
-        effects.configure({{"backgroundType", 3}});
+        effects.configure({{"systemBlur", true}, {"backgroundType", 5}});
         QTRY_VERIFY(effects.enabled);
         QCOMPARE(effects.region, QRegion(DockGeometry::capsule(capsule, 10).toFillPolygon().toPolygon()));
         QVERIFY(!effects.region.contains(QPoint(31, 81)));
@@ -51,15 +51,15 @@ private Q_SLOTS:
         controller.setGeometry(capsule, 999, {}, 0);
         QTRY_COMPARE(effects.writes, writes + 2);
         QCOMPARE(effects.region, QRegion(DockGeometry::capsule(capsule, 25).toFillPolygon().toPolygon()));
-        effects.configure({{"backgroundType", 4}});
+        effects.configure({{"systemBlur", true}, {"backgroundType", 4}});
         QTest::qWait(20);
         QCOMPARE(effects.writes, writes + 2); // Same blur in both modes.
-        for (int mode : {0, 1, 2}) {
+        for (int mode : {0, 4, 5}) {
             effects.configure({{"backgroundType", mode}});
             QTRY_VERIFY(!effects.enabled);
         }
-        effects.setGeometry({}, 0);
-        effects.configure({{"backgroundType", 3}});
+        effects.setGeometry(DockGeometry::capsule({}, 0));
+        effects.configure({{"systemBlur", true}, {"backgroundType", 5}});
         QTest::qWait(20); QVERIFY(!effects.enabled); // Never accidentally blur the full canvas.
         QVERIFY(effects.guiThread);
     }
@@ -67,8 +67,8 @@ private Q_SLOTS:
         QQuickWindow window; window.resize(300, 100); window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         Recorder effects(&window);
-        effects.setGeometry(QRectF(20, 40, 240, 40), 10);
-        effects.configure({{"backgroundType", 4}});
+        effects.setGeometry(DockGeometry::capsule(QRectF(20, 40, 240, 40), 10));
+        effects.configure({{"systemBlur", true}, {"backgroundType", 4}});
         QTRY_VERIFY(effects.enabled);
         for (int cycle = 0; cycle < 10; ++cycle) {
             const int writes = effects.writes;
@@ -92,7 +92,7 @@ private Q_SLOTS:
         QCoreApplication::sendEvent(&window, &destroy);
         QVERIFY(!effects.enabled);
         const int writes = effects.writes;
-        effects.setGeometry(QRectF(30, 40, 220, 40), 0);
+        effects.setGeometry(DockGeometry::capsule(QRectF(30, 40, 220, 40), 0));
         QCoreApplication::processEvents();
         QCOMPARE(effects.writes, writes);
         QPlatformSurfaceEvent create(QPlatformSurfaceEvent::SurfaceCreated);
@@ -106,8 +106,8 @@ private Q_SLOTS:
     void windowDestructionWithPendingWork() {
         auto *window = new QQuickWindow;
         Recorder effects(window);
-        effects.setGeometry(QRectF(0, 0, 100, 40), 10);
-        effects.configure({{"backgroundType", 3}});
+        effects.setGeometry(DockGeometry::capsule(QRectF(0, 0, 100, 40), 10));
+        effects.configure({{"systemBlur", true}, {"backgroundType", 5}});
         delete window;
         QCoreApplication::processEvents();
         QCOMPARE(effects.writes, 0);

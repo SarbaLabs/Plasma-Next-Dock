@@ -174,6 +174,40 @@ private Q_SLOTS:
         QCOMPARE(clean["indicatorCustomColor"], DockSettings::defaults()["indicatorCustomColor"]);
         QVERIFY(!clean.contains("indicatorOverflow"));
     }
+    void migrateAndSaveCapsuleStyle() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("legacy.ini");
+        {
+            QSettings legacy(file, QSettings::IniFormat);
+            legacy.setValue("radius", 19);
+            legacy.setValue("borderUseTheme", false);
+            legacy.setValue("borderColor", "#112233");
+        }
+        DockSettings settings(file);
+        QCOMPARE(settings.values()["topLeftRadius"].toInt(), 19);
+        QCOMPARE(settings.values()["bottomRightRadius"].toInt(), 19);
+        QCOMPARE(settings.values()["borderRole"].toString(), "custom");
+        QVERIFY(settings.apply({{"backgroundType", 5}, {"bottomRightRadius", -32}, {"borderRole", "highlight"},
+            {"gradientTopOpacity", 0.0}, {"gradientBottomOpacity", 0.8}, {"borderOpacity", 0.2}}));
+        const auto values = DockSettings(file).values();
+        QCOMPARE(values["backgroundType"].toInt(), 5);
+        QCOMPARE(values["bottomRightRadius"].toInt(), -32);
+        QCOMPARE(values["topLeftRadius"].toInt(), 19);
+        QCOMPARE(values["borderRole"].toString(), "highlight");
+        QCOMPARE(values["gradientTopOpacity"].toDouble(), 0.0);
+        QCOMPARE(values["gradientBottomOpacity"].toDouble(), 0.8);
+        QCOMPARE(values["borderOpacity"].toDouble(), 0.2);
+    }
+    void migrateBackgroundModes() {
+        for (int mode = 0; mode <= 5; ++mode) {
+            const auto values = DockSettings::normalized({{"backgroundType", mode}, {"backgroundOpacity", 0.42}});
+            QCOMPARE(values["backgroundType"].toInt(), mode >= 4 ? mode : 0);
+            QCOMPARE(values["systemBlur"].toBool(), mode == 3 || mode == 4);
+            QCOMPARE(values["backgroundOpacity"].toDouble(), mode == 1 ? 0.0 : (mode == 2 || mode == 3 ? 0.42 : 1.0));
+            QCOMPARE(values["glassOpacity"].toDouble(), 0.42);
+            QCOMPARE(DockSettings::normalized(values), values);
+        }
+    }
     void backgroundPersistence() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);

@@ -5,6 +5,7 @@
 #include <QPointer>
 #include <QQuickWindow>
 #include <QRegion>
+#include <QPainterPath>
 #include <QVariantMap>
 
 // One effect owner for the standalone window; all calls stay on the GUI thread.
@@ -15,7 +16,7 @@ public:
     explicit BackgroundEffects(QQuickWindow *window, QObject *parent = nullptr);
     ~BackgroundEffects() override;
     void configure(const QVariantMap &options);
-    void setGeometry(QRectF capsule, qreal radius);
+    void setGeometry(const QPainterPath &path);
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
     virtual void writeEffects(bool enabled, const QRegion &region);
@@ -24,8 +25,7 @@ private:
     void apply();
     void clear();
     QPointer<QQuickWindow> m_window;
-    QRectF m_capsule;
-    qreal m_radius = 0;
+    QPainterPath m_capsule;
     QRegion m_lastRegion;
     bool m_enabled = false, m_applied = false, m_queued = false;
     bool m_restore = true, m_surfaceDestroyed = false;
