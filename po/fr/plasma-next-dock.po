@@ -596,3 +596,87 @@ msgstr "Impossible de forcer l’arrêt de l’application."
 
 msgid "Kill All"
 msgstr "Tout tuer"
+
+msgid "Fixed color"
+msgstr "Couleur fixe"
+
+msgid "Theme default"
+msgstr "Par défaut (thème)"
+
+msgid "Window background"
+msgstr "Fond de fenêtre"
+
+msgid "Window text"
+msgstr "Texte de fenêtre"
+
+msgid "View background"
+msgstr "Fond de vue"
+
+msgid "Alternate view background"
+msgstr "Fond de vue alterné"
+
+msgid "View text"
+msgstr "Texte de vue"
+
+msgid "Highlight"
+msgstr "Surbrillance"
+
+msgid "Highlighted text"
+msgstr "Texte en surbrillance"
+
+msgid "Button background"
+msgstr "Fond de bouton"
+
+msgid "Button text"
+msgstr "Texte de bouton"
+
+msgid "Link"
+msgstr "Lien"
+
+msgid "Disabled text"
+msgstr "Texte désactivé"
+
+msgid "Positive text"
+msgstr "Texte positif"
+
+msgid "Neutral text"
+msgstr "Texte neutre"
+
+msgid "Negative text"
+msgstr "Texte négatif"
+
+msgid "Gradient"
+msgstr "Dégradé"
+
+msgid "Background color:"
+msgstr "Couleur du fond :"
+
+msgid "Upper color:"
+msgstr "Couleur supérieure :"
+
+msgid "Lower color:"
+msgstr "Couleur inférieure :"
+
+msgid "Upper opacity (%):"
+msgstr "Opacité supérieure (%) :"
+
+msgid "Lower opacity (%):"
+msgstr "Opacité inférieure (%) :"
+
+msgid "Border opacity (%):"
+msgstr "Opacité de la bordure (%) :"
+
+msgid "Negative corner radii curve outward along the dock."
+msgstr "Un rayon négatif prolonge la courbe vers l’extérieur, dans la longueur du dock."
+
+msgid "Top left radius (px):"
+msgstr "Rayon supérieur gauche (px) :"
+
+msgid "Top right radius (px):"
+msgstr "Rayon supérieur droit (px) :"
+
+msgid "Bottom left radius (px):"
+msgstr "Rayon inférieur gauche (px) :"
+
+msgid "Bottom right radius (px):"
+msgstr "Rayon inférieur droit (px) :"

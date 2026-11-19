@@ -99,24 +99,40 @@ void DockController::setSurfaceOrigin(QPoint origin)
     m_origin = origin;
     scheduleEvaluation();
 }
-void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge)
+QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const
+{
+    const auto fill = DockGeometry::capsule(QRectF(QPointF(), size), corners, vertical);
+    QString outline;
+    if (border > 0 && !fill.isEmpty()) {
+        // Boolean path operations flatten curves. Work at higher precision
+        // so the exterior ring stays smooth on scaled outputs.
+        const auto scale = QTransform::fromScale(8, 8);
+        const auto large = scale.map(fill);
+        QPainterPathStroker stroke;
+        stroke.setWidth(16 * border);
+        stroke.setJoinStyle(Qt::RoundJoin);
+        outline = DockGeometry::svgPath(scale.inverted().map(stroke.createStroke(large).subtracted(large)));
+    }
+    return {{"fill", DockGeometry::svgPath(fill)}, {"outline", outline}};
+}
+void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners)
 {
     QList<QRectF> iconRects;
     for (const auto &icon : icons) iconRects << icon.toRectF();
     const QSize bounds = m_pointerTarget ? m_pointerTarget->size().toSize()
         : (m_window ? m_window->size() : QSize());
+    const auto shape = corners.size() == 4 ? DockGeometry::capsule(rect, corners, edge >= DockGeometry::Left) : DockGeometry::capsule(rect, radius);
     const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects,
-        QRect(QPoint(), bounds), static_cast<DockGeometry::Edge>(edge));
+        QRect(QPoint(), bounds), static_cast<DockGeometry::Edge>(edge), shape);
     if (input != m_lastInput) {
         m_lastInput = input;
         // Under Qt Wayland this is the surface input region, not a rendering clip.
         if (m_window) m_window->setMask(input);
         updatePointerHover();
     }
-    if (rect == m_capsule && radius == m_radius) return;
-    m_capsule = rect;
-    m_radius = radius;
-    Q_EMIT capsuleChanged(rect, radius);
+    if (shape == m_shape) return;
+    m_shape = shape;
+    Q_EMIT capsuleChanged(shape);
     // Zoom changes capsule bounds during hover; test the final geometry on leave.
     if (!m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
 }
@@ -163,13 +179,14 @@ void DockController::evaluate()
         const int geometryRole = roles.key("Geometry", -1);
         const int windowRole = roles.key("IsWindow", -1);
         const int minimizedRole = roles.key("IsMinimized", -1);
-        const auto globalCapsule = m_capsule.translated(m_origin);
+        const auto globalCapsule = m_shape.translated(m_origin);
         // An ungrouped TasksModel, already filtered by desktop/activity, is required.
         if (geometryRole >= 0 && windowRole >= 0 && minimizedRole >= 0) {
             for (int row = 0; row < m_model->rowCount(); ++row) {
                 const auto index = m_model->index(row, 0);
                 if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
-                if (DockGeometry::overlaps(index.data(geometryRole).toRectF(), globalCapsule, m_radius)) {
+                const QRectF window = index.data(geometryRole).toRectF();
+                if (!window.isEmpty() && globalCapsule.intersects(window)) {
                     overlap = true;
                     break;
                 }

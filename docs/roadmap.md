@@ -328,3 +328,8 @@ Focus preservation and restoration were verified on the live Wayland desktop.
 ## Task menu comparison
 
 The task menu now includes native frame and capture controls, per-dock application grouping exceptions, audio mute and both process-specific Kill and group-wide Kill All actions.
+
+## Capsule colors and corners
+
+Per-dock palette roles, fixed tints, two-stop gradients, exterior borders and
+four signed corner radii support floating and edge-attached styles.

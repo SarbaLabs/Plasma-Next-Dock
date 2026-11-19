@@ -13,7 +13,10 @@ DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent
 {
     if (!group.isEmpty()) m_store.beginGroup(group);
     QVariantMap saved;
-    if (persistent) for (const auto &key : defaults().keys()) saved[key] = m_store.value(key, defaults()[key]);
+    if (persistent) {
+        for (const auto &key : defaults().keys())
+            if (m_store.contains(key)) saved[key] = m_store.value(key);
+    }
     m_values = normalized(saved);
 }
 bool DockSettings::startsAtLogin() const
@@ -42,7 +45,10 @@ QVariantMap DockSettings::defaults()
         {"layoutDirection", 0}, {"showSeparator", true}, {"revealAttention", false},
         {"showWindowPreviews", true}, {"highlightPreviewWindow", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
         {"showMediaControls", true}, {"showBadges", true}, {"showProgress", true},
-        {"backgroundType", 0}, {"backgroundOpacity", 0.35},
+        {"topLeftRadius", 10}, {"topRightRadius", 10}, {"bottomRightRadius", 10}, {"bottomLeftRadius", 10},
+        {"backgroundRole", "automatic"}, {"backgroundColor", "#303030"}, {"gradientTopRole", "window"}, {"gradientTopColor", "#303030"}, {"gradientBottomRole", "highlight"},
+        {"gradientBottomColor", "#3daee9"}, {"gradientTopOpacity", 1.0}, {"gradientBottomOpacity", 1.0},
+        {"borderRole", "automatic"}, {"borderOpacity", 1.0}, {"backgroundType", 0}, {"backgroundOpacity", 0.35},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
         {"indicatorUnfocusedColorEnabled", false},
@@ -102,11 +108,19 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
     number("blastRadius", 0, 8, true); number("hoverLift", 0, 64, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
-    if (result["backgroundType"].toInt() < 0 || result["backgroundType"].toInt() > 4) result["backgroundType"] = 0;
-    number("backgroundType", 0, 4, true); number("backgroundOpacity", 0, 1, false);
+    if (result["backgroundType"].toInt() < 0 || result["backgroundType"].toInt() > 5) result["backgroundType"] = 0;
+    for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"}) {
+        if (!input.contains(key)) result[key] = result["radius"];
+        number(key, -96, 96, true);
+    }
+    if (!input.contains("borderRole") && !result["borderUseTheme"].toBool()) result["borderRole"] = "custom";
+    for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor"})
+        if (!QColor::isValidColorName(result[key].toString())) result[key] = defaults()[key];
+    for (const auto key : {"borderOpacity", "gradientTopOpacity", "gradientBottomOpacity"}) number(key, 0, 1, false);
+    number("backgroundType", 0, 5, true); number("backgroundOpacity", 0, 1, false);
     number("borderWidth", 0, 12, true);
     number("iconSpacing", 0, 64, true); number("horizontalPadding", 0, 128, true); number("verticalPadding", 0, 64, true);
-    result["borderUseTheme"] = result["borderUseTheme"].toBool();
+    result["borderUseTheme"] = result["borderRole"].toString() != "custom";
     result["borderColor"] = QColor::isValidColorName(result["borderColor"].toString()) ? result["borderColor"].toString() : defaults()["borderColor"];
     result["indicatorUnfocusedColorEnabled"] = result["indicatorUnfocusedColorEnabled"].toBool();
     result["indicatorUnfocusedColor"] = QColor::isValidColorName(result["indicatorUnfocusedColor"].toString()) ? result["indicatorUnfocusedColor"].toString() : defaults()["indicatorUnfocusedColor"];
@@ -160,11 +174,20 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["launchers"] = launchers;
     return result;
 }
+static QVariantMap mergeChanges(QVariantMap merged, const QVariantMap &changes)
+{
+    for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
+    if (changes.contains("radius")) {
+        for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"})
+            if (!changes.contains(key)) merged[key] = changes["radius"];
+    }
+    if (changes.contains("borderUseTheme") && !changes.contains("borderRole"))
+        merged["borderRole"] = changes["borderUseTheme"].toBool() ? "automatic" : "custom";
+    return DockSettings::normalized(merged);
+}
 bool DockSettings::apply(const QVariantMap &changes)
 {
-    auto merged = m_values;
-    for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
-    const auto next = normalized(merged);
+    const auto next = mergeChanges(m_values, changes);
     if (m_persistent) {
         for (auto it = next.begin(); it != next.end(); ++it) m_store.setValue(it.key(), it.value());
         m_store.sync();
@@ -180,8 +203,6 @@ bool DockSettings::apply(const QVariantMap &changes)
 bool DockSettings::saveLaunchers(const QStringList &urls) { return apply({{"launchers", urls}}); }
 void DockSettings::overrideSession(const QVariantMap &changes)
 {
-    auto merged = m_values;
-    for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
-    m_values = normalized(merged);
+    m_values = mergeChanges(m_values, changes);
     Q_EMIT changed();
 }

@@ -33,8 +33,8 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
-- Solid, Transparent, Translucent, System Blur and Liquid Glass backgrounds.
-  The existing corner radius (pixels) is shared by paint, glow and native blur.
+- Solid, Transparent, Translucent, System Blur, Liquid Glass and vertical Gradient backgrounds.
+  Four independent signed corner radii shape the background, glow and native blur.
   Optional application-color glow stays inside the capsule.
 - macOS, Plasma and Custom running indicators, independent native group/decorations,
   and native KWin reveal animation.
@@ -103,12 +103,16 @@ See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds
 
-Open Configure → Appearance and launchers → Capsule and style. Solid remains the
-default; updating does not change the existing appearance or saved corner radius.
-System Blur and Liquid Glass require an enabled KWin blur effect. Liquid Glass adds
-tint and internal gloss; it does not refract desktop pixels. The theme
-supplies the base/border colors. Tint opacity, border thickness/color and independent icon/end/thickness spacing
-are saved independently of the selected mode. A zero-width border is invisible.
+Open Configure → Appearance and launchers → Capsule and style. Choose a fixed
+color or a KDE palette role for the fill and exterior border. Gradient has
+independent upper and lower colors and opacities. System Blur and Liquid Glass
+use KWin blur; Liquid Glass adds a gloss over the selected tint. Border width
+and opacity are independent of the fill.
+
+For a bottom dock that joins the desktop edge, set the distance to zero, give
+the upper corners positive radii and the lower corners negative radii. The
+lower corners flare out along the edge. The exterior border remains visible
+around the exposed sides. Older profiles inherit their saved radius on all four corners.
 Spacing follows the dock orientation and participates in adaptive sizing.
 
 The native effects are built into this executable, not a plasmoid plugin. No new

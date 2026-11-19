@@ -872,3 +872,13 @@ keep an unrelated application open. More should offer individual targets under
 Kill and a separate Kill All. Verify both test processes exit and the unrelated
 application remains open. With multiple windows sharing one process, verify
 that only Kill All appears.
+
+## Capsule style on KDE Wayland
+
+A temporary bottom dock used zero edge spacing, asymmetric positive upper radii,
+negative lower radii, a two-color gradient with different endpoint opacities and
+a three-pixel exterior border. The lower tips reached the screen edge and the
+border followed the exposed outline. A second run used the left edge, an
+eight-pixel gap and System Blur with the highlight palette role. The exposed
+border and both outward curves were visible. Geometry and persistence tests
+cover signed corners, a saved legacy radius and an existing custom border.

@@ -4,12 +4,16 @@
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| backgroundType | 0 | 0 Solid, 1 Transparent, 2 Translucent, 3 System Blur, 4 Liquid Glass |
+| backgroundType | 0 | 0 Solid, 1 Transparent, 2 Translucent, 3 System Blur, 4 Liquid Glass, 5 Gradient |
 | backgroundOpacity | 0.35 | Tint opacity, 0–1, for modes 2–4 |
-| radius | 10 | **Existing setting**, pixels, 0–96; clamped to half the smaller capsule dimension |
+| topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius | inherited radius | Physical corner radii, −96 to 96 logical pixels |
+| backgroundRole / backgroundColor | automatic / #303030 | Theme role or fixed fill for Solid, Translucent, System Blur and Liquid Glass |
+| gradientTopRole / gradientBottomRole | window / highlight | Each endpoint also retains its own fixed color |
+| gradientTopOpacity / gradientBottomOpacity | 1 / 1 | Independent endpoint alpha from top to bottom of the screen |
+| borderOpacity | 1 | Exterior border opacity, 0–1 |
 | borderWidth | 1 | Border thickness, 0–12 logical pixels; 0 removes the border |
-| borderUseTheme | true | Use the theme's disabled-text color for the border |
-| borderColor | #808080 | Saved custom color, used when borderUseTheme is false |
+| borderRole | automatic | KDE role or custom; automatic uses the theme's disabled-text color |
+| borderColor | #808080 | Saved custom color, used when borderRole is custom |
 | iconSpacing | 10 | Gap between neighboring icons, 0–64 |
 | horizontalPadding | 12 | Padding at both ends along the dock, 0–128 |
 | verticalPadding | 10 | Padding on both sides across dock thickness, 0–64 |
@@ -17,8 +21,7 @@
 
 All are stored in the existing plasma-next-dock.ini, using Apply/Close semantics.
 Mode switches retain the other values. Unknown modes fall back to Solid; numeric
-values are bounded and non-finite values use defaults. No second radius control
-or migration is introduced. Solid preserves the existing theme background/border.
+values are bounded and non-finite values use defaults. Existing profiles inherit their saved radius for each corner and retain the selected border color.
 Transparent removes all capsule paint and blur, but keeps the same input/dodge
 geometry and icons. Translucent paints tint only. System Blur adds KWin blur
 behind tint. Liquid Glass adds theme-aware glass tint and internal gloss.
@@ -46,7 +49,8 @@ into the preferred size. Border thickness and radius remain logical pixels.
 The visible capsule alone defines blur, never the larger icon canvas or edge
 input corridor. Geometry stays in logical window coordinates; KWindowSystem
 handles Wayland. QRegion rasterization quantizes vector edges to logical pixels.
-A zero radius gives square corners; large radii clamp consistently in QML/C++.
+A zero radius gives a square corner. Negative radii extend along the long axis.
+The renderer and native effects use the same path, capped at half the smaller dimension.
 An empty/clipped-out region disables effects, because an empty enabled KWin region
 would otherwise mean the entire window. Radius changes propagate immediately even
 if width and height stay unchanged.
