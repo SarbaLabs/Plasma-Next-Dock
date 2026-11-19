@@ -49,7 +49,7 @@ TestCase {
         findChild(window, "radiusControl").value = 0;
         findChild(window, "blastRadiusControl").value = 4;
         findChild(window, "hoverLiftControl").value = 6;
-        for (const name of ["windowPreviews", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
+        for (const name of ["windowPreviews", "highlightPreview", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
             findChild(window, name + "Control").checked = false;
         const behavior = findChild(window, "behaviorSettings");
         verify(behavior !== null);
@@ -72,7 +72,7 @@ TestCase {
         window.close();
         window.openSettings();
         compare(spacing.value, 40);
-        for (const name of ["windowPreviews", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
+        for (const name of ["windowPreviews", "highlightPreview", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
             compare(findChild(window, name + "Control").checked, false);
         compare(findChild(window, "blastRadiusControl").value, 4);
         compare(findChild(window, "hoverLiftControl").value, 6);
@@ -87,7 +87,7 @@ TestCase {
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "radiusControl").value, 0);
         window.close();
-        dockSettings.apply({bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

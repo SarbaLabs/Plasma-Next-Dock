@@ -35,6 +35,11 @@ Item {
     property var status: null
     readonly property bool mediaAvailable: dockOptions.showMediaControls !== false
         && !!(status?.player?.canControl || status?.streams?.length)
+    property Item hoveredCard: null
+    readonly property string highlightId: displayed && windowsEnabled && !dragOwner && !dockOptions.demo
+        && dockOptions.highlightPreviewWindow !== false && hoveredCard?.onScreen
+        ? hoveredCard.windowId : ""
+    onHighlightIdChanged: windowPreviews.highlight(highlightId)
     property bool windowsEnabled: true
     readonly property int visibleWindows: windowsEnabled ? windowPreviews.count : 0
     property bool thumbnailsEnabled: !dockOptions.demo
@@ -89,6 +94,13 @@ Item {
             width: panel.vertical ? list.width : Math.min(240, list.width)
             height: panel.vertical ? 180 : list.height
             readonly property bool onScreen: panel.vertical ? y + height > list.contentY && y < list.contentY + list.height : x + width > list.contentX && x < list.contentX + list.width
+            HoverHandler {
+                blocking: false
+                onHoveredChanged: {
+                    if (hovered) panel.hoveredCard = card;
+                    else if (panel.hoveredCard === card) panel.hoveredCard = null;
+                }
+            }
             Rectangle {
                 anchors.fill: parent; anchors.margins: 3
                 radius: 5

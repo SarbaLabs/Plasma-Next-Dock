@@ -848,3 +848,17 @@ window 22. The original configuration was restored with grouping enabled.
 All 15 CTest entries passed. Document and launcher cases check both directions,
 stopping away from an end, cancellation, clamping, no overflow, retargeting under
 a stationary pointer and insertion using the scrolled position.
+
+## Desktop highlight on preview hover (2026-11-19)
+
+Two overlapping green and red test windows shared a task group on the live
+CachyOS Plasma Wayland desktop. With red active and in front, hovering the
+green preview revealed green in the overlapping area. Moving onto the red card
+showed red and faded green. Leaving the previews restored the original view.
+KWin reported red as the active window throughout. The dock remained running
+after closing the test windows.
+
+All 15 CTest entries passed. The preview-model test uses an isolated D-Bus
+session to verify target switching, repeated requests, stale cleanup from
+another dock and cleanup on destruction. The settings tests cover independent
+persistence and loading the checkbox after Apply.

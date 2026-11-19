@@ -13,6 +13,8 @@ class WindowPreviewModel : public QAbstractListModel
 public:
     enum Role { Title = Qt::UserRole + 1, Icon, WindowId, Minimized, Active, Closable };
     using QAbstractListModel::QAbstractListModel;
+    ~WindowPreviewModel() override;
+    Q_INVOKABLE void highlight(const QString &id);
     int count() const { return m_windows.size(); }
     int rowCount(const QModelIndex &parent = {}) const override { return parent.isValid() ? 0 : count(); }
     QHash<int, QByteArray> roleNames() const override;
@@ -32,5 +34,6 @@ private:
     QPointer<QAbstractItemModel> m_source;
     QPersistentModelIndex m_target;
     QList<QPersistentModelIndex> m_windows;
+    QString m_highlightId;
     bool m_pending = false;
 };

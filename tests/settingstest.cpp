@@ -225,7 +225,7 @@ private Q_SLOTS:
         const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);
         QVariantMap disabled;
-        for (const auto *key : {"showWindowPreviews", "showAudioIndicator", "muteOnClick",
+        for (const auto *key : {"showWindowPreviews", "highlightPreviewWindow", "showAudioIndicator", "muteOnClick",
                                "showMediaControls", "showBadges", "showProgress"}) {
             QVERIFY(settings.values()[key].toBool());
             disabled[key] = false;

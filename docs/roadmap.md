@@ -318,3 +318,9 @@ KWin Wayland. Drag scrolling along the overflowing dock remains a separate task.
 Documents and installed application launchers can scroll an overflowing dock
 from either end. The real Wayland document drag was validated using 48
 ungrouped windows on a vertical dock; see [testing](testing.md#external-drag-scrolling-on-an-overflowing-dock-2026-11-19).
+
+## Desktop highlight on preview hover (2026-11-19)
+
+Hovering a window card uses the KWin Highlight Window effect to reveal the
+corresponding window on the desktop. A per-dock setting controls the feature.
+Focus preservation and restoration were verified on the live Wayland desktop.

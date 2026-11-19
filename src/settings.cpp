@@ -39,7 +39,7 @@ QVariantMap DockSettings::defaults()
         {"minimizeActive", false}, {"middleClick", 0}, {"wheelAction", 0}, {"skipMinimized", true},
         {"filterDesktop", true}, {"filterActivity", true}, {"filterScreen", false}, {"onlyMinimized", false},
         {"layoutDirection", 0}, {"showSeparator", true}, {"revealAttention", false},
-        {"showWindowPreviews", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
+        {"showWindowPreviews", true}, {"highlightPreviewWindow", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
         {"showMediaControls", true}, {"showBadges", true}, {"showProgress", true},
         {"backgroundType", 0}, {"backgroundOpacity", 0.35},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
@@ -141,7 +141,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["indicatorDesaturate"] = result["indicatorDesaturate"].toBool();
     number("indicatorColorSource", 0, 2, true);
     result["indicatorCustomColor"] = QColor::isValidColorName(result["indicatorCustomColor"].toString()) ? result["indicatorCustomColor"].toString() : defaults()["indicatorCustomColor"];
-    for (const auto &key : {"showWindowPreviews", "showAudioIndicator", "muteOnClick", "showMediaControls", "showBadges", "showProgress"})
+    for (const auto &key : {"showWindowPreviews", "highlightPreviewWindow", "showAudioIndicator", "muteOnClick", "showMediaControls", "showBadges", "showProgress"})
         result[key] = result[key].toBool();
     result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
