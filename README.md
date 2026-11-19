@@ -132,7 +132,9 @@ reserving space. Existing profiles retain their previous dodge or overlay behavi
 
 Horizontal docks can align left, center or right. Vertical docks can align top,
 center or bottom. With either end selected, the capsule and icons grow toward
-the other end of the screen during magnification.
+the other end of the screen during magnification. The alignment margin offsets
+that end along the edge, for example below a top panel. Each dock remembers
+its margin; centered docks ignore it.
 
 ## Build and install on CachyOS / Arch
 

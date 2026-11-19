@@ -37,8 +37,12 @@ Item {
     // Coalesce launcher-to-window row replacement before resizing the surface.
     property int layoutCount: 0
     function syncTaskCount() { layoutCount = repeater.count; }
+    readonly property real availableLength: (vertical ? outputSize.height : outputSize.width) - 16 - 2 * endClearance
+    // Retain room for an icon even if a saved margin exceeds the new output.
+    readonly property int effectiveAlignmentMargin: (dockOptions.dockAlignment ?? 1) === 1 ? 0
+        : Math.min(dockOptions.alignmentMargin ?? 0, Math.max(0, Math.floor(availableLength - dockOptions.iconSize)))
     readonly property var layoutMetrics: Adaptive.metrics(layoutCount, dockOptions.iconSize,
-        dockOptions.zoom, (vertical ? outputSize.height : outputSize.width) - 16 - 2 * endClearance,
+        dockOptions.zoom, availableLength - effectiveAlignmentMargin,
         (vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
         dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,

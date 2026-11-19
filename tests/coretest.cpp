@@ -148,6 +148,15 @@ private Q_SLOTS:
         }
         QVERIFY(screen.contains(DockGeometry::surface(screen, QSize(9000,9000), DockGeometry::Bottom)));
     }
+    void alignmentMarginStaysOnTheSelectedEnd() {
+        using namespace DockGeometry;
+        const QSize output(600, 400), canvas(560, 300);
+        QCOMPARE(alignmentMargins(output, canvas, Bottom, Start, 32), QMargins(32, 0, 0, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Top, End, 80), QMargins(0, 0, 40, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Right, Start, 64), QMargins(0, 64, 0, 0));
+        QCOMPARE(alignmentMargins(output, canvas, Left, End, 80), QMargins(0, 0, 0, 80));
+        QCOMPARE(alignmentMargins(output, canvas, Right, Center, 64), QMargins());
+    }
     void roundedContactAndInputAreIndependentOfCanvas() {
         const QRectF bar(100, 100, 300, 50);
         QVERIFY(!DockGeometry::overlaps(QRectF(110, 20, 100, 60), bar, 10)); // Drawing margin only.

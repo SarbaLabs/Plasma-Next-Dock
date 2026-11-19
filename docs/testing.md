@@ -899,3 +899,7 @@ pushing the pointer against the left edge. Tests used a temporary profile.
 Applying top alignment and Always visible directly in Settings moved the left
 dock to the upper end. A newly maximized test window measured 1851 × 1022,
 confirming the same 69-pixel reservation on the horizontal axis.
+
+A left-edge dock aligned at the top with a 64 px margin began at y=64,
+below the existing Plasma panel, and kept that end fixed when hovering its
+first icon at 2× zoom. A bottom-right dock was also checked with a 96 px margin.

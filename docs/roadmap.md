@@ -340,3 +340,5 @@ Gradient balance and glass reflections follow the configured screen edge.
 ## Visibility and alignment
 
 Four visibility policies and physical start, center and end alignment are selectable for each dock.
+
+Each dock can offset its aligned end along the screen edge with a saved margin.

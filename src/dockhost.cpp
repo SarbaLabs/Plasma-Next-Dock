@@ -80,8 +80,10 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     connect(m_view.engine(), &QQmlEngine::exit, qApp, &QCoreApplication::exit);
     m_view.setSource(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
     m_failed |= m_view.status() == QQuickView::Error;
-    if (m_view.rootObject())
+    if (m_view.rootObject()) {
         connect(m_view.rootObject(), SIGNAL(reservedThicknessChanged()), this, SLOT(position()));
+        connect(m_view.rootObject(), SIGNAL(effectiveAlignmentMarginChanged()), this, SLOT(position()));
+    }
     position();
     if (!m_failed) m_view.show();
 }
@@ -103,7 +105,10 @@ void DockHost::update(bool settingsOpen)
 void DockHost::position()
 {
     const auto alignment = static_cast<DockGeometry::Alignment>(m_settings->values()["dockAlignment"].toInt());
-    const QRect rect = DockGeometry::surface(m_screen->geometry(), m_view.size(), m_edge, alignment);
+    const QRect output = m_screen->geometry();
+    const int margin = m_view.rootObject() ? m_view.rootObject()->property("effectiveAlignmentMargin").toInt() : 0;
+    const auto margins = DockGeometry::alignmentMargins(output.size(), m_view.size(), m_edge, alignment, margin);
+    const QRect rect = DockGeometry::surface(output.marginsRemoved(margins), m_view.size(), m_edge, alignment);
     m_controller.setSurfaceOrigin(rect.topLeft());
     if (m_surfacePosition) {
         using Layer = LayerShellQt::Window;
@@ -113,6 +118,10 @@ void DockHost::position()
         if (alignment == DockGeometry::End) anchors |= m_edge < DockGeometry::Left ? Layer::AnchorRight : Layer::AnchorBottom;
         if (layer->anchors() != anchors) {
             layer->setAnchors(anchors);
+            m_view.update();
+        }
+        if (layer->margins() != margins) {
+            layer->setMargins(margins);
             m_view.update();
         }
         desiredSize(layer, rect.size());

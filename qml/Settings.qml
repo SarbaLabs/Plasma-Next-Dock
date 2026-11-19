@@ -45,7 +45,7 @@ Controls.ApplicationWindow {
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing;
-        glow.checked = v.glow; alignment.currentIndex = v.dockAlignment; visibilityMode.currentIndex = v.visibilityMode;
+        glow.checked = v.glow; alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
         revealAnimation.checked = v.revealAnimation;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
@@ -100,7 +100,7 @@ Controls.ApplicationWindow {
             highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked, dockAlignment: alignment.currentIndex, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
+            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked, dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
             if (login.checked !== login.saved) {
                 loginError.visible = !dockSettings.setStartAtLogin(login.checked);
                 login.checked = login.saved = dockSettings.startsAtLogin();
@@ -212,6 +212,14 @@ Controls.ApplicationWindow {
                     model: [{horizontal: i18n("Left"), vertical: i18n("Top")},
                             {horizontal: i18n("Centered"), vertical: i18n("Centered")},
                             {horizontal: i18n("Right"), vertical: i18n("Bottom")}]
+                }
+                Controls.SpinBox {
+                    id: alignmentMargin; objectName: "alignmentMarginControl"
+                    visible: alignment.currentIndex !== 1
+                    Kirigami.FormData.label: edge.currentIndex < 2
+                        ? (alignment.currentIndex === 0 ? i18n("Left margin (px):") : i18n("Right margin (px):"))
+                        : (alignment.currentIndex === 0 ? i18n("Top margin (px):") : i18n("Bottom margin (px):"))
+                    from: 0; to: 512; editable: true
                 }
                 Controls.ComboBox {
                     id: visibilityMode; objectName: "visibilityModeControl"

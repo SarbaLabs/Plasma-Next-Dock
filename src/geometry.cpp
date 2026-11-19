@@ -2,6 +2,22 @@
 #include "geometry.h"
 #include <algorithm>
 namespace DockGeometry {
+QMargins alignmentMargins(const QSize &screen, const QSize &size, Edge edge, Alignment alignment, int margin)
+{
+    const bool vertical = edge == Left || edge == Right;
+    const int space = vertical ? screen.height() - size.height() : screen.width() - size.width();
+    const int offset = std::clamp(margin, 0, std::max(0, space));
+    QMargins margins;
+    if (alignment == Start) {
+        if (vertical) margins.setTop(offset);
+        else margins.setLeft(offset);
+    } else if (alignment == End) {
+        if (vertical) margins.setBottom(offset);
+        else margins.setRight(offset);
+    }
+    return margins;
+}
+
 QRect surface(const QRect &screen, const QSize &size, Edge edge, Alignment alignment)
 {
     QRect rect(QPoint(), size.boundedTo(screen.size()));

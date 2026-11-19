@@ -35,7 +35,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
@@ -176,6 +176,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 3;
     number("visibilityMode", 0, 3, true);
     number("dockAlignment", 0, 2, true);
+    number("alignmentMargin", 0, 512, true);
     result["dodge"] = result["visibilityMode"].toInt() == 2;
 
     for (const auto *key : {"groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})

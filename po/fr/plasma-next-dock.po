@@ -716,3 +716,15 @@ msgstr "Éviter les fenêtres"
 
 msgid "Windows go below"
 msgstr "Les fenêtres se placent en dessous"
+
+msgid "Left margin (px):"
+msgstr "Marge gauche (px) :"
+
+msgid "Right margin (px):"
+msgstr "Marge droite (px) :"
+
+msgid "Top margin (px):"
+msgstr "Marge supérieure (px) :"
+
+msgid "Bottom margin (px):"
+msgstr "Marge inférieure (px) :"
