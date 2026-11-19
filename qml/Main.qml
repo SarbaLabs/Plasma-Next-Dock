@@ -61,7 +61,7 @@ Item {
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
     function refreshHover() {
-        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || previewPanel.displayed);
+        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -258,7 +258,8 @@ Item {
                     objectName: "task" + index
                     required property int index
                     required property var model
-                    readonly property bool taskHovered: root.hovering && !root.dragging && root.pointerTask === slot
+                    readonly property bool taskHovered: !root.dragging && ((root.hovering && root.pointerTask === slot)
+                        || (externalDrop.containsDrag && externalDrop.kind === "documents" && dropTarget.valid && dropTarget.index.row === index))
                     onTaskHoveredChanged: if (taskHovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
                     function restoreZoom() {
@@ -549,6 +550,39 @@ Item {
                 Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
             contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row);
         }
+    }
+    ExternalDrop {
+        id: externalDrop
+        anchors.fill: parent
+        enabled: !dockOptions.demo && !root.dragging
+        tasksSource: taskSource.item
+        resolver: launcherResolver
+        target: dropTarget
+        hitTest: point => root.taskAt(point, false)
+        insertionAnchor: point => {
+            const list = dockSettings.values.launchers;
+            const canonical = list.map(url => launcherResolver.launcher(url));
+            const coordinate = root.vertical ? point.y : point.x;
+            let nearest = -1, distance = Infinity, centerCoordinate = 0;
+            // Select a pinned boundary even when dropping over the unpinned group.
+            for (let row = 0; row < repeater.count; ++row) {
+                const slot = repeater.itemAt(row);
+                const url = slot.model.LauncherUrlWithoutIcon || slot.model.LauncherUrl || "";
+                const id = launcherResolver.launcher(url);
+                const index = id ? canonical.indexOf(id) : -1;
+                if (index < 0) continue;
+                const center = slot.iconItem.mapToItem(root, slot.iconItem.width / 2, slot.iconItem.height / 2);
+                const axis = root.vertical ? center.y : center.x;
+                if (Math.abs(axis - coordinate) < distance) {
+                    distance = Math.abs(axis - coordinate); nearest = index; centerCoordinate = axis;
+                }
+            }
+            if (nearest < 0) return "";
+            const before = (coordinate < centerCoordinate) !== root.reverseLayout;
+            return before ? list[nearest] : (list[nearest + 1] || "");
+        }
+        onContainsDragChanged: { if (containsDrag) previewPanel.dismiss(); root.refreshHover(); }
+        onOpenedFiles: row => root.rememberLaunch(repeater.itemAt(row))
     }
     ContextMenu {
         id: contextMenu

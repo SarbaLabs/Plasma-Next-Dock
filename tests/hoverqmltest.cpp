@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#include "launcherresolver.h"
+#include <QDragEnterEvent>
+#include <QMimeData>
+#include <QQuickItem>
+#include <QQuickWindow>
 #include "controller.h"
 #include "statussupport.h"
 #include <QDBusConnection>
@@ -61,6 +66,30 @@ class Setup : public QObject
     PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    Q_INVOKABLE bool externalDrag(QQuickItem *item, const QPointF &point, const QList<QUrl> &urls, int phase) {
+        if (!item || !item->window()) return false;
+        QMimeData mime;
+        mime.setUrls(urls);
+        const QPoint p = item->mapToScene(point).toPoint();
+        if (phase == 0) {
+            QDragEnterEvent event(p, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(item->window(), &event);
+            return event.isAccepted();
+        }
+        if (phase == 1) {
+            QDragMoveEvent event(p, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(item->window(), &event);
+            return event.isAccepted();
+        }
+        if (phase == 2) {
+            QDropEvent event(p, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(item->window(), &event);
+            return event.isAccepted();
+        }
+        QDragLeaveEvent event;
+        QCoreApplication::sendEvent(item->window(), &event);
+        return true;
+    }
     Q_INVOKABLE bool detachStatusContext() {
         auto *context = new QQmlContext(m_engine->rootContext());
         QQmlComponent component(m_engine, QUrl(QStringLiteral("qrc:/qml/TaskStatus.qml")));
@@ -175,6 +204,8 @@ public Q_SLOTS:
         engine->rootContext()->setContextProperty("statusSupport", new StatusSupport(engine));
         engine->rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(engine));
         engine->rootContext()->setContextProperty("menuTarget", new MenuTarget(engine));
+        engine->rootContext()->setContextProperty("dropTarget", new MenuTarget(engine));
+        engine->rootContext()->setContextProperty("launcherResolver", new LauncherResolver(engine));
         engine->rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(engine));
         engine->rootContext()->setContextProperty("testEnvironment", this);
         initializeIconPaths();

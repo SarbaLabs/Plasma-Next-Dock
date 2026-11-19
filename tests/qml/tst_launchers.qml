@@ -5,6 +5,24 @@ import org.kde.taskmanager as TaskManager
 TestCase {
     name: "NativeLaunchers"
     when: windowShown
+    function test_externalInsertionAndDeduplication() {
+        const saved = JSON.parse(JSON.stringify(dockSettings.values));
+        const component = Qt.createComponent("qrc:/qml/LiveTasks.qml");
+        const live = component.createObject(this);
+        verify(live !== null);
+        try {
+            dockSettings.apply({launchers: [testLauncherUrls[1]], filterDesktop: false, filterActivity: false});
+            tryCompare(live.tasks, "launcherList", dockSettings.values.launchers);
+            verify(live.insertLaunchers([testLauncherUrls[0]], testLauncherUrls[1]));
+            tryCompare(live.tasks, "launcherList", dockSettings.values.launchers);
+            compare(launcherResolver.launcher(dockSettings.values.launchers[0]), "applications:First.desktop");
+            compare(dockSettings.values.launchers.length, 2);
+            verify(live.insertLaunchers(["applications:First.desktop", testLauncherUrls[0]], ""));
+            compare(dockSettings.values.launchers.length, 2);
+        } finally {
+            dockSettings.apply(saved); live.destroy(); wait(0);
+        }
+    }
     function test_behaviorFiltersAndSort() {
         const component = Qt.createComponent("qrc:/qml/LiveTasks.qml");
         compare(component.status, Component.Ready, component.errorString());

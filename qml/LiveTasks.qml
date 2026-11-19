@@ -40,6 +40,15 @@ Item {
         if (options.middleClick === 1) launchRequested(index);
         Behavior.middle(tasks, index, options.middleClick || 0, actionRoles);
     }
+    function insertLaunchers(urls, before) {
+        const desired = launcherResolver.insert(tasks.launcherList, urls, before);
+        for (const url of desired) {
+            if (tasks.launcherPosition(url) < 0) tasks.requestAddLauncher(url);
+        }
+        if (dockSettings.saveLaunchers(desired)) return true;
+        tasks.launcherList = dockSettings.values.launchers;
+        return false;
+    }
     function pinned(url) { return tasks.launcherPosition(url) >= 0; }
     function togglePinned(url) {
         if (pinned(url)) tasks.requestRemoveLauncher(url);

@@ -17,6 +17,14 @@ Controls.ApplicationWindow {
         id: borderDialog; title: i18n("Border color"); selectedColor: window.borderColorValue
         onAccepted: window.borderColorValue = selectedColor
     }
+    ApplicationChooser {
+        id: applicationChooser
+        parent: window.contentItem
+        onChosen: url => {
+            const list = launcherResolver.insert(dockSettings.values.launchers, [url], "");
+            if (dockSettings.saveLaunchers(list)) window.launcherError = "";
+        }
+    }
     property string launcherError: ""
     function openSettings() {
         const v = dockSettings.values;
@@ -174,27 +182,10 @@ Controls.ApplicationWindow {
                     }
                 }
             }
-            RowLayout {
-                Layout.fillWidth: true; Layout.leftMargin: 16; Layout.rightMargin: 16
-                Controls.TextField {
-                    id: launcher
-                    Layout.fillWidth: true
-                    placeholderText: i18n("Desktop entry ID, e.g. org.kde.dolphin.desktop")
-                    Accessible.name: i18n("Application desktop entry")
-                }
-                Controls.Button {
-                    text: i18n("Add")
-                    onClicked: {
-                        const id = launcher.text.trim();
-                        if (!/^[A-Za-z0-9_.-]+\.desktop$/.test(id)) {
-                            window.launcherError = i18n("Enter an installed application's desktop entry ID ending in .desktop."); return;
-                        }
-                        const list = dockSettings.values.launchers.slice();
-                        const url = "applications:" + id;
-                        if (list.indexOf(url) < 0) list.push(url);
-                        if (dockSettings.saveLaunchers(list)) { launcher.clear(); window.launcherError = ""; }
-                    }
-                }
+            Controls.Button {
+                Layout.leftMargin: 16
+                text: i18n("Add an application…")
+                onClicked: applicationChooser.open()
             }
             Controls.Label {
                 Layout.fillWidth: true; Layout.margins: 16

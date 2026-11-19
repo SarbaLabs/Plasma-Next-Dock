@@ -24,7 +24,7 @@ find_package(LayerShellQt REQUIRED)
 find_package(PlasmaWaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
-add_library(dockcore STATIC src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
+add_library(dockcore STATIC src/launcherresolver.cpp src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
 target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
 target_link_libraries(dockcore PRIVATE Qt6::GuiPrivate KF6::WindowSystem)
@@ -38,6 +38,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
+    qml/ApplicationChooser.qml qml/ExternalDrop.qml
     qml/TaskBounce.qml
     qml/BehaviorSettings.qml qml/code/TaskBehavior.js
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml

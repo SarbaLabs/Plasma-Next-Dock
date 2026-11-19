@@ -527,3 +527,15 @@ msgstr "Le rebond d’attention se répète jusqu’à acquittement. Il est susp
 
 msgid "Highlight icons on hover"
 msgstr "Mettre les icônes en surbrillance au survol"
+
+msgid "Add an application"
+msgstr "Ajouter une application"
+
+msgid "Add an application…"
+msgstr "Ajouter une application…"
+
+msgid "Search installed applications…"
+msgstr "Rechercher parmi les applications installées…"
+
+msgid "No matching applications"
+msgstr "Aucune application correspondante"

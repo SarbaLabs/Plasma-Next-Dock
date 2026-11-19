@@ -102,3 +102,8 @@
 - Model row changes must remap the hovered service identity/fraction rather than
   leaving zoom on a stale row. Reconcile replacement zoom before painting; never
   derive this identity remap from animated icon positions.
+
+- External drops use a dedicated persistent target and native requestOpenUrls. Never
+  execute/import arbitrary dropped desktop files. Canonicalize installed launchers,
+  deduplicate aliases, keep native sort semantics and stop dwell work on cancellation.
+  Do not conflate native external DnD with the internal reorder DragHandler.

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#include "launcherresolver.h"
 #include "dockhost.h"
 #include "statussupport.h"
 #include "popupanchor.h"
@@ -56,6 +57,8 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("statusSupport", new StatusSupport(this));
     m_view.rootContext()->setContextProperty("applicationMenus", new ApplicationMenuBackend(this));
     m_view.rootContext()->setContextProperty("menuTarget", new MenuTarget(this));
+    m_view.rootContext()->setContextProperty("dropTarget", new MenuTarget(this));
+    m_view.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(this));
     m_view.rootContext()->setContextProperty("windowPreviews", new WindowPreviewModel(this));
     m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
