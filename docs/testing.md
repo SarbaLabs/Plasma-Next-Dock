@@ -831,6 +831,7 @@ restart, disconnect/reconnect, edge recall and preview placement.
 On the CachyOS VM with a left-edge dock, two Dolphin windows showed separate
 temporary directories. Dragging a file from the first window onto the Dolphin
 group opened both previews. Dwelling on the second preview raised the destination
-window and dismissed the previews while the mouse button remained down. Continuing
-into that window and releasing with Ctrl copied the file. Both the original and
+window while keeping both previews visible. With the same drag still held,
+hovering the first card and then the second raised each corresponding window.
+Leaving the panel closed it, and releasing with Ctrl in the destination copied the file. Both the original and
 the destination copy were verified on disk.

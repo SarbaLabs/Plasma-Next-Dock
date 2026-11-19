@@ -29,8 +29,8 @@ The 650 ms single-shot dwell timer activates a running task, never toggles minim
 Moving to another target restarts it; leaving/canceling stops it; destroyed targets
 cannot receive actions. A group opens its native window previews. The tooltip surface
 accepts supported document drag offers independently of the dock. A 350 ms
-dwell over a visible card activates its persistent model target and dismisses
-the preview. Leaving a card or cancelling stops the pending activation.
+dwell over a visible card activates its persistent model target. The preview remains visible and accepts
+another selection until the drag leaves the panel, ends or is cancelled.
 The tooltip does not take ownership of the document drop. When a group exceeds
 the preview viewport, its edge zones scroll the cards during the drag.
 

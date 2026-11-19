@@ -172,7 +172,7 @@ Item {
             locate();
         }
         onPositionChanged: event => { point = Qt.point(event.x, event.y); locate(); }
-        onExited: { reset(); panel.leaveDock(); }
+        onExited: { reset(); panel.endDrag(); }
         onDropped: event => { event.accepted = false; reset(); panel.endDrag(); }
         onScrollStepChanged: {
             if (scrollStep) choose.stop();
@@ -189,7 +189,6 @@ Item {
                 cardDrag.locate();
                 if (card !== cardDrag.candidate || !card.onScreen) return;
                 windowPreviews.activate(card.index);
-                panel.endDrag();
             }
         }
         // Make off-screen group members reachable while holding the document.

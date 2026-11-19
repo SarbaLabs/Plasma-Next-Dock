@@ -56,20 +56,23 @@ TestCase {
         tryVerify(() => area.enabled && findChild(panel, "previewActivate1") !== null);
         const first = findChild(panel, "previewActivate0");
         const second = findChild(panel, "previewActivate1");
+        tryVerify(() => second.width > 0 && second.mapToItem(area, 0, 0).x >= first.width);
         const p = first.mapToItem(area, first.width / 2, first.height / 2);
-        const urls = ["file:///tmp/document.txt"];
-        const previous = testEnvironment.activatedPreview();
-        verify(testEnvironment.externalDrag(area, p, urls, 0));
-        testEnvironment.externalDrag(area, p, urls, 3);
-        wait(400);
-        compare(testEnvironment.activatedPreview(), previous);
-        verify(testEnvironment.externalDrag(area, p, urls, 0));
-        tryVerify(() => second.width > 0 && second.parent.onScreen);
         const q = second.mapToItem(area, second.width / 2, second.height / 2);
+        const urls = ["file:///tmp/document.txt"];
+        verify(testEnvironment.externalDrag(area, p, urls, 0));
         verify(testEnvironment.externalDrag(area, q, urls, 1));
         compare(area.candidate.index, 1);
+        tryVerify(() => testEnvironment.activatedPreview() === "Second window");
+        verify(panel.displayed && area.containsDrag);
+        verify(testEnvironment.externalDrag(area, p, urls, 1));
+        tryVerify(() => testEnvironment.activatedPreview() === "First window");
+        verify(panel.displayed && area.containsDrag);
+        verify(testEnvironment.externalDrag(area, q, urls, 1));
+        testEnvironment.externalDrag(area, q, urls, 3);
+        wait(400);
+        compare(testEnvironment.activatedPreview(), "First window");
         tryCompare(panel, "displayed", false);
-        compare(testEnvironment.activatedPreview(), "Second window");
     }
     function test_groupCardsRouteToIndividualWindows() {
         tryCompare(dock, "status", Loader.Ready);

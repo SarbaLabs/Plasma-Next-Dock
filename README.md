@@ -80,7 +80,8 @@ other sort modes retain their own ordering. Drop documents or supported URLs ont
 an application to ask KDE to open them with it. Hold a document over a running task
 for 650 ms to activate its window without minimizing it. For a group, this opens its window previews.
 Keep holding the document and hover a preview for 350 ms to bring that window
-forward, then continue dragging into the application's drop target.
+forward. Keep the document over the previews to choose another window. Leaving
+the preview area closes it so you can drop the document in the application.
 
 Only installed application launchers can be pinned by drop. Mixed launcher/document
 drops and uninstalled .desktop files are rejected. No file is moved or copied.
