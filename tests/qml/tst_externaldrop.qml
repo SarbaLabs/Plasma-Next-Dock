@@ -44,6 +44,43 @@ TestCase {
         }
     }
     function init() { failOnWarning(/.*(TypeError|ReferenceError).*/); fakeTarget.group = false; fakeTasks.opens = 0; fakeTasks.activations = 0; fakeSource.pins = []; fakeTarget.bind(null, -1); }
+    Component { id: viewportFixture; Flickable { width: 300; height: 300; contentWidth: 1000 } }
+    function test_overflowScroll_data() {
+        return [{tag: "document", urls: ["file:///tmp/document.txt"]},
+                {tag: "launcher", urls: [testLauncherUrls[0]]}];
+    }
+    function test_overflowScroll(data) {
+        const view = createTemporaryObject(viewportFixture, test);
+        const drop = createTemporaryObject(dropComponent, test, {scrollView: view});
+        drop.hitTest = point => Math.floor((point.x + view.contentX) / 40);
+        drop.insertionAnchor = point => String(drop.hitTest(point));
+        const end = Qt.point(295, 150), start = Qt.point(5, 150), middle = Qt.point(150, 150);
+        verify(drop.begin(data.urls, end));
+        tryVerify(() => view.contentX >= 210);
+        compare(fakeTasks.activations, 0);
+        if (drop.kind === "documents") compare(fakeTarget.index.row, drop.hitTest(end));
+        drop.locate(middle);
+        const paused = view.contentX;
+        wait(120);
+        compare(view.contentX, paused);
+        drop.locate(start);
+        tryVerify(() => view.contentX < paused);
+        drop.clear();
+        const cancelled = view.contentX;
+        wait(120);
+        compare(view.contentX, cancelled);
+        view.contentX = 694;
+        verify(drop.begin(data.urls, end));
+        tryCompare(view, "contentX", 700);
+        compare(drop.scrollDirection, 0);
+        if (drop.kind === "documents") compare(fakeTarget.index.row, drop.hitTest(end));
+        verify(drop.commit(data.urls, end));
+        if (data.tag === "launcher") compare(fakeSource.before, String(drop.hitTest(end)));
+        view.contentWidth = view.width;
+        verify(drop.begin(data.urls, end));
+        compare(drop.scrollDirection, 0);
+        drop.clear();
+    }
     function test_nativeDragEventDelivery() {
         const drop = createTemporaryObject(dropComponent, test);
         const urls = ["file:///tmp/document.txt"];

@@ -835,3 +835,16 @@ window while keeping both previews visible. With the same drag still held,
 hovering the first card and then the second raised each corresponding window.
 Leaving the panel closed it, and releasing with Ctrl in the destination copied the file. Both the original and
 the destination copy were verified on disk.
+
+## External drag scrolling on an overflowing dock (2026-11-19)
+
+On the CachyOS Wayland VM, grouping was disabled in the Behavior settings of a
+temporary configuration. One Qt application opened 48 real windows with numbered
+icons. The vertical dock overflowed. During a native file drag, holding the
+pointer at the lower end revealed window 48. Holding it at the upper end scrolled
+back. Moving into the middle stopped scrolling and dwelling on icon 22 activated
+window 22. The original configuration was restored with grouping enabled.
+
+All 15 CTest entries passed. Document and launcher cases check both directions,
+stopping away from an end, cancellation, clamping, no overflow, retargeting under
+a stationary pointer and insertion using the scrolled position.

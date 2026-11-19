@@ -83,6 +83,10 @@ Keep holding the document and hover a preview for 350 ms to bring that window
 forward. Keep the document over the previews to choose another window. Leaving
 the preview area closes it so you can drop the document in the application.
 
+If the dock overflows, hold the document or application launcher near either end
+to scroll toward hidden icons. Move away from the end to stop and choose the
+target. This also works at the top and bottom of a vertical dock.
+
 Only installed application launchers can be pinned by drop. Mixed launcher/document
 drops and uninstalled .desktop files are rejected. No file is moved or copied.
 See [external drop architecture and acceptance](docs/external-drops.md). The maintainer validated these features on CachyOS Wayland over several days

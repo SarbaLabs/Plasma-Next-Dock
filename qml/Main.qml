@@ -561,6 +561,7 @@ Item {
     }
     ExternalDrop {
         id: externalDrop
+        scrollView: viewport
         anchors.fill: parent
         enabled: !dockOptions.demo && !root.dragging
         tasksSource: taskSource.item
