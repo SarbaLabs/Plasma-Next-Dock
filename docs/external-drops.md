@@ -27,8 +27,12 @@ Acceptance confirms dispatch, not that the target supports every document type.
 A separate MenuTarget instance holds a persistent model index for document targets.
 The 650 ms single-shot dwell timer activates a running task, never toggles minimize.
 Moving to another target restarts it; leaving/canceling stops it; destroyed targets
-cannot receive actions. A group activates its first child. Explicit member selection
-and external-drag auto-scrolling are future refinements, not claimed as complete.
+cannot receive actions. A group opens its native window previews. The tooltip surface
+accepts supported document drag offers independently of the dock. A 350 ms
+dwell over a visible card activates its persistent model target. The preview remains visible and accepts
+another selection until the drag leaves the panel, ends or is cancelled.
+The tooltip does not take ownership of the document drop. When a group exceeds
+the preview viewport, its edge zones scroll the cards during the drag.
 
 DropArea.containsDrag inhibits dodge. Highlighting uses that target during external
 drag; ordinary hover still uses the established window pointer observer. The
@@ -44,8 +48,7 @@ activation. GitHub Actions run 43819877812 passed for implementation commit
 6dcf3dabf2b44af5b3c1fee0b2137832eb8c1816. PR #11 is ready for maintainer review/merge;
 no automatic merge is authorized. This final update changes documentation only.
 
-Specific grouped-member selection and external-drag auto-scrolling remain the
-explicit future refinements above. The following checklist is retained for future
+Automatic scrolling of an overflowing dock during an external drag remains open. The following checklist is retained for future
 regression checks; the general acceptance does not certify every source/output mix.
 
 ## Manual regression checklist

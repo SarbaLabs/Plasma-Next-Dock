@@ -285,6 +285,7 @@ Item {
                     }
                     Component.onDestruction: root.animatedWeight -= reportedFactor
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
+                    property alias previewOwner: taskTip
                     property alias iconItem: icon
                     property alias inputItem: inputLane
                     readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
@@ -588,7 +589,20 @@ Item {
             const before = (coordinate < centerCoordinate) !== root.reverseLayout;
             return before ? list[nearest] : (list[nearest + 1] || "");
         }
-        onContainsDragChanged: { if (containsDrag) previewPanel.dismiss(); root.refreshHover(); }
+        onGroupHovered: row => {
+            const slot = repeater.itemAt(row);
+            if (slot) previewPanel.showForDrag(slot.previewOwner);
+        }
+        onTargetChangedDuringDrag: row => {
+            if (row >= 0 && previewPanel.dragOwner !== repeater.itemAt(row)?.previewOwner)
+                previewPanel.endDrag();
+        }
+        onContainsDragChanged: {
+            if (containsDrag) previewPanel.dismiss();
+            else previewPanel.leaveDock();
+            root.refreshHover();
+        }
+        onDropped: previewPanel.endDrag()
         onOpenedFiles: row => root.rememberLaunch(repeater.itemAt(row))
     }
     ContextMenu {

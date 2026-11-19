@@ -29,7 +29,8 @@ TestCase {
         property bool valid: false
         property var index: ({row: -1})
         function bind(model, row) { valid = model !== null && row >= 0; index = {row: row}; }
-        function data(role) { return role === "IsWindow"; }
+        property bool group: false
+        function data(role) { return role === "IsWindow" || (group && role === "IsGroupParent"); }
     }
     Component {
         id: dropComponent
@@ -42,7 +43,7 @@ TestCase {
             insertionAnchor: point => "applications:Second.desktop"
         }
     }
-    function init() { failOnWarning(/.*(TypeError|ReferenceError).*/); fakeTasks.opens = 0; fakeTasks.activations = 0; fakeSource.pins = []; fakeTarget.bind(null, -1); }
+    function init() { failOnWarning(/.*(TypeError|ReferenceError).*/); fakeTarget.group = false; fakeTasks.opens = 0; fakeTasks.activations = 0; fakeSource.pins = []; fakeTarget.bind(null, -1); }
     function test_nativeDragEventDelivery() {
         const drop = createTemporaryObject(dropComponent, test);
         const urls = ["file:///tmp/document.txt"];
@@ -116,6 +117,17 @@ TestCase {
         verify(drop.begin(["file:///tmp/document.txt"], Qt.point(40, 40)));
         drop.clear(); wait(700);
         compare(fakeTasks.activations, 1);
+    }
+    function test_groupDwellOnlyOpensChooser() {
+        const drop = createTemporaryObject(dropComponent, test);
+        let group = -1;
+        drop.groupHovered.connect(row => group = row);
+        fakeTarget.group = true;
+        verify(drop.begin(["file:///tmp/document.txt"], Qt.point(40, 40)));
+        tryVerify(() => group === 0);
+        compare(fakeTasks.activations, 0);
+        verify(drop.commit(["file:///tmp/document.txt"], Qt.point(40, 40)));
+        compare(fakeTasks.opens, 1);
     }
     function test_pinAndRejectMixedPayload() {
         const drop = createTemporaryObject(dropComponent, test);

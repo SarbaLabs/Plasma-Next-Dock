@@ -10,6 +10,24 @@ Item {
     id: panel
     // Plasma's tooltip sets this to its current owner before displaying us.
     property PlasmaCore.ToolTipArea toolTip: null
+    property PlasmaCore.ToolTipArea dragOwner: null
+    function showForDrag(owner) {
+        handover.stop();
+        dragOwner = owner;
+        owner.showGroupWindows();
+    }
+    function leaveDock() { if (dragOwner) handover.restart(); }
+    function endDrag() {
+        handover.stop();
+        if (!dragOwner) return;
+        dragOwner = null;
+        dismiss();
+    }
+    Timer {
+        id: handover
+        interval: 750
+        onTriggered: if (!cardDrag.containsDrag) panel.endDrag()
+    }
     property var dockWindow: null
     property string applicationName: ""
     property var applicationIcon: ""
@@ -23,7 +41,7 @@ Item {
     readonly property bool displayed: Window.window !== null && Window.window !== dockWindow && Window.window.visible
     // A shared Plasma tooltip briefly detaches this item while changing owners.
     // Release the model only after that synchronous reparenting has finished.
-    onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) windowPreviews.clear(); })
+    onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) { panel.dragOwner = null; windowPreviews.clear(); } })
     visible: false
     implicitWidth: visibleWindows ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(visibleWindows, 3) * 240) : Math.min(outputSize.width - 32, Math.max(mediaAvailable ? 260 : 80, heading.implicitWidth + 24))
     implicitHeight: Math.min(outputSize.height - 32, (visibleWindows ? 32 + (vertical ? Math.min(visibleWindows, 3) : 1) * 180 : 36) + (media.item && media.item.visible ? media.item.implicitHeight + 12 : 0))
@@ -74,7 +92,7 @@ Item {
             Rectangle {
                 anchors.fill: parent; anchors.margins: 3
                 radius: 5
-                color: card.active ? Kirigami.Theme.highlightColor : "transparent"
+                color: card.active || cardDrag.candidate === card ? Kirigami.Theme.highlightColor : "transparent"
                 opacity: 0.18
             }
             Controls.ToolButton {
@@ -117,6 +135,71 @@ Item {
                     Accessible.name: i18ndc("plasma_applet_org.kde.plasma.taskmanager", "action:inmenu", "&Close")
                     onClicked: windowPreviews.close(card.index)
                 }
+            }
+        }
+    }
+    // Wayland sends a new drag enter when crossing into the tooltip surface.
+    // Accept the hover offer, but leave the actual file drop to the application.
+    DropArea {
+        id: cardDrag
+        objectName: "previewDocumentDrag"
+        anchors.fill: parent
+        enabled: !!panel.dragOwner && panel.toolTip === panel.dragOwner && panel.displayed
+        property Item candidate: null
+        property point point: Qt.point(0, 0)
+        readonly property point listPoint: list.mapFromItem(cardDrag, point)
+        readonly property real axis: panel.vertical ? listPoint.y : listPoint.x
+        readonly property real extent: panel.vertical ? list.height : list.width
+        readonly property real offset: panel.vertical ? list.contentY - list.originY : list.contentX - list.originX
+        readonly property real overflow: panel.vertical ? list.contentHeight - list.height : list.contentWidth - list.width
+        readonly property int scrollStep: !containsDrag || !list.contains(listPoint) ? 0
+            : axis < 22 && offset > 0 ? -18 : axis > extent - 22 && offset < overflow ? 18 : 0
+        function locate() {
+            const p = list.contentItem.mapFromItem(cardDrag, point);
+            const card = list.contains(listPoint) ? list.itemAt(p.x, p.y) : null;
+            if (card === candidate) return;
+            choose.stop();
+            candidate = card;
+            if (card && !scrollStep) choose.start();
+        }
+        function reset() { choose.stop(); candidate = null; }
+        onEntered: event => {
+            event.accepted = event.hasUrls && !!(event.supportedActions & Qt.CopyAction)
+                && launcherResolver.classify(event.urls).kind === "documents";
+            if (!event.accepted) return;
+            handover.stop();
+            point = Qt.point(event.x, event.y);
+            locate();
+        }
+        onPositionChanged: event => { point = Qt.point(event.x, event.y); locate(); }
+        onExited: { reset(); panel.endDrag(); }
+        onDropped: event => { event.accepted = false; reset(); panel.endDrag(); }
+        onScrollStepChanged: {
+            if (scrollStep) choose.stop();
+            else if (containsDrag && candidate) choose.restart();
+        }
+        onEnabledChanged: if (!enabled) reset()
+        Timer {
+            id: choose
+            interval: 350
+            onTriggered: {
+                const card = cardDrag.candidate;
+                if (!cardDrag.containsDrag || !cardDrag.enabled || !card || cardDrag.scrollStep) return;
+                // Card geometry can settle or change under a stationary drag.
+                cardDrag.locate();
+                if (card !== cardDrag.candidate || !card.onScreen) return;
+                windowPreviews.activate(card.index);
+            }
+        }
+        // Make off-screen group members reachable while holding the document.
+        Timer {
+            interval: 60; repeat: true
+            running: cardDrag.scrollStep !== 0
+            onTriggered: {
+                const next = Math.max(0, Math.min(cardDrag.overflow, cardDrag.offset + cardDrag.scrollStep));
+                if (panel.vertical) list.contentY = list.originY + next;
+                else list.contentX = list.originX + next;
+                cardDrag.locate();
             }
         }
     }

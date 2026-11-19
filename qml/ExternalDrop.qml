@@ -14,6 +14,8 @@ DropArea {
     property var launchers: []
     property bool located: false
     property point dragPoint: Qt.point(0, 0)
+    signal groupHovered(int row)
+    signal targetChangedDuringDrag(int row)
     signal openedFiles(int row)
     function clear() {
         dwell.stop(); kind = ""; launchers = []; located = false;
@@ -26,6 +28,7 @@ DropArea {
         if (kind !== "documents" || !tasksSource) return;
         const row = hitTest(point);
         if (target.valid && target.index.row === row) return;
+        targetChangedDuringDrag(row);
         target.bind(tasksSource.tasks, row);
         dwell.stop();
         if (target.valid && (target.data("IsWindow") || target.data("IsGroupParent"))) dwell.start();
@@ -69,8 +72,12 @@ DropArea {
         interval: 650; repeat: false
         onTriggered: {
             if (!root.tasksSource || !root.target.valid) return;
-            let index = root.target.index;
-            if (root.target.data("IsGroupParent")) index = root.tasksSource.tasks.makeModelIndex(index.row, 0);
+            const index = root.target.index;
+            if (root.target.data("IsGroupParent")) {
+                root.groupHovered(index.row);
+                return;
+            }
+            if (!root.target.data("IsWindow")) return;
             // Activation only: never toggle minimization during a drag.
             root.tasksSource.tasks.requestActivate(index);
         }
