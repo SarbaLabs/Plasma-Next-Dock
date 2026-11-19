@@ -223,10 +223,11 @@ Item {
         bottomOpacity: dockOptions.gradientBottomOpacity ?? 1
         borderOpacity: dockOptions.borderOpacity ?? 1
         backgroundType: dockOptions.backgroundType === undefined ? 0 : dockOptions.backgroundType
-        blurOpacity: dockOptions.backgroundOpacity === undefined ? 0.35 : dockOptions.backgroundOpacity
+        tintOpacity: backgroundType === 4 ? (dockOptions.glassOpacity ?? 0.35) : (dockOptions.backgroundOpacity ?? 1)
+        midpoint: (dockOptions.gradientMidpoint ?? 50) / 100
         customBorderWidth: dockOptions.borderWidth === undefined ? 1 : dockOptions.borderWidth
         customBorderColor: dockPalette.resolve(dockOptions.borderRole, dockOptions.borderColor, Kirigami.Theme.disabledTextColor)
-        isVertical: root.vertical
+        edge: dockOptions.edge
         glowEnabled: dockOptions.glow
         glowPosition: Qt.point(dockController.pointerPosition.x - bar.x, dockController.pointerPosition.y - bar.y)
         glowHovering: dockController.pointerHovered && fillShape.contains(glowPosition)
@@ -477,7 +478,7 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: (dockOptions.glow && bar.backgroundType !== 1) || (dockOptions.indicatorMode === 2
+                        active: (dockOptions.glow && (bar.backgroundType !== 0 || bar.tintOpacity > 0)) || (dockOptions.indicatorMode === 2
                             && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {

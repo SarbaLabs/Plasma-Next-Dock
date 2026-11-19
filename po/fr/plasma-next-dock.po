@@ -680,3 +680,21 @@ msgstr "Rayon inférieur gauche (px) :"
 
 msgid "Bottom right radius (px):"
 msgstr "Rayon inférieur droit (px) :"
+
+msgid "Desktop-side color:"
+msgstr "Couleur côté bureau :"
+
+msgid "Screen-edge color:"
+msgstr "Couleur côté bord de l’écran :"
+
+msgid "Desktop-side opacity (%):"
+msgstr "Opacité côté bureau (%) :"
+
+msgid "Screen-edge opacity (%):"
+msgstr "Opacité côté bord de l’écran (%) :"
+
+msgid "Use system blur"
+msgstr "Utiliser le flou système"
+
+msgid "Gradient midpoint (% toward screen edge):"
+msgstr "Milieu du dégradé (% vers le bord de l’écran) :"

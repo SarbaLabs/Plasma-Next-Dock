@@ -198,6 +198,16 @@ private Q_SLOTS:
         QCOMPARE(values["gradientBottomOpacity"].toDouble(), 0.8);
         QCOMPARE(values["borderOpacity"].toDouble(), 0.2);
     }
+    void migrateBackgroundModes() {
+        for (int mode = 0; mode <= 5; ++mode) {
+            const auto values = DockSettings::normalized({{"backgroundType", mode}, {"backgroundOpacity", 0.42}});
+            QCOMPARE(values["backgroundType"].toInt(), mode >= 4 ? mode : 0);
+            QCOMPARE(values["systemBlur"].toBool(), mode == 3 || mode == 4);
+            QCOMPARE(values["backgroundOpacity"].toDouble(), mode == 1 ? 0.0 : (mode == 2 || mode == 3 ? 0.42 : 1.0));
+            QCOMPARE(values["glassOpacity"].toDouble(), 0.42);
+            QCOMPARE(DockSettings::normalized(values), values);
+        }
+    }
     void backgroundPersistence() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);

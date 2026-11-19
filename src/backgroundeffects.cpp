@@ -20,8 +20,7 @@ BackgroundEffects::~BackgroundEffects()
 }
 void BackgroundEffects::configure(const QVariantMap &options)
 {
-    const int mode = options.value("backgroundType", 0).toInt();
-    const bool enabled = mode == 3 || mode == 4;
+    const bool enabled = options.value("systemBlur").toBool();
     if (enabled == m_enabled) return;
     m_enabled = enabled;
     schedule();

@@ -333,3 +333,6 @@ The task menu now includes native frame and capture controls, per-dock applicati
 
 Per-dock palette roles, fixed tints, two-stop gradients, exterior borders and
 four signed corner radii support floating and edge-attached styles.
+
+Solid, Liquid Glass and Gradient now share an independent system-blur option.
+Gradient balance and glass reflections follow the configured screen edge.

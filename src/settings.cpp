@@ -48,7 +48,7 @@ QVariantMap DockSettings::defaults()
         {"topLeftRadius", 10}, {"topRightRadius", 10}, {"bottomRightRadius", 10}, {"bottomLeftRadius", 10},
         {"backgroundRole", "automatic"}, {"backgroundColor", "#303030"}, {"gradientTopRole", "window"}, {"gradientTopColor", "#303030"}, {"gradientBottomRole", "highlight"},
         {"gradientBottomColor", "#3daee9"}, {"gradientTopOpacity", 1.0}, {"gradientBottomOpacity", 1.0},
-        {"borderRole", "automatic"}, {"borderOpacity", 1.0}, {"backgroundType", 0}, {"backgroundOpacity", 0.35},
+        {"borderRole", "automatic"}, {"borderOpacity", 1.0}, {"backgroundType", 0}, {"backgroundOpacity", 1.0}, {"glassOpacity", 0.35}, {"systemBlur", false}, {"gradientMidpoint", 50},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
         {"indicatorUnfocusedColorEnabled", false},
@@ -108,7 +108,19 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
     number("blastRadius", 0, 8, true); number("hoverLift", 0, 64, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
-    if (result["backgroundType"].toInt() < 0 || result["backgroundType"].toInt() > 5) result["backgroundType"] = 0;
+    const int oldMode = result["backgroundType"].toInt();
+    if (!input.contains("systemBlur")) {
+        result["systemBlur"] = oldMode == 3 || oldMode == 4;
+        result["glassOpacity"] = input.value("backgroundOpacity", 0.35);
+        if (oldMode == 1) result["borderOpacity"] = 0.0;
+        if (oldMode == 1) result["backgroundOpacity"] = 0.0;
+        else if (oldMode == 2 || oldMode == 3) result["backgroundOpacity"] = input.value("backgroundOpacity", 0.35);
+        else if (oldMode >= 0 && oldMode <= 5) result["backgroundOpacity"] = 1.0;
+    }
+    result["backgroundType"] = oldMode == 4 || oldMode == 5 ? oldMode : 0;
+    result["systemBlur"] = result["systemBlur"].toBool();
+    number("gradientMidpoint", 1, 99, true);
+    number("glassOpacity", 0, 1, false);
     for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"}) {
         if (!input.contains(key)) result[key] = result["radius"];
         number(key, -96, 96, true);
@@ -117,7 +129,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor"})
         if (!QColor::isValidColorName(result[key].toString())) result[key] = defaults()[key];
     for (const auto key : {"borderOpacity", "gradientTopOpacity", "gradientBottomOpacity"}) number(key, 0, 1, false);
-    number("backgroundType", 0, 5, true); number("backgroundOpacity", 0, 1, false);
+    number("backgroundOpacity", 0, 1, false);
     number("borderWidth", 0, 12, true);
     number("iconSpacing", 0, 64, true); number("horizontalPadding", 0, 128, true); number("verticalPadding", 0, 64, true);
     result["borderUseTheme"] = result["borderRole"].toString() != "custom";

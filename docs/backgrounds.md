@@ -4,12 +4,14 @@
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| backgroundType | 0 | 0 Solid, 1 Transparent, 2 Translucent, 3 System Blur, 4 Liquid Glass, 5 Gradient |
-| backgroundOpacity | 0.35 | Tint opacity, 0–1, for modes 2–4 |
+| backgroundType | 0 | 0 Solid, 4 Liquid Glass, 5 Gradient |
+| backgroundOpacity / glassOpacity | 1 / 0.35 | Independent Solid and Liquid Glass tint opacities |
+| systemBlur | false | Enable compositor blur for the selected fill |
+| gradientMidpoint | 50 | Position of the equal mix, 1–99% from the desktop side toward the screen edge |
 | topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius | inherited radius | Physical corner radii, −96 to 96 logical pixels |
-| backgroundRole / backgroundColor | automatic / #303030 | Theme role or fixed fill for Solid, Translucent, System Blur and Liquid Glass |
+| backgroundRole / backgroundColor | automatic / #303030 | Theme role or fixed fill for Solid and Liquid Glass |
 | gradientTopRole / gradientBottomRole | window / highlight | Each endpoint also retains its own fixed color |
-| gradientTopOpacity / gradientBottomOpacity | 1 / 1 | Independent endpoint alpha from top to bottom of the screen |
+| gradientTopOpacity / gradientBottomOpacity | 1 / 1 | Independent endpoint alpha from the desktop side to the screen edge |
 | borderOpacity | 1 | Exterior border opacity, 0–1 |
 | borderWidth | 1 | Border thickness, 0–12 logical pixels; 0 removes the border |
 | borderRole | automatic | KDE role or custom; automatic uses the theme's disabled-text color |
@@ -17,17 +19,15 @@
 | iconSpacing | 10 | Gap between neighboring icons, 0–64 |
 | horizontalPadding | 12 | Padding at both ends along the dock, 0–128 |
 | verticalPadding | 10 | Padding on both sides across dock thickness, 0–64 |
-| glow | false | Existing bounded hover glow; suppressed in Transparent mode |
+| glow | false | Existing bounded hover glow; suppressed for a fully transparent solid fill |
 
 All are stored in the existing plasma-next-dock.ini, using Apply/Close semantics.
 Mode switches retain the other values. Unknown modes fall back to Solid; numeric
 values are bounded and non-finite values use defaults. Existing profiles inherit their saved radius for each corner and retain the selected border color.
-Transparent removes all capsule paint and blur, but keeps the same input/dodge
-geometry and icons. Translucent paints tint only. System Blur adds KWin blur
-behind tint. Liquid Glass adds theme-aware glass tint and internal gloss.
-The existing glow follows both pointer axes and shares the rounded path; border
-and gloss paint above it. Transparent does not allocate a glow or extract colors
-for it (icon-colored indicators may independently need extraction).
+Existing Transparent, Translucent and System Blur profiles migrate to Solid.
+Transparent retains a clear fill and border. System Blur and Liquid Glass retain
+enabled blur on upgrade. Gradient follows the short axis on every edge. Liquid
+Glass places its strongest gloss on the desktop-facing side.
 
 ## Spacing and padding
 
@@ -104,10 +104,9 @@ Do not restart Plasma Shell or install the old plasmoid's native plugin.
 
 1. Existing installation: Solid, saved radius, indicator modes and glow stay as
    configured. Open settings, cancel changes, apply changes, restart and check
-   persistence. Confirm there is exactly one radius setting.
-2. Cycle all five backgrounds. Check no residual blur in Solid/Transparent/
-   Translucent, theme colors, tint opacity, contour width/color, and theme/custom border switching.
-3. In System Blur and Liquid Glass, use radius 0, 5, 10, 20 and a value above half
+   persistence. Confirm all four corner radii persist.
+2. Cycle all three backgrounds. Toggle system blur in each and check theme colors, tint opacity, contour width/color, and theme/custom border switching.
+3. With system blur enabled, use radius 0, 5, 10, 20 and a value above half
    the capsule thickness. Check corners, border, gloss and glow on all four edges,
    including small adaptive icons, magnification, scrolling and fractional scale.
 4. Hide/recall at least 20 times, with pointer outside the capsule where possible;

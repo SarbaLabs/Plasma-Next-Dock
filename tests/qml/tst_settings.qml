@@ -38,8 +38,8 @@ TestCase {
         verify(indicators !== null);
         indicators.cfg_indicatorMode = 2;
         indicators.cfg_indicatorMaxSegments = 7;
-        findChild(window, "backgroundTypeControl").currentIndex = 4;
-        findChild(window, "backgroundOpacityControl").value = 27;
+        findChild(window, "backgroundTypeControl").currentIndex = 1;
+        findChild(window, "glassOpacityControl").value = 27;
         findChild(window, "borderWidthControl").value = 0;
         findChild(window, "iconSpacingControl").value = 18;
         findChild(window, "horizontalPaddingControl").value = 25;
@@ -76,8 +76,8 @@ TestCase {
             compare(findChild(window, name + "Control").checked, false);
         compare(findChild(window, "blastRadiusControl").value, 4);
         compare(findChild(window, "hoverLiftControl").value, 6);
-        compare(findChild(window, "backgroundTypeControl").currentIndex, 4);
-        compare(findChild(window, "backgroundOpacityControl").value, 27);
+        compare(findChild(window, "backgroundTypeControl").currentIndex, 1);
+        compare(findChild(window, "glassOpacityControl").value, 27);
         compare(findChild(window, "borderWidthControl").value, 0);
         compare(findChild(window, "iconSpacingControl").value, 18);
         compare(findChild(window, "horizontalPaddingControl").value, 25);
@@ -86,7 +86,7 @@ TestCase {
         compare(findChild(window, "outlineColorControl").enabled, false);
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "topLeftControl").value, 0);
-        findChild(window, "backgroundTypeControl").currentIndex = 5;
+        findChild(window, "backgroundTypeControl").currentIndex = 2;
         verify(!findChild(window, "backgroundOpacityControl").visible);
         verify(findChild(window, "upperColorControl").visible);
         findChild(window, "upperColorControl").role = "highlight";
@@ -95,7 +95,11 @@ TestCase {
         findChild(window, "bottomLeftControl").value = -22;
         findChild(window, "topOpacityControl").value = 0;
         findChild(window, "bottomOpacityControl").value = 75;
+        findChild(window, "gradientMidpointControl").value = 72;
+        findChild(window, "systemBlurControl").checked = true;
         buttons.applied();
+        compare(dockSettings.values.gradientMidpoint, 72);
+        compare(dockSettings.values.systemBlur, true);
         compare(dockSettings.values.gradientTopRole, "highlight");
         compare(dockSettings.values.gradientBottomColor, "#123456");
         compare(dockSettings.values.gradientTopOpacity, 0);

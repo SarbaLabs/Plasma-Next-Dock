@@ -882,3 +882,8 @@ border followed the exposed outline. A second run used the left edge, an
 eight-pixel gap and System Blur with the highlight palette role. The exposed
 border and both outward curves were visible. Geometry and persistence tests
 cover signed corners, a saved legacy radius and an existing custom border.
+
+Four simultaneous test docks used a yellow desktop-side stop and a blue
+screen-edge stop at a 72% midpoint. Wayland screenshots showed the blue along
+the physical edge in all four orientations. The same docks were switched to
+Liquid Glass with system blur to check the reflected highlight on each edge.

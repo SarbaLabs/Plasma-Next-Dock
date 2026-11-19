@@ -21,8 +21,13 @@ Item {
     property color lowerColor: Kirigami.Theme.highlightColor
     property int customBorderWidth: 1
     property color customBorderColor: Kirigami.Theme.disabledTextColor
-    property bool isVertical: false
-    property real blurOpacity: 0.35
+    property int edge: 0
+    readonly property bool isVertical: edge >= 2
+    // Both gradients run from the desktop-facing side toward the physical edge.
+    readonly property point desktopSide: Qt.point(edge === 2 ? width : 0, edge === 1 ? height : 0)
+    readonly property point screenSide: Qt.point(edge === 3 ? width : 0, edge === 0 ? height : 0)
+    property real midpoint: 0.5
+    property real tintOpacity: 1
     property real topOpacity: 1
     property real bottomOpacity: 1
     property real borderOpacity: 1
@@ -34,10 +39,9 @@ Item {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
         containsMode: Shape.FillContains
-        visible: root.backgroundType !== 1
         ShapePath {
             strokeWidth: -1
-            fillColor: root.tint(root.customBackgroundColor, root.backgroundType === 0 ? 1 : root.blurOpacity)
+            fillColor: root.tint(root.customBackgroundColor, root.tintOpacity)
             fillGradient: root.backgroundType === 5 ? colors : null
             PathSvg { path: root.drawing.fill }
         }
@@ -45,15 +49,25 @@ Item {
     property alias fillShape: base
     LinearGradient {
         id: colors
-        x1: 0; y1: 0; x2: 0; y2: root.height
-        GradientStop { position: 0; color: root.tint(root.customBackgroundColor, root.topOpacity) }
-        GradientStop { position: 1; color: root.tint(root.lowerColor, root.bottomOpacity) }
+        x1: root.desktopSide.x; y1: root.desktopSide.y
+        x2: root.screenSide.x; y2: root.screenSide.y
+        GradientStop { id: start; position: 0; color: root.tint(root.customBackgroundColor, root.topOpacity) }
+        GradientStop {
+            position: root.midpoint
+            color: {
+                const a = start.color, b = end.color, sum = a.a + b.a;
+                if (!sum) return "transparent";
+                return Qt.rgba((a.r*a.a + b.r*b.a) / sum, (a.g*a.a + b.g*b.a) / sum,
+                               (a.b*a.a + b.b*b.a) / sum, sum / 2);
+            }
+        }
+        GradientStop { id: end; position: 1; color: root.tint(root.lowerColor, root.bottomOpacity) }
     }
     Loader {
         id: glowLoader
         objectName: "glowLoader"
         anchors.fill: parent
-        active: root.glowEnabled && root.backgroundType !== 1
+        active: root.glowEnabled && (root.backgroundType !== 0 || root.tintOpacity > 0)
         sourceComponent: CapsuleGlow {
             silhouette: root.drawing.fill
             pointerX: root.glowPosition.x
@@ -72,8 +86,8 @@ Item {
         ShapePath {
             strokeWidth: -1
             fillGradient: LinearGradient {
-                x2: root.isVertical ? root.width : 0
-                y2: root.isVertical ? 0 : root.height
+                x1: root.desktopSide.x; y1: root.desktopSide.y
+                x2: root.screenSide.x; y2: root.screenSide.y
                 GradientStop { position: 0; color: "#29ffffff" }
                 GradientStop { position: 0.35; color: "#0affffff" }
                 GradientStop { position: 0.75; color: "#03ffffff" }
@@ -85,7 +99,7 @@ Item {
     Shape {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer
-        visible: root.backgroundType !== 1 && root.customBorderWidth > 0 && root.borderOpacity > 0
+        visible: root.customBorderWidth > 0 && root.borderOpacity > 0
         ShapePath {
             strokeWidth: -1
             fillRule: ShapePath.OddEvenFill

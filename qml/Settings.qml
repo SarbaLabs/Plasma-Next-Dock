@@ -47,7 +47,10 @@ Controls.ApplicationWindow {
         spacing.value = v.spacing;
         glow.checked = v.glow; dodge.checked = v.dodge;
         revealAnimation.checked = v.revealAnimation;
-        backgroundType.currentIndex = v.backgroundType;
+        backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
+        systemBlur.checked = v.systemBlur;
+        midpoint.value = v.gradientMidpoint;
+        glassOpacity.value = Math.round(v.glassOpacity * 100);
         backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
         borderWidth.value = v.borderWidth;
         borderOpacity.value = Math.round(v.borderOpacity * 100);
@@ -88,7 +91,7 @@ Controls.ApplicationWindow {
             window.profileError = "";
             if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: window.draftScreen,
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
-            backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
+            backgroundType: backgroundType.mode, systemBlur: systemBlur.checked, gradientMidpoint: midpoint.value, glassOpacity: glassOpacity.value / 100, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderRole: outline.role, borderColor: outline.fixedColor.toString(), borderOpacity: borderOpacity.value / 100,
             backgroundRole: fill.role, backgroundColor: fill.fixedColor.toString(),
             gradientTopRole: upper.role, gradientTopColor: upper.fixedColor.toString(), gradientTopOpacity: topOpacity.value / 100,
@@ -212,47 +215,56 @@ Controls.ApplicationWindow {
                     id: backgroundType; objectName: "backgroundTypeControl"
                     implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: i18n("Background:")
-                    model: [i18n("Solid"), i18n("Transparent"), i18n("Translucent"), i18n("System Blur"), i18n("Liquid Glass"), i18n("Gradient")]
+                    readonly property var modeIds: [0, 4, 5]
+                    readonly property int mode: modeIds[currentIndex] ?? 0
+                    model: [i18n("Solid"), i18n("Liquid Glass"), i18n("Gradient")]
                 }
                 Controls.SpinBox {
                     id: backgroundOpacity; objectName: "backgroundOpacityControl"
-                    visible: backgroundType.currentIndex >= 2 && backgroundType.currentIndex <= 4
+                    visible: backgroundType.mode === 0
                     Kirigami.FormData.label: i18n("Background tint opacity (%):")
                     from: 0; to: 100; editable: true
                 }
-                Controls.Label {
-                    visible: backgroundType.currentIndex === 3 || backgroundType.currentIndex === 4
-                    Layout.fillWidth: true
-                    text: i18n("Requires an enabled KWin blur effect. Liquid Glass adds tint and gloss, not optical refraction.")
-                    wrapMode: Text.WordWrap
+                Controls.SpinBox {
+                    id: glassOpacity; objectName: "glassOpacityControl"
+                    visible: backgroundType.mode === 4
+                    Kirigami.FormData.label: i18n("Background tint opacity (%):")
+                    from: 0; to: 100; editable: true
                 }
+                Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
                 ColorSetting {
                     id: fill; objectName: "fillColorControl"; paletteSource: dockPalette
                     Kirigami.FormData.label: i18n("Background color:")
-                    visible: backgroundType.currentIndex !== 1 && backgroundType.currentIndex !== 5
-                    defaultColor: backgroundType.currentIndex !== 4 ? Kirigami.Theme.backgroundColor : Kirigami.Theme.backgroundColor.hslLightness < 0.5 ? "#1f1f26" : "#f5f7ff"
+                    visible: backgroundType.mode !== 5
+                    defaultColor: backgroundType.mode !== 4 ? Kirigami.Theme.backgroundColor : Kirigami.Theme.backgroundColor.hslLightness < 0.5 ? "#1f1f26" : "#f5f7ff"
                 }
                 ColorSetting {
                     id: upper; objectName: "upperColorControl"; paletteSource: dockPalette
-                    Kirigami.FormData.label: i18n("Upper color:")
-                    visible: backgroundType.currentIndex === 5
+                    Kirigami.FormData.label: i18n("Desktop-side color:")
+                    visible: backgroundType.mode === 5
                     defaultColor: Kirigami.Theme.backgroundColor
                 }
                 Controls.SpinBox {
-                    id: topOpacity; objectName: "topOpacityControl"; Kirigami.FormData.label: i18n("Upper opacity (%):")
+                    id: topOpacity; objectName: "topOpacityControl"; Kirigami.FormData.label: i18n("Desktop-side opacity (%):")
                     from: 0; to: 100; editable: true
-                    visible: backgroundType.currentIndex === 5
+                    visible: backgroundType.mode === 5
                 }
                 ColorSetting {
                     id: lower; objectName: "lowerColorControl"; paletteSource: dockPalette
-                    Kirigami.FormData.label: i18n("Lower color:")
-                    visible: backgroundType.currentIndex === 5
+                    Kirigami.FormData.label: i18n("Screen-edge color:")
+                    visible: backgroundType.mode === 5
                     defaultColor: Kirigami.Theme.highlightColor
                 }
                 Controls.SpinBox {
-                    id: bottomOpacity; objectName: "bottomOpacityControl"; Kirigami.FormData.label: i18n("Lower opacity (%):")
+                    id: bottomOpacity; objectName: "bottomOpacityControl"; Kirigami.FormData.label: i18n("Screen-edge opacity (%):")
                     from: 0; to: 100; editable: true
-                    visible: backgroundType.currentIndex === 5
+                    visible: backgroundType.mode === 5
+                }
+                Controls.SpinBox {
+                    id: midpoint; objectName: "gradientMidpointControl"
+                    visible: backgroundType.mode === 5
+                    Kirigami.FormData.label: i18n("Gradient midpoint (% toward screen edge):")
+                    from: 1; to: 99; editable: true
                 }
                 Controls.Label {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap

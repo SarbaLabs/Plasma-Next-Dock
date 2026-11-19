@@ -33,7 +33,7 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - Window avoidance based on the **visible capsule**, not the transparent canvas.
 - Native KWin screen-edge recall through `kde-screen-edge-v1`, without unmapping
   the window. If the extension is unavailable, the dock stays visible.
-- Solid, Transparent, Translucent, System Blur, Liquid Glass and vertical Gradient backgrounds.
+- Solid, Liquid Glass and edge-relative Gradient backgrounds, each with optional KWin blur.
   Four independent signed corner radii shape the background, glow and native blur.
   Optional application-color glow stays inside the capsule.
 - macOS, Plasma and Custom running indicators, independent native group/decorations,
@@ -105,8 +105,9 @@ See [behavior settings and desktop checks](docs/behavior.md).
 
 Open Configure → Appearance and launchers → Capsule and style. Choose a fixed
 color or a KDE palette role for the fill and exterior border. Gradient has
-independent upper and lower colors and opacities. System Blur and Liquid Glass
-use KWin blur; Liquid Glass adds a gloss over the selected tint. Border width
+independent desktop-side and screen-edge colors and opacities. Move the midpoint
+toward the screen edge to give the desktop-side color more space. Solid supports
+0–100% opacity. Liquid Glass places its bright reflection on the desktop side. Border width
 and opacity are independent of the fill.
 
 For a bottom dock that joins the desktop edge, set the distance to zero, give
