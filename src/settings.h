@@ -11,7 +11,7 @@ class DockSettings : public QObject
     Q_PROPERTY(bool loginAvailable READ loginAvailable CONSTANT)
 public:
     explicit DockSettings(const QString &file, bool persistent = true, QObject *parent = nullptr,
-                          const QString &loginTemplate = {});
+                          const QString &loginTemplate = {}, const QString &group = {});
     bool loginAvailable() const { return m_persistent && !m_loginTemplate.isEmpty(); }
     Q_INVOKABLE bool startsAtLogin() const;
     Q_INVOKABLE bool setStartAtLogin(bool enabled);

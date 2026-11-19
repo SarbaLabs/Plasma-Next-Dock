@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#include "settings.h"
+#include "dockprofiles.h"
 #include <QTemporaryDir>
 #include <QTest>
 #include <limits>
@@ -7,6 +7,45 @@ class SettingsTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void independentDocksAndOutputs() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("dock.ini");
+        const QStringList pins{"applications:org.kde.dolphin.desktop"};
+        QVERIFY(DockSettings(file).apply({{"screen", "Samsung"}, {"edge", 2}, {"launchers", pins}, {"zoom", 2.0}}));
+        {
+            DockProfiles docks(file, true, {});
+            docks.setOutputs({"Samsung", "AOC"}, "Samsung");
+            auto *first = docks.current();
+            QCOMPARE(first->values()["launchers"].toStringList(), pins);
+            QVERIFY(docks.add());
+            auto *second = docks.current();
+            QVERIFY(second != first);
+            QVERIFY(second->values()["launchers"].toStringList().isEmpty());
+            QVERIFY(!docks.positionAvailable("", 2));
+            QVERIFY(second->apply({{"screen", "AOC"}, {"edge", 2}, {"glow", true}}));
+            QCOMPARE(docks.assignedOutput(first), "Samsung");
+            QCOMPARE(docks.assignedOutput(second), "AOC");
+            docks.setOutputs({"Samsung"}, "Samsung");
+            QCOMPARE(docks.assignedOutput(second), QString());
+            QCOMPARE(second->values()["screen"], "AOC");
+            docks.setOutputs({"other"}, "other");
+            QCOMPARE(docks.assignedOutput(first), "other");
+            QCOMPARE(docks.assignedOutput(second), QString());
+            first->configure();
+            QCOMPARE(docks.current(), first);
+            QCOMPARE(first->values()["zoom"], 2.0);
+            QCOMPARE(first->values()["glow"], false);
+        }
+        DockProfiles restored(file, true, {});
+        restored.setOutputs({"Samsung", "AOC"}, "Samsung");
+        QCOMPARE(restored.profiles().size(), 2);
+        QCOMPARE(restored.current()->values()["launchers"].toStringList(), pins);
+        QVERIFY(restored.removeSelected());
+        QCOMPARE(restored.assignedOutput(restored.current()), "AOC");
+        QCOMPARE(restored.current()->values()["glow"], true);
+        QVERIFY(!restored.removeSelected());
+        QCOMPARE(DockProfiles(file, true, {}).profiles().size(), 1);
+    }
     void optionalLoginEntry() {
         QTemporaryDir dir;
         QVERIFY(dir.isValid());

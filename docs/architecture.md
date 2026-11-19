@@ -64,8 +64,14 @@ Installation defaults to ~/.local and uses the unique executable/desktop ID
 `plasma-next-dock` / `org.sarbalabs.PlasmaNextDock`. Optional login startup uses a user-owned XDG autostart symlink targeting the
 installed KDE desktop entry template. The settings window reads the link state
 each time it opens. Login and manual launches share the live instance lock.
-Output removal recreates the dock on the primary remaining screen; simultaneous
-multi-instance/multi-output management is future work.
+DockProfiles owns a DockSettings object per saved dock. Dock 1 uses the existing
+flat INI keys, additional docks use numbered groups in the same file, and the
+collection stores their order. One application lock and one login entry cover
+the whole collection. Each visible dock has its own host, QML engine, task models,
+controller and native screen-edge object. Explicit assignments use the Qt output
+name. Disconnecting a monitor retires its surfaces and retains the assignments.
+If all assignments are unavailable, the first dock temporarily appears on the
+primary screen so the configuration window stays reachable.
 
 The KDE screen-edge and task-manager APIs are desktop integration interfaces,
 not a promise of cross-compositor or indefinite binary compatibility. In particular,

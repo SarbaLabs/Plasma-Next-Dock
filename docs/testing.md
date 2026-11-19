@@ -805,3 +805,23 @@ the generator again produced no matching service. The settings-persistence test
 also covers missing templates, conflicting files, repeated enable/disable, and
 demo isolation. All 15 CTest entries passed. An actual KDE logout/login cycle
 with the option enabled and then disabled remains a manual acceptance check.
+
+## Multiple docks and outputs (2026-11-19)
+
+On the single-output CachyOS VM, a temporary copy of the existing configuration
+opened as Dock 1 with the original four pinned applications. In the French
+settings window, Add dock selected Dock 2 with fresh settings. Changing its edge
+to Right and applying preserved Dock 1 on Left. After restarting, both profiles
+were restored. Selecting Dock 2 displayed its saved Right edge. Both surfaces
+were visible on the same monitor with distinct launcher sets. Confirming removal
+of Dock 2 left only Dock 1 and its original launchers in the INI file.
+
+All 15 CTest entries passed. The settings test covers legacy migration,
+independent values and launchers, output assignment, disconnection and fallback,
+restoration, conflict detection and removal of the original profile. The prior
+single-dock autostart release was also confirmed by the maintainer on a KDE
+login configured to start an empty session.
+
+The maintainer validated the full multi-monitor checklist on CachyOS with Samsung
+and AOC displays, including different scale factors, independent settings,
+restart, disconnect/reconnect, edge recall and preview placement.

@@ -12,6 +12,20 @@ Controls.ApplicationWindow {
     width: 620; height: 720
     minimumWidth: 460; minimumHeight: 400
     visible: false
+    readonly property var profiles: typeof dockProfiles === "undefined" ? null : dockProfiles
+    property string profileError: ""
+    property string draftScreen: ""
+    readonly property var screenNames: outputNames.indexOf(draftScreen) < 0 ? outputNames.concat([draftScreen]) : outputNames
+    Controls.Dialog {
+        id: confirmRemoval
+        parent: window.contentItem
+        anchors.centerIn: parent
+        modal: true
+        title: i18n("Remove %1?", window.profiles ? window.profiles.labels[window.profiles.selectedIndex] || "" : "")
+        standardButtons: Controls.Dialog.Ok | Controls.Dialog.Cancel
+        Controls.Label { text: i18n("Its settings and pinned applications will be removed.") }
+        onAccepted: if (!window.profiles.removeSelected()) window.profileError = i18n("Could not remove the dock.")
+    }
     property color borderColorValue: "#808080"
     QtDialogs.ColorDialog {
         id: borderDialog; title: i18n("Border color"); selectedColor: window.borderColorValue
@@ -31,7 +45,8 @@ Controls.ApplicationWindow {
         loginError.visible = false;
         const v = dockSettings.values;
         edge.currentIndex = v.edge;
-        screen.currentIndex = Math.max(0, outputNames.indexOf(v.screen));
+        window.draftScreen = v.screen;
+        window.profileError = "";
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing; radius.value = v.radius;
@@ -60,7 +75,12 @@ Controls.ApplicationWindow {
         objectName: "settingsButtons"
         standardButtons: Controls.DialogButtonBox.Apply | Controls.DialogButtonBox.Close
         onApplied: {
-            if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: outputNames[screen.currentIndex] || "",
+            if (window.profiles && !window.profiles.positionAvailable(window.draftScreen, edge.currentIndex)) {
+                window.profileError = i18n("Another dock uses this screen edge. Choose a different edge or screen.");
+                return;
+            }
+            window.profileError = "";
+            if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: window.draftScreen,
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
@@ -76,12 +96,45 @@ Controls.ApplicationWindow {
         }
         onRejected: window.close()
     }
-    header: Controls.TabBar {
-        id: pages
-        Controls.TabButton { text: i18n("Appearance and launchers") }
-        Controls.TabButton { text: i18n("Indicators") }
-        Controls.TabButton { text: i18n("Application status") }
-        Controls.TabButton { text: i18n("Behavior") }
+    header: ColumnLayout {
+        spacing: 0
+        RowLayout {
+            visible: !!window.profiles
+            Layout.fillWidth: true
+            Layout.margins: 6
+            Controls.Label { text: i18n("Dock:") }
+            Controls.ComboBox {
+                objectName: "dockSelector"
+                Layout.fillWidth: true
+                model: window.profiles ? window.profiles.labels : []
+                currentIndex: window.profiles ? window.profiles.selectedIndex : -1
+                onActivated: index => window.profiles.select(index)
+            }
+            Controls.Button {
+                text: i18n("Add dock")
+                onClicked: if (!window.profiles.add()) window.profileError = i18n("Could not add a dock. Check for a free screen edge and a writable configuration file.")
+            }
+            Controls.Button {
+                text: i18n("Remove dock")
+                enabled: !!window.profiles && window.profiles.labels.length > 1
+                onClicked: confirmRemoval.open()
+            }
+        }
+        Controls.Label {
+            visible: text.length > 0
+            text: window.profileError
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            color: Kirigami.Theme.negativeTextColor
+        }
+        Controls.TabBar {
+            id: pages
+            Layout.fillWidth: true
+            Controls.TabButton { text: i18n("Appearance and launchers") }
+            Controls.TabButton { text: i18n("Indicators") }
+            Controls.TabButton { text: i18n("Application status") }
+            Controls.TabButton { text: i18n("Behavior") }
+        }
     }
     StackLayout {
       anchors.fill: parent
@@ -98,6 +151,7 @@ Controls.ApplicationWindow {
                     id: login
                     objectName: "startAtLoginControl"
                     property bool saved: false
+                    Kirigami.FormData.label: i18n("All docks:")
                     enabled: dockSettings.loginAvailable
                     text: i18n("Start Plasma Next Dock at login")
                 }
@@ -116,7 +170,21 @@ Controls.ApplicationWindow {
                     // Avoid style content-item/implicit-width feedback in Breeze.
                     implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: i18n("Screen:")
-                    model: outputNames.map(name => name || i18n("Primary screen"))
+                    function fullLabel(name) {
+                        if (!name) return i18n("Primary screen");
+                        if (outputNames.indexOf(name) < 0) return i18n("%1 (disconnected)", name);
+                        const description = outputDescriptions[name];
+                        return description ? i18n("%1: %2", name, description) : name;
+                    }
+                    FontMetrics { id: screenMetrics; font: screen.font }
+                    // Leave room for the native style's dropdown arrow and margins.
+                    readonly property real labelWidth: Math.max(0, width - 2 * Kirigami.Units.gridUnit)
+                    model: window.screenNames.map(name => screenMetrics.elidedText(
+                        fullLabel(name), Qt.ElideRight, labelWidth))
+                    Controls.ToolTip.text: fullLabel(window.draftScreen)
+                    Controls.ToolTip.visible: hovered && displayText !== Controls.ToolTip.text && !popup.visible
+                    currentIndex: window.screenNames.indexOf(window.draftScreen)
+                    onActivated: index => window.draftScreen = window.screenNames[index]
                 }
                 Controls.ComboBox {
                     id: edge
