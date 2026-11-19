@@ -159,7 +159,14 @@ Item {
     function queueGeometry() { Qt.callLater(syncGeometry); }
     onWidthChanged: queueGeometry()
     onHeightChanged: queueGeometry()
-    Component.onCompleted: { dockController.setPointerTarget(root); queueGeometry(); }
+    Component.onCompleted: {
+        // Size the first layer-shell configure from the populated model.
+        // Later row replacements still coalesce through onCountChanged.
+        syncTaskCount();
+        refreshDivider();
+        dockController.setPointerTarget(root);
+        queueGeometry();
+    }
 
     Loader {
         id: taskSource

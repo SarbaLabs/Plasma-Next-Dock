@@ -778,3 +778,13 @@ successfully for 6dcf3dabf2b44af5b3c1fee0b2137832eb8c1816. Final PR preparation 
 updates README/development notes; the tested implementation is unchanged. This
 acceptance does not independently certify every item in the extended output/source
 matrix. Keep that matrix for future regressions. No automatic merge performed.
+
+## Initial launcher layout on KWin (2026-11-19)
+
+With Dolphin, Firefox, Konsole and Visual Studio Code pinned on the left, the
+original executable requested a 99 × 200 logical-pixel surface before updating
+its request to 99 × 254. After initializing the task count and divider during
+component completion, the first layer-shell request and KWin configure both
+measured 99 × 254. A live capture on CachyOS showed the complete fourth icon and
+the rounded end of the capsule. The adaptive layout regression test reads the
+task count immediately after loading, before queued model changes can settle.

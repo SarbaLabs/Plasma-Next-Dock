@@ -9,6 +9,15 @@ TestCase {
     visible: true
     when: windowShown
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
+    function test_initialCanvasIncludesTasks() {
+        // Inspect the component before queued row-count notifications can run.
+        dock.active = false;
+        dock.active = true;
+        compare(dock.status, Loader.Ready);
+        const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;
+        verify(tasks.count > 0);
+        compare(dock.item.layoutCount, tasks.count);
+    }
     function test_radiusBudgetAndLift() {
         for (let r = 0; r <= 8; ++r) {
             for (let p = 0; p < 1; p += 0.05) {
