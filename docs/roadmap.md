@@ -312,3 +312,9 @@ including mixed scale factors. See the [test matrix](testing.md#multiple-docks-a
 A document drag can raise a specific group member through its preview and
 continue into the chosen window. This was exercised end to end with Dolphin on
 KWin Wayland. Drag scrolling along the overflowing dock remains a separate task.
+
+## External drag scrolling (2026-11-19)
+
+Documents and installed application launchers can scroll an overflowing dock
+from either end. The real Wayland document drag was validated using 48
+ungrouped windows on a vertical dock; see [testing](testing.md#external-drag-scrolling-on-an-overflowing-dock-2026-11-19).

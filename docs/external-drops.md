@@ -34,6 +34,13 @@ another selection until the drag leaves the panel, ends or is cancelled.
 The tooltip does not take ownership of the document drop. When a group exceeds
 the preview viewport, its edge zones scroll the cards during the drag.
 
+During an accepted document or launcher drag, the outer 28 logical pixels of an
+overflowing viewport scroll its contents toward that end while space remains.
+The viewport coordinate system follows the layout on all four edges. After each
+scroll step, hit testing updates the document target under a stationary pointer.
+Window activation and group preview dwell resume when scrolling stops. Launcher
+insertion uses the visible positions at drop time.
+
 DropArea.containsDrag inhibits dodge. Highlighting uses that target during external
 drag; ordinary hover still uses the established window pointer observer. The
 native input mask, bounce, popup positioning and capsule blur stay unchanged.
@@ -48,7 +55,7 @@ activation. GitHub Actions run 43819877812 passed for implementation commit
 6dcf3dabf2b44af5b3c1fee0b2137832eb8c1816. PR #11 is ready for maintainer review/merge;
 no automatic merge is authorized. This final update changes documentation only.
 
-Automatic scrolling of an overflowing dock during an external drag remains open. The following checklist is retained for future
+An overflowing dock scrolls an accepted external drag in either direction. The following checklist is retained for future
 regression checks; the general acceptance does not certify every source/output mix.
 
 ## Manual regression checklist
