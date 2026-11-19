@@ -105,12 +105,12 @@ paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg p
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
-For the application status development branch:
+To install the current main branch:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch feature/application-status https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch main https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -202,7 +202,16 @@ dock is already running, use its menu instead of starting a second process).
 Settings live in `$XDG_CONFIG_HOME/plasma-next-dock.ini`, normally
 `~/.config/plasma-next-dock.ini`. Defaults preserve the initial prototype appearance:
 40 px icons, 1.5× zoom, 8 px spacing, 10 px radius, bottom/primary output, glow off,
-dodge on and no pinned apps. No background service or autostart is created.
+dodge on and no pinned apps.
+
+To start the dock with your KDE Plasma Wayland session, open **Configure →
+Appearance and launchers**, check **Start Plasma Next Dock at login**, and click
+**Apply**. The option starts off disabled. Uncheck it and apply to remove the
+login entry. Closing the settings window discards an unapplied change.
+The user entry lives in `$XDG_CONFIG_HOME/autostart` (normally
+`~/.config/autostart`) and links to a template under the installation prefix.
+Running `./install.sh` again preserves the choice. A login launch reuses the
+usual dock configuration and exits successfully if the dock is already running.
 
 CLI geometry/launcher options override saved values for the current session;
 explicitly applying settings or changing pins saves the current values. Demo and

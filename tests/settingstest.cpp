@@ -7,6 +7,36 @@ class SettingsTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void optionalLoginEntry() {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        const auto config = dir.filePath("dock.ini");
+        const auto target = dir.filePath("installed template.desktop");
+        const auto entry = dir.filePath("autostart/org.sarbalabs.PlasmaNextDock.desktop");
+        DockSettings settings(config, true, nullptr, target);
+        QVERIFY(!settings.startsAtLogin());
+        QVERIFY(!settings.setStartAtLogin(true)); // Missing installation.
+        QFile desktop(target);
+        QVERIFY(desktop.open(QIODevice::WriteOnly));
+        desktop.close();
+        QVERIFY(settings.setStartAtLogin(true));
+        QVERIFY(settings.setStartAtLogin(true));
+        QCOMPARE(QFileInfo(entry).symLinkTarget(), target);
+        DockSettings restored(config, true, nullptr, target);
+        QVERIFY(restored.startsAtLogin());
+        DockSettings demo(config, false, nullptr, target);
+        QVERIFY(!demo.startsAtLogin());
+        QVERIFY(!demo.setStartAtLogin(false));
+        QVERIFY(restored.setStartAtLogin(false));
+        QVERIFY(!QFileInfo(entry).isSymLink());
+        QVERIFY(restored.setStartAtLogin(false));
+        QFile foreign(entry);
+        QVERIFY(foreign.open(QIODevice::WriteOnly));
+        foreign.close();
+        QVERIFY(!settings.setStartAtLogin(true));
+        QVERIFY(QFileInfo(entry).isFile());
+        QVERIFY(!QFileInfo(entry).isSymLink());
+    }
     void hoverHighlightPersistence() {
         QTemporaryDir dir; const auto file = dir.filePath("dock.ini");
         DockSettings settings(file);

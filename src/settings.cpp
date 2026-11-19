@@ -1,15 +1,32 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "settings.h"
 #include <QUrl>
+#include <QDir>
+#include <QFileInfo>
 #include <QColor>
 #include <cmath>
 #include <algorithm>
-DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent)
-    : QObject(parent), m_store(file, QSettings::IniFormat), m_persistent(persistent)
+DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent, const QString &loginTemplate)
+    : QObject(parent), m_store(file, QSettings::IniFormat), m_persistent(persistent),
+      m_loginTemplate(loginTemplate),
+      m_loginEntry(QFileInfo(file).dir().filePath("autostart/org.sarbalabs.PlasmaNextDock.desktop"))
 {
     QVariantMap saved;
     if (persistent) for (const auto &key : defaults().keys()) saved[key] = m_store.value(key, defaults()[key]);
     m_values = normalized(saved);
+}
+bool DockSettings::startsAtLogin() const
+{
+    return loginAvailable() && QFileInfo(m_loginEntry).symLinkTarget() == m_loginTemplate;
+}
+bool DockSettings::setStartAtLogin(bool enabled)
+{
+    if (!loginAvailable()) return false;
+    if (startsAtLogin() == enabled) return true;
+    if (!enabled) return QFile::remove(m_loginEntry);
+    return QFileInfo(m_loginTemplate).isFile()
+        && QDir().mkpath(QFileInfo(m_loginEntry).absolutePath())
+        && QFile::link(m_loginTemplate, m_loginEntry);
 }
 QVariantMap DockSettings::defaults()
 {

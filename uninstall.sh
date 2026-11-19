@@ -2,7 +2,12 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 set -euo pipefail
 prefix="${PLASMA_NEXT_DOCK_PREFIX:-$HOME/.local}"
-rm -f -- "$prefix/bin/plasma-next-dock" "$prefix/share/applications/org.sarbalabs.PlasmaNextDock.desktop"
+template="$prefix/share/plasma-next-dock/org.sarbalabs.PlasmaNextDock.desktop"
+entry="${XDG_CONFIG_HOME:-$HOME/.config}/autostart/org.sarbalabs.PlasmaNextDock.desktop"
+if [[ -L "$entry" && "$(readlink -m -- "$entry")" == "$(realpath -m -- "$template")" ]]; then
+    rm -- "$entry"
+fi
+rm -f -- "$template" "$prefix/bin/plasma-next-dock" "$prefix/share/applications/org.sarbalabs.PlasmaNextDock.desktop"
 for catalog in "$prefix"/share/locale/*/LC_MESSAGES/plasma-next-dock.mo; do
     rm -f -- "$catalog"
 done

@@ -30,6 +30,9 @@ target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18
 target_link_libraries(dockcore PRIVATE Qt6::GuiPrivate KF6::WindowSystem)
 add_executable(plasma-next-dock src/main.cpp src/screenedge.cpp src/dockhost.cpp)
 target_link_libraries(plasma-next-dock PRIVATE dockcore KF6::WindowSystem Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
+file(RELATIVE_PATH dock_autostart_entry "${CMAKE_INSTALL_FULL_BINDIR}"
+    "${CMAKE_INSTALL_FULL_DATADIR}/plasma-next-dock/org.sarbalabs.PlasmaNextDock.desktop")
+target_compile_definitions(plasma-next-dock PRIVATE DOCK_AUTOSTART_ENTRY="${dock_autostart_entry}")
 set(wayland_codegen_options)
 if(Qt6_VERSION VERSION_GREATER_EQUAL 6.12)
     # Preserve the public generator API used by the adapter, explicitly (QTP0006).

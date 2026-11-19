@@ -61,8 +61,9 @@ hiding, which the separate collision region addresses.
 ## Isolation and maintenance
 
 Installation defaults to ~/.local and uses the unique executable/desktop ID
-`plasma-next-dock` / `org.sarbalabs.PlasmaNextDock`. There is no autostart, service,
-config migration, global environment setting or plasmoid plugin registration.
+`plasma-next-dock` / `org.sarbalabs.PlasmaNextDock`. Optional login startup uses a user-owned XDG autostart symlink targeting the
+installed KDE desktop entry template. The settings window reads the link state
+each time it opens. Login and manual launches share the live instance lock.
 Output removal recreates the dock on the primary remaining screen; simultaneous
 multi-instance/multi-output management is future work.
 

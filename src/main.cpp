@@ -9,6 +9,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QScreen>
+#include <QDir>
 #include <QTimer>
 #include <QLockFile>
 #include <QStandardPaths>
@@ -28,6 +29,7 @@ int main(int argc, char **argv)
     parser.setApplicationDescription(QStringLiteral("Plasma Next Dock — standalone Wayland dock"));
     parser.addHelpOption();
     parser.addOptions({
+        {"autostart", "Start at login if the dock is not already running."},
         {"demo", "Use demonstration icons and temporary settings."},
         {"smoke-test", "Run briefly with isolated settings and exit."},
         {"settings", "Open the configuration window at startup."},
@@ -50,7 +52,8 @@ int main(int argc, char **argv)
     const bool smoke = parser.isSet("smoke-test"), demo = parser.isSet("demo");
     const bool wayland = app.platformName().startsWith("wayland");
     if (!wayland && !demo && !smoke) { qCritical("A Wayland session is required. Use --demo for a preview."); return 1; }
-    DockSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/plasma-next-dock.ini", !demo && !smoke);
+    DockSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/plasma-next-dock.ini", !demo && !smoke, nullptr,
+                          QDir::cleanPath(app.applicationDirPath() + "/" + DOCK_AUTOSTART_ENTRY));
     QVariantMap overrides;
     const QStringList edgeNames = {"bottom", "top", "left", "right"};
     if (parser.isSet("edge")) {
@@ -73,7 +76,11 @@ int main(int argc, char **argv)
     if (parser.isSet("launcher")) overrides["launchers"] = parser.values("launcher");
     settings.overrideSession(overrides);
     QLockFile lock(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) + "/plasma-next-dock.lock");
-    if (!demo && !smoke && !lock.tryLock(0)) { qCritical("Dock already running. Use its right-click Configure menu."); return 1; }
+    if (!demo && !smoke && !lock.tryLock(0)) {
+        if (lock.error() == QLockFile::LockFailedError && parser.isSet("autostart")) return 0;
+        qCritical("Could not acquire the dock instance lock. If already running, use its right-click Configure menu.");
+        return 1;
+    }
     QQmlApplicationEngine configEngine;
     auto *configTranslations = new KLocalizedQmlContext(&configEngine);
     configTranslations->setTranslationDomain(QStringLiteral("plasma-next-dock"));

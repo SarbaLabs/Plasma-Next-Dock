@@ -18,3 +18,10 @@ if(IS_ABSOLUTE "@CMAKE_INSTALL_DATADIR@")
 endif()
 file(INSTALL "@CMAKE_CURRENT_BINARY_DIR@/org.sarbalabs.PlasmaNextDock.desktop"
     DESTINATION "${desktop_destination}")
+
+# A passive template. Only the settings checkbox links it into user autostart.
+string(REPLACE "Exec=\"${executable}\"" "Exec=\"${executable}\" --autostart" login_entry "${desktop_entry}")
+file(WRITE "@CMAKE_CURRENT_BINARY_DIR@/autostart/org.sarbalabs.PlasmaNextDock.desktop"
+    "${login_entry}OnlyShowIn=KDE;\n")
+file(INSTALL "@CMAKE_CURRENT_BINARY_DIR@/autostart/org.sarbalabs.PlasmaNextDock.desktop"
+    DESTINATION "${desktop_destination}/../plasma-next-dock")
