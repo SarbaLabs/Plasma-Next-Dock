@@ -825,3 +825,12 @@ login configured to start an empty session.
 The maintainer validated the full multi-monitor checklist on CachyOS with Samsung
 and AOC displays, including different scale factors, independent settings,
 restart, disconnect/reconnect, edge recall and preview placement.
+
+## Dragging a document to a grouped window (2026-11-19)
+
+On the CachyOS VM with a left-edge dock, two Dolphin windows showed separate
+temporary directories. Dragging a file from the first window onto the Dolphin
+group opened both previews. Dwelling on the second preview raised the destination
+window and dismissed the previews while the mouse button remained down. Continuing
+into that window and releasing with Ctrl copied the file. Both the original and
+the destination copy were verified on disk.

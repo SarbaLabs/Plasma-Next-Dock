@@ -45,6 +45,32 @@ TestCase {
         panel.dismiss();
         tryCompare(panel, "displayed", false);
     }
+    function test_documentDragChoosesSecondWindow() {
+        tryCompare(dock, "status", Loader.Ready);
+        const panel = findChild(dock.item, "taskPreview");
+        const owner = findChild(dock.item, "taskTip0");
+        panel.showForDrag(owner);
+        tryCompare(panel, "displayed", true);
+        windowPreviews.select(testPreviewModel, 0);
+        const area = findChild(panel, "previewDocumentDrag");
+        tryVerify(() => area.enabled && findChild(panel, "previewActivate1") !== null);
+        const first = findChild(panel, "previewActivate0");
+        const second = findChild(panel, "previewActivate1");
+        const p = first.mapToItem(area, first.width / 2, first.height / 2);
+        const urls = ["file:///tmp/document.txt"];
+        const previous = testEnvironment.activatedPreview();
+        verify(testEnvironment.externalDrag(area, p, urls, 0));
+        testEnvironment.externalDrag(area, p, urls, 3);
+        wait(400);
+        compare(testEnvironment.activatedPreview(), previous);
+        verify(testEnvironment.externalDrag(area, p, urls, 0));
+        tryVerify(() => second.width > 0 && second.parent.onScreen);
+        const q = second.mapToItem(area, second.width / 2, second.height / 2);
+        verify(testEnvironment.externalDrag(area, q, urls, 1));
+        compare(area.candidate.index, 1);
+        tryCompare(panel, "displayed", false);
+        compare(testEnvironment.activatedPreview(), "Second window");
+    }
     function test_groupCardsRouteToIndividualWindows() {
         tryCompare(dock, "status", Loader.Ready);
         const owner = findChild(dock.item, "taskTip0");

@@ -306,3 +306,9 @@ The dock selector, independent settings and launcher lists, and output-aware
 hosts are implemented. Two edges on one physical output were verified on the
 VM. The maintainer validated physical multi-monitor operation on CachyOS,
 including mixed scale factors. See the [test matrix](testing.md#multiple-docks-and-outputs-2026-11-19).
+
+## Choosing a grouped window during document drag (2026-11-19)
+
+A document drag can raise a specific group member through its preview and
+continue into the chosen window. This was exercised end to end with Dolphin on
+KWin Wayland. Drag scrolling along the overflowing dock remains a separate task.
