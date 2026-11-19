@@ -28,6 +28,15 @@ TestCase {
         if (glow.active) compare(glow.item.silhouette, item.drawing.fill);
         item.customBorderWidth = 0;
         compare(item.drawing.outline, "");
+        item.glowEnabled = true;
+        item.glowRadius = 116; item.glowIntensity = 1.5; item.glowOpacity = 0.65;
+        compare(glow.item.glowRadius, 116);
+        compare(glow.item.intensity, 1.5);
+        compare(glow.item.strength, 0.65);
+        item.glowOpacity = 0;
+        compare(glow.active, false);
+        item.glowOpacity = 0.65; item.glowIntensity = 0;
+        compare(glow.active, false);
         item.destroy();
     }
 }

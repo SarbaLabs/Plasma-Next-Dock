@@ -121,6 +121,11 @@ dependency, system configuration change or Plasma Shell restart is required.
 If KWin's blur effect is unavailable, tint/gloss remain visible without blur.
 See [background architecture and testing](docs/backgrounds.md).
 
+The optional hover glow follows the pointer and uses the hovered icon's color.
+Its radius can track the magnified icon size (0 = automatic) or use a fixed
+1–256 logical pixels. Intensity scales the selected opacity (up to 200%);
+the defaults are 100% intensity and 30% opacity. Each dock saves its own values.
+
 ## Visibility and alignment
 
 Each dock can use **Always visible** to reserve its resting thickness plus the

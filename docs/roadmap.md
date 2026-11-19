@@ -342,3 +342,9 @@ Gradient balance and glass reflections follow the configured screen edge.
 Four visibility policies and physical start, center and end alignment are selectable for each dock.
 
 Each dock can offset its aligned end along the screen edge with a saved margin.
+
+## Hover glow
+
+Each dock now exposes glow radius, intensity and opacity. The reference fork at
+cd5fa9d9 uses a fixed 70 px default; Next Dock retains automatic radius for
+existing profiles and offers the same 1–256 px manual range.

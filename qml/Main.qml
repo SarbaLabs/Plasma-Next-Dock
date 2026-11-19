@@ -239,7 +239,9 @@ Item {
         glowPosition: Qt.point(dockController.pointerPosition.x - bar.x, dockController.pointerPosition.y - bar.y)
         glowHovering: dockController.pointerHovered && fillShape.contains(glowPosition)
         glowColor: root.applicationColor
-        glowRadius: root.maximum
+        glowRadius: dockOptions.glowRadius > 0 ? dockOptions.glowRadius : root.maximum
+        glowIntensity: (dockOptions.glowIntensity ?? 100) / 100
+        glowOpacity: (dockOptions.glowOpacity ?? 30) / 100
         onCornersChanged: root.queueGeometry()
         onXChanged: root.queueGeometry()
         onYChanged: root.queueGeometry()
@@ -485,7 +487,7 @@ Item {
                     }
                     Loader {
                         id: colorLoader
-                        active: (dockOptions.glow && (bar.backgroundType !== 0 || bar.tintOpacity > 0)) || (dockOptions.indicatorMode === 2
+                        active: bar.drawGlow || (dockOptions.indicatorMode === 2
                             && dockOptions.customIndicatorsEnabled !== false && dockOptions.indicatorColorSource === 1
                             && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
                         sourceComponent: Kirigami.ImageColors {

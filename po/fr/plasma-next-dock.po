@@ -728,3 +728,12 @@ msgstr "Marge supérieure (px) :"
 
 msgid "Bottom margin (px):"
 msgstr "Marge inférieure (px) :"
+
+msgid "Glow radius (px, 0 = automatic):"
+msgstr "Rayon du halo (px, 0 = automatique) :"
+
+msgid "Glow intensity (%):"
+msgstr "Intensité du halo (%) :"
+
+msgid "Glow opacity (%):"
+msgstr "Opacité du halo (%) :"
