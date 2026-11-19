@@ -36,6 +36,10 @@ Item {
         Behavior.primary(tasks, index, options.minimizeActive === true, actionRoles);
     }
     function cycle(index, direction) { return Behavior.cycle(tasks, index, direction, options.skipMinimized !== false, actionRoles); }
+    function activateGroupFromKeyboard(index) {
+        // A group with every window minimized must still be reachable.
+        Behavior.cycle(tasks, index, 1, false, actionRoles);
+    }
     function middle(index) {
         if (options.middleClick === 1) launchRequested(index);
         Behavior.middle(tasks, index, options.middleClick || 0, actionRoles);

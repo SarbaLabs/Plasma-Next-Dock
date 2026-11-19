@@ -63,8 +63,51 @@ Item {
     readonly property bool dragging: dragIndex >= 0
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
+    property Item keyboardItem: null
+    readonly property bool keyboardActive: keyboardItem !== null
+    onKeyboardActiveChanged: refreshHover()
+    function selectKeyboardRow(row) {
+        keyboardItem = repeater.itemAt(row);
+        if (!keyboardItem) return;
+        const icon = keyboardItem.iconItem;
+        const rect = icon.mapToItem(viewport.contentItem, Qt.rect(0, 0, icon.width, icon.height));
+        if (rect.x < viewport.contentX) viewport.contentX = Math.max(0, rect.x);
+        else if (rect.x + rect.width > viewport.contentX + viewport.width)
+            viewport.contentX = Math.min(viewport.contentWidth - viewport.width, rect.x + rect.width - viewport.width);
+    }
+    function beginKeyboard() {
+        if (!repeater.count || contextMenu.visibleMenu || dragging || externalDrop.containsDrag) return;
+        previewPanel.dismiss();
+        selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0);
+        forceActiveFocus(Qt.ShortcutFocusReason);
+    }
+    Keys.onPressed: event => {
+        if (!keyboardActive || event.modifiers !== Qt.NoModifier) return;
+        const selected = keyboardItem;
+        const index = selected.index;
+        if (index < 0 || repeater.itemAt(index) !== selected) { keyboardItem = null; return; }
+        const forward = reverseLayout ? -1 : 1;
+        switch (event.key) {
+        case Qt.Key_Escape: keyboardItem = null; break;
+        case Qt.Key_Home: selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0); break;
+        case Qt.Key_End: selectKeyboardRow(reverseLayout ? 0 : repeater.count - 1); break;
+        case Qt.Key_Return: case Qt.Key_Enter: case Qt.Key_Space:
+            keyboardItem = null;
+            if (selected.model.IsGroupParent) taskSource.item.activateGroupFromKeyboard(index);
+            else taskSource.item.activate(index);
+            break;
+        default: {
+            const next = vertical ? Qt.Key_Down : Qt.Key_Right;
+            const previous = vertical ? Qt.Key_Up : Qt.Key_Left;
+            if (event.key !== next && event.key !== previous) return;
+            const delta = event.key === next ? forward : -forward;
+            selectKeyboardRow((index + delta + repeater.count) % repeater.count);
+        }
+        }
+        event.accepted = true;
+    }
     function refreshHover() {
-        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
+        dockController.setHovered(keyboardActive || dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -419,6 +462,15 @@ Item {
                             enabled: !dockOptions.demo && !overlays.audioHovered && dockOptions.middleClick > 0
                             onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
                         }
+                    }
+                    Rectangle {
+                        visible: root.keyboardItem === slot
+                        anchors.fill: icon
+                        radius: 5
+                        color: "transparent"
+                        border.width: 2
+                        border.color: Kirigami.Theme.focusColor
+                        z: icon.z + 1
                     }
                     Kirigami.Icon {
                         id: icon

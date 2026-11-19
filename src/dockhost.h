@@ -13,6 +13,9 @@ public:
     DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland);
     ~DockHost() override;
     void update(bool settingsOpen);
+    bool beginKeyboard();
+    bool keyboardActive() const;
+    void endKeyboard();
     QScreen *output() const { return m_screen; }
     DockGeometry::Edge edge() const { return m_edge; }
     bool failed() const { return m_failed; }
@@ -20,6 +23,7 @@ public:
     QQuickView *view() { return &m_view; }
 private Q_SLOTS:
     void position();
+    void syncKeyboard();
 private:
     void updateReservation();
     std::unique_ptr<QQuickWindow> m_reservation;

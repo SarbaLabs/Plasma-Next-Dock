@@ -911,3 +911,12 @@ Wayland desktop with a temporary dark solid capsule. At 150% intensity and
 65% opacity, the wider orange glow extended beyond the icon while the smaller
 one stayed close to the pointer. QML tests exercise Apply/reopen, delivery of the
 three settings to the glow and unloading it at zero intensity or opacity.
+
+## Keyboard navigation on KWin Wayland
+
+From a maximized probe window, Meta+Alt+Space revealed an auto-hidden bottom
+dock and outlined Dolphin. Right moved the outline to Firefox, End selected the
+last task, and Escape dismissed the dock. The QML fixture covers traversal,
+wrapping, Home/End, Escape and Enter without launching user applications.
+Repeating the shortcut selected a second, vertical dock; Down moved its
+outline to Firefox. KWin reported the probe window active again after Escape.

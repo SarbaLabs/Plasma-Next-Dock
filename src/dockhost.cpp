@@ -81,6 +81,10 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.setSource(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
     m_failed |= m_view.status() == QQuickView::Error;
     if (m_view.rootObject()) {
+        connect(m_view.rootObject(), SIGNAL(keyboardActiveChanged()), this, SLOT(syncKeyboard()));
+        connect(&m_view, &QWindow::activeChanged, this, [this] {
+            if (!m_view.isActive() && keyboardActive()) endKeyboard();
+        });
         connect(m_view.rootObject(), SIGNAL(reservedThicknessChanged()), this, SLOT(position()));
         connect(m_view.rootObject(), SIGNAL(effectiveAlignmentMarginChanged()), this, SLOT(position()));
     }
@@ -101,6 +105,31 @@ void DockHost::update(bool settingsOpen)
     const auto mode = static_cast<DockGeometry::Visibility>(options["visibilityMode"].toInt());
     m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::WindowsGoBelow : mode);
     position();
+}
+bool DockHost::keyboardActive() const
+{
+    return m_view.rootObject() && m_view.rootObject()->property("keyboardActive").toBool();
+}
+bool DockHost::beginKeyboard()
+{
+    if (!m_view.rootObject()) return false;
+    QMetaObject::invokeMethod(m_view.rootObject(), "beginKeyboard");
+    return keyboardActive();
+}
+void DockHost::endKeyboard()
+{
+    if (keyboardActive()) m_view.rootObject()->setProperty("keyboardItem", QVariant::fromValue<QQuickItem *>(nullptr));
+}
+void DockHost::syncKeyboard()
+{
+    if (!m_surfacePosition) return;
+    using Layer = LayerShellQt::Window;
+    Layer::get(&m_view)->setKeyboardInteractivity(keyboardActive() ? Layer::KeyboardInteractivityOnDemand
+                                                                  : Layer::KeyboardInteractivityNone);
+    m_view.update();
+    if (keyboardActive()) {
+        QTimer::singleShot(1000, this, [this] { if (!m_view.isActive()) endKeyboard(); });
+    }
 }
 void DockHost::position()
 {

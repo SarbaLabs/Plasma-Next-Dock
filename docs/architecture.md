@@ -359,3 +359,5 @@ arbitrary desktop entries. ExternalDrop owns only drag reception and a single-sh
 activation timer; a separate persistent MenuTarget protects against row reuse.
 Native TasksModel handles pinning and opening URLs. See external-drops.md for the
 accepted URL policy, UI behavior, limitations and desktop validation checklist.
+
+During explicit keyboard navigation the selected host temporarily requests layer-shell on-demand keyboard interactivity. Escape, activation and loss of window focus return it to no keyboard interactivity. Demo and smoke runs do not register a global shortcut.

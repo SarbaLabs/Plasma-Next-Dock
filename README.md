@@ -126,6 +126,18 @@ Its radius can track the magnified icon size (0 = automatic) or use a fixed
 1–256 logical pixels. Intensity scales the selected opacity (up to 200%);
 the defaults are 100% intensity and 30% opacity. Each dock saves its own values.
 
+## Keyboard navigation
+
+Press **Meta+Alt+Space** to reveal and focus the selected dock (or the first
+available dock). Press the shortcut again during navigation to cycle through
+available docks. You can reassign **Focus Plasma Next Dock** in KDE System
+Settings → Keyboard → Shortcuts.
+
+Use Left/Right on a horizontal dock or Up/Down on a vertical dock. Home and
+End select the first and last icon in visual order. Enter or Space activates
+the selected task or launcher; for a group it activates a member. Escape
+exits navigation. Outside this mode the dock requests no keyboard focus.
+
 ## Visibility and alignment
 
 Each dock can use **Always visible** to reserve its resting thickness plus the
@@ -148,7 +160,7 @@ Dependencies (the KDE runtime packages are usually already installed):
 ```bash
 paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg plasma-pa \
     layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
-    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kwindowsystem gettext
+    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kglobalaccel kwindowsystem gettext
 ```
 
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the

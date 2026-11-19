@@ -12,6 +12,27 @@ TestCase {
     Rectangle { anchors.fill: parent; color: "#ff00ff"; z: -1 }
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
     function initTestCase() { testCase.Window.window.color = "transparent"; }
+    function test_keyboardNavigation() {
+        tryCompare(dock, "status", Loader.Ready);
+        dock.item.beginKeyboard();
+        verify(dock.item.keyboardActive);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Right);
+        compare(dock.item.keyboardItem.index, 1);
+        keyClick(Qt.Key_End);
+        compare(dock.item.keyboardItem.index, 4);
+        keyClick(Qt.Key_Right);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Left);
+        compare(dock.item.keyboardItem.index, 4);
+        keyClick(Qt.Key_Home);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Escape);
+        verify(!dock.item.keyboardActive);
+        dock.item.beginKeyboard();
+        keyClick(Qt.Key_Return);
+        verify(!dock.item.keyboardActive);
+    }
     function test_magnificationContinuesAndResets() {
         tryCompare(dock, "status", Loader.Ready);
         const first = findChild(dock.item, "task0");

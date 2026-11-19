@@ -737,3 +737,6 @@ msgstr "Intensité du halo (%) :"
 
 msgid "Glow opacity (%):"
 msgstr "Opacité du halo (%) :"
+
+msgid "Focus Plasma Next Dock"
+msgstr "Donner le focus à Plasma Next Dock"
