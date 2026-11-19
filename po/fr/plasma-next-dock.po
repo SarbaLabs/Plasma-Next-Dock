@@ -545,3 +545,36 @@ msgstr "Démarrer Plasma Next Dock à l’ouverture de session"
 
 msgid "Could not update the login entry. Check the dock installation and your autostart directory."
 msgstr "Impossible de modifier le démarrage automatique. Vérifiez l’installation du dock et votre dossier de démarrage automatique."
+
+msgid "Dock %1"
+msgstr "Dock %1"
+
+msgid "Dock:"
+msgstr "Dock :"
+
+msgid "Add dock"
+msgstr "Ajouter un dock"
+
+msgid "Remove dock"
+msgstr "Supprimer le dock"
+
+msgid "Remove %1?"
+msgstr "Supprimer %1 ?"
+
+msgid "Its settings and pinned applications will be removed."
+msgstr "Ses réglages et ses applications épinglées seront supprimés."
+
+msgid "Could not remove the dock."
+msgstr "Impossible de supprimer le dock."
+
+msgid "Another dock uses this screen edge. Choose a different edge or screen."
+msgstr "Un autre dock occupe ce bord. Choisissez un autre bord ou un autre écran."
+
+msgid "Could not add a dock. Check for a free screen edge and a writable configuration file."
+msgstr "Impossible d’ajouter un dock. Vérifiez qu’un bord est libre et que le fichier de configuration est accessible en écriture."
+
+msgid "%1 (disconnected)"
+msgstr "%1 (déconnecté)"
+
+msgid "All docks:"
+msgstr "Tous les docks :"

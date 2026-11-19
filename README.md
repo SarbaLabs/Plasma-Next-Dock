@@ -50,6 +50,24 @@ Configurable launch/attention bounce and the native **Test Bounce Animation** ac
 are available under Configure → Behavior → Icon bounce. See [bounce settings and
 validation](docs/bounce.md) and the remaining [roadmap](docs/roadmap.md).
 
+## Multiple docks and screens
+
+Right-click a dock and choose **Configure Plasma Next Dock…** to open its
+settings. Use the dock selector above the tabs to switch between docks. **Add
+dock** creates and selects a fresh profile on a free edge. Choose its screen and
+edge, edit its settings and click **Apply** before switching profiles. Pinned
+applications and their order are saved immediately. **Remove dock** asks for
+confirmation. One dock stays available for opening settings.
+
+The existing configuration becomes Dock 1 on upgrade. Each dock has its own
+launchers, appearance, task filters, indicators and behavior. Session startup
+applies to the whole collection. Two docks can share a monitor on different
+edges. Select a named output to keep a dock there, or choose **Primary screen**
+to follow the primary output. A disconnected dock resumes when the output name
+returns. If every assigned screen is missing, the first dock temporarily uses
+the primary output. A primary-output change that brings two docks to the same
+edge gives the first dock priority until their positions separate.
+
 ## Adding applications and external drops
 
 Configure → Appearance and launchers → Add an application opens a searchable list

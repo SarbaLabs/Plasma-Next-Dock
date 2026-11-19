@@ -299,3 +299,10 @@ The settings checkbox enables per-user KDE session startup. The install script
 preserves the user's choice on updates. See [validation and the remaining login
 check](testing.md#optional-login-startup-2026-11-19). Multiple independent docks
 and output assignment are the next planned feature after desktop acceptance.
+
+## Multiple docks and outputs (2026-11-19)
+
+The dock selector, independent settings and launcher lists, and output-aware
+hosts are implemented. Two edges on one physical output were verified on the
+VM. Physical multi-monitor acceptance is pending on the maintainer's CachyOS
+desktop. See the [test matrix](testing.md#multiple-docks-and-outputs-2026-11-19).

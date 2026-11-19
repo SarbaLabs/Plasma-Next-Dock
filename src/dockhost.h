@@ -13,6 +13,8 @@ public:
     DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland);
     ~DockHost() override;
     void update(bool settingsOpen);
+    QScreen *output() const { return m_screen; }
+    DockGeometry::Edge edge() const { return m_edge; }
     bool failed() const { return m_failed; }
     bool hasWarnings() const { return m_warnings; }
     QQuickView *view() { return &m_view; }

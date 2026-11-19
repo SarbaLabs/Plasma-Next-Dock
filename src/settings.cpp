@@ -6,11 +6,12 @@
 #include <QColor>
 #include <cmath>
 #include <algorithm>
-DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent, const QString &loginTemplate)
+DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent, const QString &loginTemplate, const QString &group)
     : QObject(parent), m_store(file, QSettings::IniFormat), m_persistent(persistent),
       m_loginTemplate(loginTemplate),
       m_loginEntry(QFileInfo(file).dir().filePath("autostart/org.sarbalabs.PlasmaNextDock.desktop"))
 {
+    if (!group.isEmpty()) m_store.beginGroup(group);
     QVariantMap saved;
     if (persistent) for (const auto &key : defaults().keys()) saved[key] = m_store.value(key, defaults()[key]);
     m_values = normalized(saved);

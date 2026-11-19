@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
 #include "dockhost.h"
+#include "dockprofiles.h"
+#include <map>
 #include "icons.h"
 #include <QCommandLineParser>
 #include <QApplication>
@@ -52,8 +54,6 @@ int main(int argc, char **argv)
     const bool smoke = parser.isSet("smoke-test"), demo = parser.isSet("demo");
     const bool wayland = app.platformName().startsWith("wayland");
     if (!wayland && !demo && !smoke) { qCritical("A Wayland session is required. Use --demo for a preview."); return 1; }
-    DockSettings settings(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/plasma-next-dock.ini", !demo && !smoke, nullptr,
-                          QDir::cleanPath(app.applicationDirPath() + "/" + DOCK_AUTOSTART_ENTRY));
     QVariantMap overrides;
     const QStringList edgeNames = {"bottom", "top", "left", "right"};
     if (parser.isSet("edge")) {
@@ -74,74 +74,90 @@ int main(int argc, char **argv)
     if (parser.isSet("glow")) overrides["glow"] = true;
     if (parser.isSet("no-dodge")) overrides["dodge"] = false;
     if (parser.isSet("launcher")) overrides["launchers"] = parser.values("launcher");
-    settings.overrideSession(overrides);
     QLockFile lock(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) + "/plasma-next-dock.lock");
     if (!demo && !smoke && !lock.tryLock(0)) {
         if (lock.error() == QLockFile::LockFailedError && parser.isSet("autostart")) return 0;
         qCritical("Could not acquire the dock instance lock. If already running, use its right-click Configure menu.");
         return 1;
     }
+    DockProfiles profiles(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/plasma-next-dock.ini",
+                          !demo && !smoke, QDir::cleanPath(app.applicationDirPath() + "/" + DOCK_AUTOSTART_ENTRY));
+    profiles.current()->overrideSession(overrides);
     QQmlApplicationEngine configEngine;
     auto *configTranslations = new KLocalizedQmlContext(&configEngine);
     configTranslations->setTranslationDomain(QStringLiteral("plasma-next-dock"));
     configEngine.rootContext()->setContextObject(configTranslations);
     QQmlEngine::setContextForObject(configTranslations, configEngine.rootContext());
-    configEngine.rootContext()->setContextProperty("dockSettings", &settings);
+    configEngine.rootContext()->setContextProperty("dockSettings", profiles.current());
+    configEngine.rootContext()->setContextProperty("dockProfiles", &profiles);
     configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
     auto outputs = [&] {
-        QStringList names{QString()};
+        QStringList names;
         for (auto *s : app.screens()) names << s->name();
-        configEngine.rootContext()->setContextProperty("outputNames", names);
+        profiles.setOutputs(names, app.primaryScreen() ? app.primaryScreen()->name() : QString());
+        configEngine.rootContext()->setContextProperty("outputNames", QStringList{QString()} + names);
     };
     outputs();
-    QObject::connect(&app, &QGuiApplication::screenAdded, &configEngine, outputs);
-    QObject::connect(&app, &QGuiApplication::screenRemoved, &configEngine, outputs);
     bool configFailed = false;
     QObject::connect(&configEngine, &QQmlEngine::warnings, &app, [&] { configFailed = true; });
     QObject::connect(&configEngine, &QQmlEngine::quit, &app, &QCoreApplication::quit);
     configEngine.load(QUrl(QStringLiteral("qrc:/qml/Settings.qml")));
     if (configEngine.rootObjects().isEmpty() || (smoke && configFailed)) return 1;
     auto *configWindow = qobject_cast<QQuickWindow *>(configEngine.rootObjects().first());
-    std::unique_ptr<DockHost> host;
-    QScreen *selected = nullptr;
-    int edge = -1;
+    std::map<DockSettings *, std::unique_ptr<DockHost>> hosts;
+    QObject connections;
     auto refresh = [&] {
-        QScreen *screen = app.primaryScreen();
-        const QString wanted = settings.values()["screen"].toString();
-        for (auto *s : app.screens()) if (s->name() == wanted) screen = s;
-        if (!screen) { app.quit(); return; }
-        const int nextEdge = settings.values()["edge"].toInt();
-        if (!host || screen != selected || nextEdge != edge) {
-            // Settings changes, not dodge: retire the old role before creating a new one.
-            host.reset(); selected = screen; edge = nextEdge;
-            host = std::make_unique<DockHost>(&settings, screen, demo, wayland);
+        std::erase_if(hosts, [&](const auto &entry) { return !profiles.profiles().contains(entry.first); });
+        for (auto *profile : profiles.profiles()) {
+            const QString output = profiles.assignedOutput(profile);
+            QScreen *screen = nullptr;
+            for (auto *candidate : app.screens())
+                if (candidate->name() == output && !output.isEmpty()) screen = candidate;
+            // Qt's offscreen platform can have an unnamed primary output.
+            if (!wayland && !screen) screen = app.primaryScreen();
+            if (!screen) { hosts.erase(profile); continue; }
+            const int edge = profile->values()["edge"].toInt();
+            auto &host = hosts[profile];
+            if (!host || screen != host->output() || edge != host->edge()) {
+                host.reset();
+                host = std::make_unique<DockHost>(profile, screen, demo, wayland);
+            }
+            host->update(configWindow->isVisible() && profiles.current() == profile);
+            if (host->failed()) { configFailed = true; app.exit(1); }
         }
-        host->update(configWindow->isVisible());
-        if (host->failed()) app.exit(1);
     };
-    refresh();
-    if (!host || host->failed()) return 1;
-    QObject::connect(&settings, &DockSettings::changed, &app, refresh, Qt::QueuedConnection);
-    QObject::connect(configWindow, &QWindow::visibleChanged, &app, refresh, Qt::QueuedConnection);
-    QObject::connect(&app, &QGuiApplication::primaryScreenChanged, &app, refresh, Qt::QueuedConnection);
-    QObject::connect(&app, &QGuiApplication::screenAdded, &app, refresh, Qt::QueuedConnection);
-    QObject::connect(&app, &QGuiApplication::screenRemoved, &app, [&](QScreen *removed) {
-        if (removed == selected) { host.reset(); selected = nullptr; QTimer::singleShot(0, &app, refresh); }
+    auto topologyChanged = [&] { outputs(); refresh(); };
+    QObject::connect(&app, &QGuiApplication::screenAdded, &connections, topologyChanged);
+    QObject::connect(&app, &QGuiApplication::primaryScreenChanged, &connections, topologyChanged);
+    QObject::connect(&app, &QGuiApplication::screenRemoved, &connections, [&](QScreen *removed) {
+        std::erase_if(hosts, [removed](const auto &entry) { return entry.second->output() == removed; });
+        QTimer::singleShot(0, &connections, topologyChanged);
     });
-    QObject::connect(&settings, &DockSettings::configureRequested, configWindow, [&] {
+    QObject::connect(&profiles, &DockProfiles::profileChanged, &connections, refresh, Qt::QueuedConnection);
+    QObject::connect(&profiles, &DockProfiles::listChanged, &connections, refresh);
+    QObject::connect(configWindow, &QWindow::visibleChanged, &connections, refresh, Qt::QueuedConnection);
+    QObject::connect(&profiles, &DockProfiles::selectionChanged, &connections, [&] {
+        configEngine.rootContext()->setContextProperty("dockSettings", profiles.current());
+        if (configWindow->isVisible()) QMetaObject::invokeMethod(configWindow, "openSettings");
+        refresh();
+    });
+    QObject::connect(&profiles, &DockProfiles::openRequested, &connections, [&] {
         QMetaObject::invokeMethod(configWindow, "openSettings");
         configWindow->requestActivate();
     });
-    if (parser.isSet("settings")) settings.configure();
+    refresh();
+    for (const auto &entry : hosts) if (entry.second->failed()) return 1;
+    if (configFailed && smoke) return 1;
+    if (parser.isSet("settings")) profiles.current()->configure();
     if (smoke) QTimer::singleShot(700, &app, [&] {
         const QString configCapture = qEnvironmentVariable("PND_TEST_CAPTURE_SETTINGS");
         if (!configCapture.isEmpty() && !configWindow->grabWindow().save(configCapture)) configFailed = true;
         const QString capture = qEnvironmentVariable("PND_TEST_CAPTURE");
-        if (!capture.isEmpty() && !host->view()->grabWindow().save(capture)) configFailed = true;
+        if (!capture.isEmpty() && (hosts.empty() || !hosts.begin()->second->view()->grabWindow().save(capture))) configFailed = true;
         app.quit();
     });
     const int result = app.exec();
-    const bool failed = configFailed || (host && (host->failed() || host->hasWarnings()));
-    host.reset();
+    bool failed = configFailed;
+    for (const auto &entry : hosts) failed |= entry.second->failed() || entry.second->hasWarnings();
     return smoke && failed ? 1 : result;
 }
