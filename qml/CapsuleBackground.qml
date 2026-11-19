@@ -10,6 +10,8 @@ Item {
     id: root
     property var corners: [10, 10, 10, 10]
     property bool glowEnabled: false
+    readonly property bool drawGlow: glowEnabled && glowIntensity > 0 && glowOpacity > 0
+        && (backgroundType !== 0 || tintOpacity > 0)
     property bool glowHovering: false
     property point glowPosition: Qt.point(width / 2, height / 2)
     property color glowColor: Kirigami.Theme.highlightColor
@@ -67,7 +69,7 @@ Item {
         id: glowLoader
         objectName: "glowLoader"
         anchors.fill: parent
-        active: root.glowEnabled && (root.backgroundType !== 0 || root.tintOpacity > 0)
+        active: root.drawGlow
         sourceComponent: CapsuleGlow {
             silhouette: root.drawing.fill
             pointerX: root.glowPosition.x

@@ -35,7 +35,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}}, {"revealAnimation", true},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
@@ -173,6 +173,9 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool();
+    number("glowRadius", 0, 256, true);
+    number("glowIntensity", 0, 200, true);
+    number("glowOpacity", 0, 100, true);
     if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 3;
     number("visibilityMode", 0, 3, true);
     number("dockAlignment", 0, 2, true);

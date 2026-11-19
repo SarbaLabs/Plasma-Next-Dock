@@ -45,7 +45,9 @@ Controls.ApplicationWindow {
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing;
-        glow.checked = v.glow; alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
+        glow.checked = v.glow;
+        glowRadius.value = v.glowRadius; glowIntensity.value = v.glowIntensity; glowOpacity.value = v.glowOpacity;
+        alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
         revealAnimation.checked = v.revealAnimation;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
@@ -100,7 +102,9 @@ Controls.ApplicationWindow {
             highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked, dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
+            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
+            glowRadius: glowRadius.value, glowIntensity: glowIntensity.value, glowOpacity: glowOpacity.value,
+            dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
             if (login.checked !== login.saved) {
                 loginError.visible = !dockSettings.setStartAtLogin(login.checked);
                 login.checked = login.saved = dockSettings.startsAtLogin();
@@ -329,7 +333,22 @@ Controls.ApplicationWindow {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap
                     text: i18n("End padding follows the dock's length; thickness padding follows its short axis, on every screen edge. Spacing and padding scale down with icons when space is limited.")
                 }
-                Controls.CheckBox { id: glow; text: i18n("Enable hover glow") }
+                Controls.CheckBox { id: glow; objectName: "glowControl"; text: i18n("Enable hover glow") }
+                Controls.SpinBox {
+                    id: glowRadius; objectName: "glowRadiusControl"; visible: glow.checked
+                    Kirigami.FormData.label: i18n("Glow radius (px, 0 = automatic):")
+                    from: 0; to: 256; editable: true
+                }
+                Controls.SpinBox {
+                    id: glowIntensity; objectName: "glowIntensityControl"; visible: glow.checked
+                    Kirigami.FormData.label: i18n("Glow intensity (%):")
+                    from: 0; to: 200; editable: true
+                }
+                Controls.SpinBox {
+                    id: glowOpacity; objectName: "glowOpacityControl"; visible: glow.checked
+                    Kirigami.FormData.label: i18n("Glow opacity (%):")
+                    from: 0; to: 100; editable: true
+                }
                 Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }
                 Controls.Label {
                     Layout.fillWidth: true

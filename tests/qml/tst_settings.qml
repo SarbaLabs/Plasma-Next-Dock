@@ -69,6 +69,10 @@ TestCase {
         behavior.change("bounceOnLaunch", false);
         // Applying a stale settings draft must not overwrite newly pinned apps.
         dockSettings.saveLaunchers([testLauncherUrls[0]]);
+        findChild(window, "glowControl").checked = true;
+        findChild(window, "glowRadiusControl").value = 116;
+        findChild(window, "glowIntensityControl").value = 150;
+        findChild(window, "glowOpacityControl").value = 65;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
@@ -82,6 +86,9 @@ TestCase {
         window.close();
         window.openSettings();
         compare(spacing.value, 40);
+        compare(findChild(window, "glowRadiusControl").value, 116);
+        compare(findChild(window, "glowIntensityControl").value, 150);
+        compare(findChild(window, "glowOpacityControl").value, 65);
         for (const name of ["windowPreviews", "highlightPreview", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
             compare(findChild(window, name + "Control").checked, false);
         compare(findChild(window, "blastRadiusControl").value, 4);
@@ -116,7 +123,7 @@ TestCase {
         compare(dockSettings.values.gradientBottomOpacity, 0.75);
         compare(dockSettings.values.bottomLeftRadius, -22);
         window.close();
-        dockSettings.apply({bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({glow: false, glowRadius: 0, glowIntensity: 100, glowOpacity: 30, bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }
