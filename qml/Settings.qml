@@ -170,8 +170,19 @@ Controls.ApplicationWindow {
                     // Avoid style content-item/implicit-width feedback in Breeze.
                     implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: i18n("Screen:")
-                    model: window.screenNames.map(name => !name ? i18n("Primary screen") :
-                        outputNames.indexOf(name) < 0 ? i18n("%1 (disconnected)", name) : name)
+                    function fullLabel(name) {
+                        if (!name) return i18n("Primary screen");
+                        if (outputNames.indexOf(name) < 0) return i18n("%1 (disconnected)", name);
+                        const description = outputDescriptions[name];
+                        return description ? i18n("%1: %2", name, description) : name;
+                    }
+                    FontMetrics { id: screenMetrics; font: screen.font }
+                    // Leave room for the native style's dropdown arrow and margins.
+                    readonly property real labelWidth: Math.max(0, width - 2 * Kirigami.Units.gridUnit)
+                    model: window.screenNames.map(name => screenMetrics.elidedText(
+                        fullLabel(name), Qt.ElideRight, labelWidth))
+                    Controls.ToolTip.text: fullLabel(window.draftScreen)
+                    Controls.ToolTip.visible: hovered && displayText !== Controls.ToolTip.text && !popup.visible
                     currentIndex: window.screenNames.indexOf(window.draftScreen)
                     onActivated: index => window.draftScreen = window.screenNames[index]
                 }

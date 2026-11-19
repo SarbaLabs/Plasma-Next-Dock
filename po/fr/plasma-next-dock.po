@@ -578,3 +578,6 @@ msgstr "%1 (déconnecté)"
 
 msgid "All docks:"
 msgstr "Tous les docks :"
+
+msgid "%1: %2"
+msgstr "%1 : %2"

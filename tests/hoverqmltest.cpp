@@ -230,7 +230,9 @@ public Q_SLOTS:
             qFatal("Could not build isolated test service cache");
         engine->rootContext()->setContextProperty("testLauncherUrls", urls);
         engine->rootContext()->setContextProperty("dockSettings", new DockSettings("/unused", false, engine));
-        engine->rootContext()->setContextProperty("outputNames", QStringList{QString(), "DP-1"});
+        engine->rootContext()->setContextProperty("outputDescriptions", QVariantMap{
+            {"DP-1", "AOC 2590G4"}, {"DP-2", QString("Samsung Electronics ").repeated(8)}});
+        engine->rootContext()->setContextProperty("outputNames", QStringList{QString(), "DP-1", "DP-2", "HDMI-1"});
         engine->rootContext()->setContextProperty("dockController", new DockController(nullptr, engine));
         engine->rootContext()->setContextProperty("outputSize", QSize(1000, 700));
         engine->rootContext()->setContextProperty("outputGeometry", QRect(-1000, 0, 1000, 700));

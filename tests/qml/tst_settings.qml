@@ -13,6 +13,12 @@ TestCase {
         const screen = findChild(window, "screenControl");
         const edge = findChild(window, "edgeControl");
         verify(screen.implicitWidth > 0 && edge.implicitWidth > 0);
+        verify(screen.textAt(1).includes("DP-1") && screen.textAt(1).includes("AOC 2590G4"));
+        verify(screen.textAt(2).startsWith("DP-2") && screen.textAt(2).endsWith("…"));
+        compare(screen.textAt(3), "HDMI-1");
+        screen.activated(2);
+        compare(window.draftScreen, "DP-2");
+        screen.activated(0);
         const preferred = screen.implicitWidth;
         window.width = 800;
         wait(0);

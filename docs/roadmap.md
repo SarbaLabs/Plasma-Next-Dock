@@ -304,5 +304,5 @@ and output assignment are the next planned feature after desktop acceptance.
 
 The dock selector, independent settings and launcher lists, and output-aware
 hosts are implemented. Two edges on one physical output were verified on the
-VM. Physical multi-monitor acceptance is pending on the maintainer's CachyOS
-desktop. See the [test matrix](testing.md#multiple-docks-and-outputs-2026-11-19).
+VM. The maintainer validated physical multi-monitor operation on CachyOS,
+including mixed scale factors. See the [test matrix](testing.md#multiple-docks-and-outputs-2026-11-19).

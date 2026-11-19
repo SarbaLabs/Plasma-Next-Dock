@@ -822,7 +822,6 @@ restoration, conflict detection and removal of the original profile. The prior
 single-dock autostart release was also confirmed by the maintainer on a KDE
 login configured to start an empty session.
 
-Physical multi-monitor acceptance: assign one dock explicitly to each output;
-change appearance, task filtering and launchers independently; relaunch; unplug
-and reconnect the second monitor. Check edge recall on each monitor, preview
-placement and scaling with different resolutions and scale factors.
+The maintainer validated the full multi-monitor checklist on CachyOS with Samsung
+and AOC displays, including different scale factors, independent settings,
+restart, disconnect/reconnect, edge recall and preview placement.

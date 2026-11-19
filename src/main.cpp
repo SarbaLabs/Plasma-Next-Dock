@@ -93,7 +93,18 @@ int main(int argc, char **argv)
     configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
     auto outputs = [&] {
         QStringList names;
-        for (auto *s : app.screens()) names << s->name();
+        QVariantMap descriptions;
+        for (const auto *screen : app.screens()) {
+            const QString connector = screen->name();
+            names << connector;
+            const QString make = screen->manufacturer().simplified();
+            QString model = screen->model().simplified();
+            if (model.compare(connector, Qt::CaseInsensitive) == 0) model.clear();
+            if (!make.isEmpty() && !model.startsWith(make, Qt::CaseInsensitive))
+                model = model.isEmpty() ? make : make + " " + model;
+            descriptions.insert(connector, model);
+        }
+        configEngine.rootContext()->setContextProperty("outputDescriptions", descriptions);
         profiles.setOutputs(names, app.primaryScreen() ? app.primaryScreen()->name() : QString());
         configEngine.rootContext()->setContextProperty("outputNames", QStringList{QString()} + names);
     };
