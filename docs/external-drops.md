@@ -35,7 +35,20 @@ drag; ordinary hover still uses the established window pointer observer. The
 native input mask, bounce, popup positioning and capsule blur stay unchanged.
 The component is disabled in demo mode. There is no global drag hook or polling.
 
-## Manual acceptance
+## Maintainer acceptance — 2026-11-19
+
+The maintainer tested this branch over several days on CachyOS Wayland and confirmed
+all four delivered functions work as expected, without detected problems: application
+selection/search, external launcher pinning, document opening and drag-hover window
+activation. GitHub Actions run 43819877812 passed for implementation commit
+6dcf3dabf2b44af5b3c1fee0b2137832eb8c1816. PR #11 is ready for maintainer review/merge;
+no automatic merge is authorized. This final update changes documentation only.
+
+Specific grouped-member selection and external-drag auto-scrolling remain the
+explicit future refinements above. The following checklist is retained for future
+regression checks; the general acceptance does not certify every source/output mix.
+
+## Manual regression checklist
 
 - Open the chooser; search by name/ID, use Down/Enter/Escape, pin, and repeat without
   duplicates. Confirm installed Flatpak application entries are included by KDE.

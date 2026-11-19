@@ -65,8 +65,9 @@ child; selecting a specific group member during dragging is not implemented yet.
 
 Only installed application launchers can be pinned by drop. Mixed launcher/document
 drops and uninstalled .desktop files are rejected. No file is moved or copied.
-See [external drop architecture and acceptance](docs/external-drops.md). Real Wayland
-source interoperability remains under desktop validation.
+See [external drop architecture and acceptance](docs/external-drops.md). The maintainer validated these features on CachyOS Wayland over several days
+without reported problems. The wider source/output matrix remains a regression
+checklist, not a claim of universal compatibility.
 
 ## Task behavior
 

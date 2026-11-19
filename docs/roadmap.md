@@ -274,6 +274,16 @@ hiding them or taking service ownership away from Plasma.
 The maintainer confirmed the final highlight/palette correction and merged PR #10.
 Branch feature/external-drag-and-drop starts from main b35d1c00f823f6cfc0245976480cba1634b3b48f.
 Add a searchable installed application chooser, external launcher pinning, document
-URL dispatch to native tasks and delayed activation while dragging. Desktop source
-interoperability remains pending. See external-drops.md for scope and continuation.
+URL dispatch to native tasks and delayed activation while dragging. The maintainer
+accepted all four features after several days of use on 2026-11-19. See
+external-drops.md for scope and continuation.
 Optional autostart, multiple docks/screens and general settings cleanup remain later.
+
+## 2026-11-19 — External drops accepted; PR #11 ready
+
+Maintainer reports no detected problems after several days of desktop testing.
+Implementation CI run 43819877812 succeeded. Final preparation is documentation-only;
+no additional installation or desktop retest is required for that update. PR #11
+is prepared for manual merge, not recorded as merged until the maintainer does so.
+The next proposed stage remains optional autostart, followed by multiple docks and
+output management; neither is implemented by this branch.

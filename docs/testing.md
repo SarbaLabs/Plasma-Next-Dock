@@ -769,3 +769,12 @@ CI/user D-Bus session unavailable in this runner.
 Final local result: clean build, 14/14 runnable CTest entries passed in 57.05 s
 (Qt 6.8.2 / Plasma 6.3, offscreen/software), staged installation and shell/whitespace
 checks passed. The native D-Bus status test remains enabled for CI and the user.
+
+### External-drop desktop acceptance — 2026-11-19
+
+The maintainer confirms all delivered functions work as expected after several days
+on CachyOS Wayland with no detected problems. GitHub Actions run 43819877812 completed
+successfully for 6dcf3dabf2b44af5b3c1fee0b2137832eb8c1816. Final PR preparation only
+updates README/development notes; the tested implementation is unchanged. This
+acceptance does not independently certify every item in the extended output/source
+matrix. Keep that matrix for future regressions. No automatic merge performed.
