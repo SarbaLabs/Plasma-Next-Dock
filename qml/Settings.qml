@@ -45,7 +45,7 @@ Controls.ApplicationWindow {
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         spacing.value = v.spacing;
-        glow.checked = v.glow; dodge.checked = v.dodge;
+        glow.checked = v.glow; alignment.currentIndex = v.dockAlignment; visibilityMode.currentIndex = v.visibilityMode;
         revealAnimation.checked = v.revealAnimation;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
@@ -100,7 +100,7 @@ Controls.ApplicationWindow {
             highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))) return;
+            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked, dockAlignment: alignment.currentIndex, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
             if (login.checked !== login.saved) {
                 loginError.visible = !dockSettings.setStartAtLogin(login.checked);
                 login.checked = login.saved = dockSettings.startsAtLogin();
@@ -204,6 +204,19 @@ Controls.ApplicationWindow {
                     implicitWidth: Kirigami.Units.gridUnit * 16
                     Kirigami.FormData.label: i18n("Edge:")
                     model: [i18n("Bottom"), i18n("Top"), i18n("Left"), i18n("Right")]
+                }
+                Controls.ComboBox {
+                    id: alignment; objectName: "dockAlignmentControl"
+                    Kirigami.FormData.label: i18n("Dock alignment:")
+                    textRole: edge.currentIndex < 2 ? "horizontal" : "vertical"
+                    model: [{horizontal: i18n("Left"), vertical: i18n("Top")},
+                            {horizontal: i18n("Centered"), vertical: i18n("Centered")},
+                            {horizontal: i18n("Right"), vertical: i18n("Bottom")}]
+                }
+                Controls.ComboBox {
+                    id: visibilityMode; objectName: "visibilityModeControl"
+                    Kirigami.FormData.label: i18n("Visibility:")
+                    model: [i18n("Always visible"), i18n("Auto hide"), i18n("Dodge windows"), i18n("Windows go below")]
                 }
                 Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
                 Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
@@ -315,7 +328,6 @@ Controls.ApplicationWindow {
                     text: i18n("Uses KWin's Sliding Popups effect and system animation speed. No system setting is changed.")
                     wrapMode: Text.WordWrap
                 }
-                Controls.CheckBox { id: dodge; text: i18n("Hide when a window overlaps the capsule") }
                 Controls.Label {
                     Layout.fillWidth: true
                     text: i18n("Apply saves these settings. Changing the screen or edge briefly recreates the dock window.")

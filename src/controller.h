@@ -27,7 +27,7 @@ public:
     bool hideRequested() const { return m_hideRequested; }
     bool edgeAvailable() const { return m_edgeAvailable; }
     void setEdgeAvailable(bool available);
-    void setDodgeEnabled(bool enabled);
+    void setVisibility(DockGeometry::Visibility mode);
     void setSurfaceOrigin(QPoint origin);
     Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {});
     Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
@@ -57,7 +57,7 @@ private:
     QTimer m_leaveTimer;
     QPoint m_origin;
     QPainterPath m_shape;
-    bool m_dodgeEnabled = true;
+    DockGeometry::Visibility m_visibility = DockGeometry::DodgeWindows;
     bool m_edgeAvailable = false;
     bool m_hovered = false;
     bool m_attention = false;

@@ -2,7 +2,7 @@
 #include "geometry.h"
 #include <algorithm>
 namespace DockGeometry {
-QRect surface(const QRect &screen, const QSize &size, Edge edge)
+QRect surface(const QRect &screen, const QSize &size, Edge edge, Alignment alignment)
 {
     QRect rect(QPoint(), size.boundedTo(screen.size()));
     rect.moveTopLeft(screen.topLeft() + QPoint((screen.width() - rect.width()) / 2,
@@ -12,6 +12,13 @@ QRect surface(const QRect &screen, const QSize &size, Edge edge)
     case Top: rect.moveTop(screen.top()); break;
     case Left: rect.moveLeft(screen.left()); break;
     case Right: rect.moveRight(screen.right()); break;
+    }
+    if (edge == Left || edge == Right) {
+        if (alignment == Start) rect.moveTop(screen.top());
+        if (alignment == End) rect.moveBottom(screen.bottom());
+    } else {
+        if (alignment == Start) rect.moveLeft(screen.left());
+        if (alignment == End) rect.moveRight(screen.right());
     }
     return rect;
 }

@@ -123,6 +123,9 @@ Item {
     property bool hovering: dockController.pointerHovered
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: base + 2 * taskPadding
+    readonly property int reservedThickness: Math.ceil(edgeSpacing + barThickness + (dockOptions.borderWidth ?? 1))
+    readonly property real alignmentFactor: (dockOptions.dockAlignment ?? 1) / 2
+    readonly property real barStart: endClearance + (length - barLength) * alignmentFactor
     readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
 
     function updatePointer(position) {
@@ -208,8 +211,8 @@ Item {
     CapsuleBackground {
         id: bar
         objectName: "capsuleBackground"
-        x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : (root.width - width) / 2
-        y: root.vertical ? (root.height - height) / 2 : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
+        x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : root.barStart
+        y: root.vertical ? root.barStart : (dockOptions.edge === 1 ? root.edgeSpacing : root.height - height - root.edgeSpacing)
         width: root.vertical ? root.barThickness : root.barLength
         height: root.vertical ? root.barLength : root.barThickness
         corners: root.corners
@@ -264,7 +267,7 @@ Item {
             id: taskRow
             layoutDirection: root.reverseLayout ? Qt.RightToLeft : Qt.LeftToRight
             LayoutMirroring.enabled: false
-            x: Math.max(root.endPadding, (viewport.width - width) / 2)
+            x: root.endPadding + Math.max(0, viewport.width - 2 * root.endPadding - width) * root.alignmentFactor
             height: viewport.height
             spacing: (dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing) * root.fitScale
             onXChanged: root.queueGeometry()

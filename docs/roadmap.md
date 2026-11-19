@@ -336,3 +336,7 @@ four signed corner radii support floating and edge-attached styles.
 
 Solid, Liquid Glass and Gradient now share an independent system-blur option.
 Gradient balance and glass reflections follow the configured screen edge.
+
+## Visibility and alignment
+
+Four visibility policies and physical start, center and end alignment are selectable for each dock.

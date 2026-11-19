@@ -121,6 +121,19 @@ dependency, system configuration change or Plasma Shell restart is required.
 If KWin's blur effect is unavailable, tint/gloss remain visible without blur.
 See [background architecture and testing](docs/backgrounds.md).
 
+## Visibility and alignment
+
+Each dock can use **Always visible** to reserve its resting thickness plus the
+edge gap and exterior border. Maximized windows leave this strip free across
+the selected screen edge. Hover magnification does not move those windows.
+**Auto hide** recalls the dock at its edge; **Dodge windows** hides it on
+overlap; **Windows go below** keeps the dock above normal windows without
+reserving space. Existing profiles retain their previous dodge or overlay behavior.
+
+Horizontal docks can align left, center or right. Vertical docks can align top,
+center or bottom. With either end selected, the capsule and icons grow toward
+the other end of the screen during magnification.
+
 ## Build and install on CachyOS / Arch
 
 Dependencies (the KDE runtime packages are usually already installed):

@@ -6,7 +6,9 @@
 #include <QRectF>
 namespace DockGeometry {
 enum Edge { Bottom, Top, Left, Right };
-QRect surface(const QRect &screen, const QSize &size, Edge edge);
+enum Alignment { Start, Center, End };
+enum Visibility { AlwaysVisible, AutoHide, DodgeWindows, WindowsGoBelow };
+QRect surface(const QRect &screen, const QSize &size, Edge edge, Alignment alignment = Center);
 QPainterPath capsule(const QRectF &rect, qreal radius);
 QPainterPath capsule(const QRectF &rect, const QList<qreal> &corners, bool vertical);
 QString svgPath(const QPainterPath &path);

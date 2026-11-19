@@ -154,9 +154,9 @@ void DockController::setEdgeAvailable(bool value)
     evaluate();
     Q_EMIT stateChanged();
 }
-void DockController::setDodgeEnabled(bool value)
+void DockController::setVisibility(DockGeometry::Visibility value)
 {
-    m_dodgeEnabled = value;
+    m_visibility = value;
     evaluate();
 }
 void DockController::setAttention(bool attention)
@@ -193,7 +193,8 @@ void DockController::evaluate()
             }
         }
     }
-    const bool hide = overlap && m_dodgeEnabled && m_edgeAvailable && !m_attention && !m_hovered && !m_leaveTimer.isActive();
+    const bool hide = (m_visibility == DockGeometry::AutoHide || (m_visibility == DockGeometry::DodgeWindows && overlap))
+        && m_edgeAvailable && !m_attention && !m_hovered && !m_leaveTimer.isActive();
     if (overlap == m_overlapping && hide == m_hideRequested) return;
     m_overlapping = overlap;
     m_hideRequested = hide;
