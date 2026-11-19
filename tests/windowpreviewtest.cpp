@@ -2,6 +2,7 @@
 #include "windowpreviewmodel.h"
 #include <QStandardItemModel>
 #include <QSignalSpy>
+#include <QDBusConnection>
 #include <QTest>
 
 class TaskFixture : public QStandardItemModel
@@ -24,10 +25,41 @@ public:
     Q_INVOKABLE void requestActivate(const QModelIndex &index) { activated = index.data().toString(); }
     Q_INVOKABLE void requestClose(const QModelIndex &index) { closed = index.data().toString(); }
 };
+class HighlightFixture : public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.kde.KWin.HighlightWindow")
+public:
+    QList<QStringList> requests;
+public Q_SLOTS:
+    void highlightWindows(const QStringList &ids) { requests.append(ids); }
+};
+
 class WindowPreviewTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void desktopHighlightOwnership() {
+        if (!qEnvironmentVariableIsSet("PND_TEST_PRIVATE_HIGHLIGHT_BUS"))
+            QSKIP("This test requires the isolated CTest session bus");
+        auto bus = QDBusConnection::sessionBus();
+        HighlightFixture effect;
+        QVERIFY(bus.registerService("org.kde.KWin.HighlightWindow"));
+        QVERIFY(bus.registerObject("/org/kde/KWin/HighlightWindow", &effect, QDBusConnection::ExportAllSlots));
+        WindowPreviewModel first;
+        {
+            WindowPreviewModel second;
+            first.highlight("window-a");
+            first.highlight("window-a");
+            second.highlight("window-b");
+            first.highlight({}); // Leaving the older dock must preserve the newer hover.
+            QTRY_COMPARE(effect.requests.size(), 2);
+            QCOMPARE(effect.requests.at(0), QStringList{"window-a"});
+            QCOMPARE(effect.requests.at(1), QStringList{"window-b"});
+        }
+        QTRY_COMPARE(effect.requests.size(), 3);
+        QVERIFY(effect.requests.last().isEmpty());
+    }
     void groupSelectionAndActions() {
         TaskFixture source;
         auto *group = new QStandardItem("Application"); group->setData(true, TaskFixture::IsGroup);

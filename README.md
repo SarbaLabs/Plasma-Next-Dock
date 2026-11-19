@@ -311,7 +311,12 @@ Hover an icon to show the native Plasma tooltip toward the interior of the scree
 A pinned launcher without a window shows its name. Running windows show titles,
 activation and close controls; clicking a grouped application opens the selector
 immediately. The native group symbol can be enabled independently of the running-indicator mode.
-Previews scroll when the group exceeds the available area.
+Previews scroll when the group exceeds the available area. Hover a preview card
+to see that window on the desktop while KWin fades the other windows. Moving to
+another card changes the highlighted window, and leaving the cards restores the
+desktop. Click a card to activate its window. This per-dock option is enabled
+by default under **Configure → Application status** and uses KWin's Highlight
+Window effect when available.
 
 Live thumbnails use KDE's `ScreencastingRequest` and KPipeWire under KWin Wayland.
 Only visible, non-minimized cards request capture, and hiding the popup releases
@@ -349,8 +354,8 @@ performance limits and desktop acceptance checks.
 
 ## Audio, media and application status
 
-The **Application status** settings tab controls hover previews, the audio indicator,
-click-to-mute, media/volume controls, application counters and progress. All six
+The **Application status** settings tab controls hover previews, desktop window highlighting, the audio indicator,
+click-to-mute, media/volume controls, application counters and progress. These
 options default to enabled and are saved independently. Disabling hover previews
 keeps the application title and any supported media controls; clicking a group
 still opens its window selector.

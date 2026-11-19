@@ -57,6 +57,7 @@ Controls.ApplicationWindow {
         borderWidth.value = v.borderWidth;
         borderUseTheme.checked = v.borderUseTheme; borderColorValue = v.borderColor;
         iconSpacing.value = v.iconSpacing; horizontalPadding.value = v.horizontalPadding; verticalPadding.value = v.verticalPadding;
+        highlightPreview.checked = v.highlightPreviewWindow;
         windowPreviews.checked = v.showWindowPreviews; audioIndicator.checked = v.showAudioIndicator;
         muteOnClick.checked = v.muteOnClick; mediaControls.checked = v.showMediaControls;
         badges.checked = v.showBadges; progress.checked = v.showProgress;
@@ -85,7 +86,7 @@ Controls.ApplicationWindow {
             backgroundType: backgroundType.currentIndex, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderUseTheme: borderUseTheme.checked, borderColor: borderColorValue.toString(),
             iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
-            showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
+            highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
             radius: radius.value, glow: glow.checked, dodge: dodge.checked, revealAnimation: revealAnimation.checked}))) return;
@@ -293,6 +294,11 @@ Controls.ApplicationWindow {
         Kirigami.FormLayout {
             width: parent.width
             Controls.CheckBox { id: windowPreviews; objectName: "windowPreviewsControl"; text: i18n("Show window previews on hover") }
+            Controls.CheckBox {
+                id: highlightPreview
+                objectName: "highlightPreviewControl"
+                text: i18n("Highlight the window on the desktop when hovering over its preview")
+            }
             Controls.CheckBox { id: audioIndicator; objectName: "audioIndicatorControl"; text: i18n("Show application audio indicator") }
             Controls.CheckBox { id: muteOnClick; objectName: "muteOnClickControl"; text: i18n("Click audio indicator to mute"); enabled: audioIndicator.checked }
             Controls.CheckBox { id: mediaControls; objectName: "mediaControlsControl"; text: i18n("Show media and volume controls in previews") }

@@ -581,3 +581,6 @@ msgstr "Tous les docks :"
 
 msgid "%1: %2"
 msgstr "%1 : %2"
+
+msgid "Highlight the window on the desktop when hovering over its preview"
+msgstr "Mettre la fenêtre en évidence sur le bureau au survol de sa miniature"

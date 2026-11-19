@@ -1,5 +1,29 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "windowpreviewmodel.h"
+#include <QDBusConnection>
+#include <QDBusMessage>
+
+// KWin exposes one highlight for the whole desktop, shared by all dock hosts.
+static QPointer<WindowPreviewModel> highlightOwner;
+
+WindowPreviewModel::~WindowPreviewModel() { highlight({}); }
+
+void WindowPreviewModel::highlight(const QString &id)
+{
+    if (id.isEmpty() && highlightOwner != this) return;
+    if (highlightOwner == this && id == m_highlightId) return;
+
+    auto message = QDBusMessage::createMethodCall(QStringLiteral("org.kde.KWin.HighlightWindow"),
+        QStringLiteral("/org/kde/KWin/HighlightWindow"), QStringLiteral("org.kde.KWin.HighlightWindow"),
+        QStringLiteral("highlightWindows"));
+    message.setAutoStartService(false);
+    message << (id.isEmpty() ? QStringList{} : QStringList{id});
+    QDBusConnection::sessionBus().send(message);
+
+    highlightOwner = id.isEmpty() ? nullptr : this;
+    m_highlightId = id;
+}
+
 QHash<int, QByteArray> WindowPreviewModel::roleNames() const
 {
     return {{Title,"title"},{Icon,"icon"},{WindowId,"windowId"},{Minimized,"minimized"},{Active,"active"},{Closable,"closable"}};
@@ -67,6 +91,7 @@ void WindowPreviewModel::refresh()
         }
     }
     if (windows != m_windows) {
+        highlight({});
         beginResetModel(); m_windows = windows; endResetModel();
         Q_EMIT countChanged();
     } else if (!windows.isEmpty()) {

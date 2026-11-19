@@ -122,3 +122,13 @@ A dedicated test simulates the normalized backend geometry and checks correction
 mapToGlobal, unchanged sizes, all four edges, nonzero/negative output origins and
 surface destruction/recreation. Actual KWin placement still needs the maintainer's
 follow-up using the same four-edge desktop scenario.
+
+## Desktop highlight on preview hover
+
+A passive hover handler tracks the visible card, including its caption. The
+selected window UUID goes to KWin's HighlightWindow D-Bus service on the session
+bus. An empty list ends the effect. Docks share compositor ownership so cleanup
+from an older preview cannot clear a newer dock's highlight. Model reset, host
+teardown and popup dismissal release the effect. The dock never enables the
+compositor plugin. Document drags keep their existing explicit dwell-to-activate
+behavior. See [KWin's effect implementation](https://invent.kde.org/plasma/kwin/-/blob/master/src/plugins/highlightwindow/highlightwindow.cpp).
