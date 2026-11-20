@@ -355,3 +355,8 @@ The global focus shortcut, visual-order traversal, activation and Escape are
 implemented. Menu and Shift+F10 open the selected task’s context menu.
 Enter on a group opens its previews for keyboard selection, including off-screen cards.
 The picker stays open while waiting for the next key.
+
+## Appearance and indicator settings cleanup
+
+Dock hide and reveal always use the native slide hint. Custom indicator segments
+share a center line, with independently configurable state thicknesses.

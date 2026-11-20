@@ -35,7 +35,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
-        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}}, {"revealAnimation", true},
+        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
@@ -66,7 +66,6 @@ QVariantMap DockSettings::defaults()
         {"indicatorLength", 12},
         {"indicatorRoundness", 100},
         {"indicatorSpacing", 2},
-        {"indicatorAlignment", 1},
         {"indicatorResizeActive", true},
         {"indicatorActiveThickness", 5},
         {"indicatorActiveLength", 20},
@@ -150,7 +149,6 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     number("indicatorLength", 1, 160, true);
     number("indicatorRoundness", 0, 100, true);
     number("indicatorSpacing", 0, 16, true);
-    number("indicatorAlignment", 0, 2, true);
     result["indicatorResizeActive"] = result["indicatorResizeActive"].toBool();
     number("indicatorActiveThickness", 1, 24, true);
     number("indicatorActiveLength", 1, 160, true);
@@ -170,7 +168,6 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["indicatorCustomColor"] = QColor::isValidColorName(result["indicatorCustomColor"].toString()) ? result["indicatorCustomColor"].toString() : defaults()["indicatorCustomColor"];
     for (const auto &key : {"showWindowPreviews", "highlightPreviewWindow", "showAudioIndicator", "muteOnClick", "showMediaControls", "showBadges", "showProgress"})
         result[key] = result[key].toBool();
-    result["revealAnimation"] = result["revealAnimation"].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool();
     number("glowRadius", 0, 256, true);

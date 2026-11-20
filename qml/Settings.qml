@@ -48,7 +48,6 @@ Controls.ApplicationWindow {
         glow.checked = v.glow;
         glowRadius.value = v.glowRadius; glowIntensity.value = v.glowIntensity; glowOpacity.value = v.glowOpacity;
         alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
-        revealAnimation.checked = v.revealAnimation;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
         midpoint.value = v.gradientMidpoint;
@@ -104,7 +103,7 @@ Controls.ApplicationWindow {
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
             topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
             glowRadius: glowRadius.value, glowIntensity: glowIntensity.value, glowOpacity: glowOpacity.value,
-            dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex, revealAnimation: revealAnimation.checked}))) return;
+            dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex}))) return;
             if (login.checked !== login.saved) {
                 loginError.visible = !dockSettings.setStartAtLogin(login.checked);
                 login.checked = login.saved = dockSettings.startsAtLogin();
@@ -348,12 +347,6 @@ Controls.ApplicationWindow {
                     id: glowOpacity; objectName: "glowOpacityControl"; visible: glow.checked
                     Kirigami.FormData.label: i18n("Glow opacity (%):")
                     from: 0; to: 100; editable: true
-                }
-                Controls.CheckBox { id: revealAnimation; text: i18n("Animate dock appearance and disappearance") }
-                Controls.Label {
-                    Layout.fillWidth: true
-                    text: i18n("Uses KWin's Sliding Popups effect and system animation speed. No system setting is changed.")
-                    wrapMode: Text.WordWrap
                 }
                 Controls.Label {
                     Layout.fillWidth: true

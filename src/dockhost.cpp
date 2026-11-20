@@ -101,7 +101,6 @@ void DockHost::update(bool settingsOpen)
     auto options = m_settings->values(); options["demo"] = m_demo;
     m_view.rootContext()->setContextProperty("dockOptions", options);
     m_backgroundEffects.configure(options);
-    if (m_screenEdge) m_screenEdge->setAnimated(options["revealAnimation"].toBool());
     const auto mode = static_cast<DockGeometry::Visibility>(options["visibilityMode"].toInt());
     m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::WindowsGoBelow : mode);
     position();

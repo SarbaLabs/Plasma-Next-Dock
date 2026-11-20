@@ -11,7 +11,6 @@ public:
     ScreenEdge(QWindow *window, DockGeometry::Edge edge);
     ~ScreenEdge() override;
     void setHidden(bool hidden);
-    void setAnimated(bool animated);
     bool available() const;
 Q_SIGNALS:
     void availabilityChanged(bool available);

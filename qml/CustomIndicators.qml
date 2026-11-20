@@ -41,11 +41,7 @@ Item {
             required property int index
             objectName: "indicatorSegment" + index
             readonly property var modelData: root.segments[index] || ({active: false, index: index, length: 0, thickness: 0, offset: 0})
-            readonly property real cross: {
-                const alignment = Logic.number(root.configuration, "indicatorAlignment", 1, 0, 2);
-                const difference = root.lane - modelData.thickness;
-                return alignment === 0 ? 0 : alignment === 1 ? difference / 2 : difference;
-            }
+            readonly property real cross: (root.lane - modelData.thickness) / 2
             readonly property real outside: root.padding - root.edgeDistance - modelData.thickness - cross
             readonly property color ink: Logic.segmentColor(root.baseColor, modelData.active, root.windowCount > 1,
                 root.minimizedWindows[modelData.index] === true, root.configuration)
