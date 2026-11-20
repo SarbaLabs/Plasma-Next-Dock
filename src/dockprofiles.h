@@ -14,6 +14,7 @@ public:
     int selectedIndex() const { return m_profiles.indexOf(m_current); }
     DockSettings *current() const { return m_current; }
     const QList<DockSettings *> &profiles() const { return m_profiles; }
+    Q_INVOKABLE DockSettings *profileAt(int index) const { return m_profiles.value(index); }
     Q_INVOKABLE void select(int index);
     Q_INVOKABLE bool add();
     Q_INVOKABLE bool removeSelected();

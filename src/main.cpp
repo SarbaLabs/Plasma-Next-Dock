@@ -107,7 +107,9 @@ int main(int argc, char **argv)
             descriptions.insert(connector, model);
         }
         configEngine.rootContext()->setContextProperty("outputDescriptions", descriptions);
-        profiles.setOutputs(names, app.primaryScreen() ? app.primaryScreen()->name() : QString());
+        const QString primary = app.primaryScreen() ? app.primaryScreen()->name() : QString();
+        configEngine.rootContext()->setContextProperty("primaryOutput", primary);
+        profiles.setOutputs(names, primary);
         configEngine.rootContext()->setContextProperty("outputNames", QStringList{QString()} + names);
     };
     outputs();

@@ -47,13 +47,13 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
 - A harmless `--demo` mode with five inert icons, independent of running applications.
 
 Configurable launch/attention bounce and the native **Test Bounce Animation** action
-are available under Configure → Behavior → Icon bounce. See [bounce settings and
+are available under Configure → Icons and animations → Icon bounce. See [bounce settings and
 validation](docs/bounce.md) and the remaining [roadmap](docs/roadmap.md).
 
 ## Multiple docks and screens
 
 Right-click a dock and choose **Configure Plasma Next Dock…** to open its
-settings. Use the dock selector above the tabs to switch between docks. **Add
+settings. Use the dock selector above the section sidebar to switch between docks. **Add
 dock** creates and selects a fresh profile on a free edge. Choose its screen and
 edge, edit its settings and click **Apply** before switching profiles. Pinned
 applications and their order are saved immediately. **Remove dock** asks for
@@ -70,7 +70,7 @@ edge gives the first dock priority until their positions separate.
 
 ## Adding applications and external drops
 
-Configure → Appearance and launchers → Add an application opens a searchable list
+Configure → Pinned applications → Add an application opens a searchable list
 of installed applications. Names and icons come from KDE's application catalog.
 Launcher changes are immediate; duplicates are not added.
 
@@ -103,7 +103,7 @@ See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds
 
-Open Configure → Appearance and launchers → Capsule and style. Choose a fixed
+Open Configure → Appearance. Choose a fixed
 color or a KDE palette role for the fill and exterior border. Gradient has
 independent desktop-side and screen-edge colors and opacities. Move the midpoint
 toward the screen edge to give the desktop-side color more space. Solid supports
@@ -269,7 +269,7 @@ Settings live in `$XDG_CONFIG_HOME/plasma-next-dock.ini`, normally
 dodge on and no pinned apps.
 
 To start the dock with your KDE Plasma Wayland session, open **Configure →
-Appearance and launchers**, check **Start Plasma Next Dock at login**, and click
+Position and visibility**, check **Start Plasma Next Dock at login**, and click
 **Apply**. The option starts off disabled. Uncheck it and apply to remove the
 login entry. Closing the settings window discards an unapplied change.
 The user entry lives in `$XDG_CONFIG_HOME/autostart` (normally
@@ -357,7 +357,7 @@ Previews scroll when the group exceeds the available area. Hover a preview card
 to see that window on the desktop while KWin fades the other windows. Moving to
 another card changes the highlighted window, and leaving the cards restores the
 desktop. Click a card to activate its window. This per-dock option is enabled
-by default under **Configure → Application status** and uses KWin's Highlight
+by default under **Configure → Behavior → Previews and media** and uses KWin's Highlight
 Window effect when available.
 
 Live thumbnails use KDE's `ScreencastingRequest` and KPipeWire under KWin Wayland.
@@ -373,7 +373,7 @@ parity work stays tracked explicitly in the roadmap.
 
 ## Icon colors
 
-Under **Appearance and launchers**, each dock can use original icon colors
+Under **Icons and animations**, each dock can use original icon colors
 (the default) or grayscale. Enable **Tint grayscale icons** to select a fixed
 color or a system palette role. Tint saturation ranges from 0% (pure grayscale)
 to 100%. The filter applies to launcher and task artwork, preserving transparency
@@ -381,7 +381,7 @@ and leaving status badges and indicators in their configured colors.
 
 ## Advanced indicators and reveal animation
 
-The **Indicators** settings tab offers macOS (default), native Plasma theme and
+The **Indicators** section offers macOS (default), native Plasma theme and
 Custom modes. Custom indicators support dots, a shared line or individual dashes;
 state-specific sizes, up to eight window segments, roundness, spacing,
 accent/icon/custom colors, separate unfocused color, opacity and minimized-window
@@ -403,7 +403,7 @@ performance limits and desktop acceptance checks.
 
 ## Audio, media and application status
 
-The **Application status** settings tab controls hover previews, desktop window highlighting, the audio indicator,
+The **Behavior** section controls hover previews, desktop window highlighting, the audio indicator,
 click-to-mute, media/volume controls, application counters and progress. These
 options default to enabled and are saved independently. Disabling hover previews
 keeps the application title and any supported media controls; clicking a group
