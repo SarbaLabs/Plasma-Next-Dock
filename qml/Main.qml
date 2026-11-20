@@ -527,7 +527,9 @@ Item {
                             textFormat: Text.PlainText
                             mainItem: previewPanel
                             interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
-                            active: !root.dragging && !contextMenu.visibleMenu && (!previewPanel.keyboardOwner || previewPanel.keyboardOwner === taskTip)
+                            // Deactivating any ToolTipArea schedules dismissal of Plasma's shared popup.
+                            // Settle the active areas when selecting the task, before Enter opens it.
+                            active: !root.dragging && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
                             onAboutToShow: {
                                 previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
                                 forceWindows = false;

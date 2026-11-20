@@ -928,3 +928,8 @@ Four disposable windows formed a group on a horizontal dock under KWin. Enter
 opened its previews. End scrolled the fourth card into view, and Enter activated
 its window. Escape returned to the group; after reopening, Right and Enter
 activated the second window, verified via KWin’s active window.
+
+With the pointer away from the dock, the group picker stayed visible during an
+idle pause. Right followed by Enter then activated the second probe window.
+The QML regression test waits beyond Plasma’s deferred tooltip dismissal before
+selecting the second card.

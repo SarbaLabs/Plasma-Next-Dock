@@ -85,6 +85,10 @@ TestCase {
         panel.keyboardOwner = null;
         windowPreviews.select(testPreviewModel, 0);
         panel.keyboardOwner = owner;
+        // Plasma defers shared tooltip dismissal after a sibling area is deactivated.
+        wait(1000);
+        compare(panel.displayed, true);
+        compare(panel.keyboardOwner, owner);
         verify(panel.moveKeyboardSelection(Qt.Key_Home));
         verify(panel.moveKeyboardSelection(Qt.Key_Right));
         tryVerify(() => findChild(panel, "previewActivate1") !== null);
