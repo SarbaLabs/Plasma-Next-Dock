@@ -376,3 +376,7 @@ physical positions; padding and edge offsets keep their per-dock semantics.
 Corner radii can be linked per dock, using the top-left radius when linking.
 Magnification and hover lift share a row. Custom indicator dimensions are grouped
 by active and inactive state.
+
+Window tasks now publish icon geometry for KWin minimize animations. Grouped
+windows share the group icon. Geometry changes are coalesced as the dock moves
+icons and scrolls.

@@ -25,6 +25,9 @@ Item {
         tasks.sortMode = TaskManager.TasksModel.SortDisabled;
         tasks.sortMode = Qt.binding(() => source.selectedSort);
     }
+    function publishMinimizeTarget(row, rect, delegate) {
+        tasks.requestPublishDelegateGeometry(tasks.makeModelIndex(row), rect, delegate);
+    }
     function moveTask(from, to) { return tasks.move(from, to); }
     function finishMove() {
         tasks.syncLaunchers();

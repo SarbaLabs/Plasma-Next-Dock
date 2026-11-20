@@ -226,7 +226,42 @@ Item {
         }
         dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, icons, dockOptions.edge, bar.corners);
     }
-    function queueGeometry() { Qt.callLater(syncGeometry); }
+    // KDE reads the delegate rectangle in surface-local coordinates on Wayland.
+    // Use an unrotated item so vertical docks and clipped ends map correctly.
+    Item { id: minimizeAnchor; visible: false }
+    Timer {
+        id: minimizeUpdates
+        interval: 50
+        onTriggered: {
+            if (!root.Window.window?.visible || !taskSource.item?.publishMinimizeTarget) return;
+            const bounds = viewport.mapToItem(root, Qt.rect(0, 0, viewport.width, viewport.height));
+            for (let row = 0; row < repeater.count; ++row) {
+                const slot = repeater.itemAt(row);
+                if (!slot?.windowIds) continue;
+                const icon = slot.iconItem;
+                const rect = icon.mapToItem(root, Qt.rect(0, 0, icon.width, icon.height));
+                const x = Math.round(Math.max(bounds.x, Math.min(rect.x, (bounds.x + bounds.width) - 1)));
+                const y = Math.round(Math.max(bounds.y, Math.min(rect.y, (bounds.y + bounds.height) - 1)));
+                const width = Math.max(1, Math.round(Math.min((rect.x + rect.width), (bounds.x + bounds.width))) - x);
+                const height = Math.max(1, Math.round(Math.min((rect.y + rect.height), (bounds.y + bounds.height))) - y);
+                const target = Qt.rect(x, y, width, height);
+                if (slot.lastMinimizeTarget === target && slot.publishedIds === slot.windowIds) continue;
+                minimizeAnchor.x = x; minimizeAnchor.y = y;
+                minimizeAnchor.width = width; minimizeAnchor.height = height;
+                taskSource.item.publishMinimizeTarget(row, target, minimizeAnchor);
+                slot.lastMinimizeTarget = target;
+                slot.publishedIds = slot.windowIds;
+            }
+        }
+    }
+    Connections {
+        target: root.Window.window
+        function onVisibleChanged() { root.queueGeometry(); }
+    }
+    function queueGeometry() {
+        Qt.callLater(syncGeometry);
+        if (!dockOptions.demo && !minimizeUpdates.running) minimizeUpdates.start();
+    }
     onWidthChanged: queueGeometry()
     onHeightChanged: queueGeometry()
     Component.onCompleted: {
@@ -373,6 +408,10 @@ Item {
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias menuStatus: taskStatus
                     property alias previewOwner: taskTip
+                    readonly property string windowIds: (model.WinIdList || []).join(",")
+                    property string publishedIds: ""
+                    property rect lastMinimizeTarget
+                    onWindowIdsChanged: { publishedIds = ""; root.queueGeometry(); }
                     property alias iconItem: icon
                     property alias inputItem: inputLane
                     readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
@@ -503,6 +542,7 @@ Item {
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
                             ? root.edgeSpacing + root.taskPadding + lift + bounce.offset
                             : slot.height - height - root.edgeSpacing - root.taskPadding - lift - bounce.offset
+                        onYChanged: root.queueGeometry()
                         rotation: root.vertical ? -90 : 0
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         readonly property bool active: dockOptions.iconHoverHighlight !== false && slot.taskHovered

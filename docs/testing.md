@@ -962,3 +962,11 @@ radius changed all four fields from 10 to 11. The settings fixture also checks
 negative edits from every corner, Apply/reopen and independent edits after
 unlinking. Inspected the paired zoom/lift fields and both pairs of dimensions
 in the custom dash indicator layout.
+
+## Minimize animation target
+
+With Magic Lamp slowed on KWin Wayland and the Plasma task manager removed,
+minimized a pink test window with the pointer at (740, 423). At 280 and 550 ms
+the animation tip was within the horizontal span of its bottom dock icon near
+x=1090, reaching y=1011. A second window of the same application targeted the
+same grouped icon when minimized from a different pointer position.
