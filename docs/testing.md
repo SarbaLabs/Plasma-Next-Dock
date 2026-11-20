@@ -970,3 +970,13 @@ minimized a pink test window with the pointer at (740, 423). At 280 and 550 ms
 the animation tip was within the horizontal span of its bottom dock icon near
 x=1090, reaching y=1011. A second window of the same application targeted the
 same grouped icon when minimized from a different pointer position.
+
+## Uniform gradient backgrounds
+
+On KWin Wayland, compared Solid with equal fixed gradient endpoints (#337fa5,
+55% opacity, midpoint 31%, system blur enabled) in the same desktop position.
+All 4590 sampled background pixels matched. Changing only the screen-side color
+to #cc4422 produced a visible blue-to-red gradient. The old build also matched
+for this temporary profile; the maintainer's original band was not reproduced.
+The QML test compares complete rendered capsules at 0%, 40% and 100% opacity
+and three midpoints, independently of the saved Solid opacity.

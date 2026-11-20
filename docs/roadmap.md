@@ -411,3 +411,9 @@ by active and inactive state.
 Window tasks now publish icon geometry for KWin minimize animations. Grouped
 windows share the group icon. Geometry changes are coalesced as the dock moves
 icons and scrolls.
+
+## Uniform gradient rendering
+
+Matching resolved endpoint colors and opacities now use the Solid fill path.
+A fully transparent gradient suppresses hover glow like a fully transparent
+Solid background. Desktop comparison and regression coverage are in docs/testing.md.

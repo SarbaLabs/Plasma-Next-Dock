@@ -11,7 +11,7 @@ Item {
     property var corners: [10, 10, 10, 10]
     property bool glowEnabled: false
     readonly property bool drawGlow: glowEnabled && glowIntensity > 0 && glowOpacity > 0
-        && (backgroundType !== 0 || tintOpacity > 0)
+        && (backgroundType === 5 ? desktopTint.a > 0 || screenTint.a > 0 : backgroundType !== 0 || tintOpacity > 0)
     property bool glowHovering: false
     property point glowPosition: Qt.point(width / 2, height / 2)
     property color glowColor: Kirigami.Theme.highlightColor
@@ -36,6 +36,10 @@ Item {
     readonly property var drawing: dockController.capsuleDrawing(Qt.size(width, height), corners, isVertical, customBorderWidth)
     function tint(color, opacity) { return Qt.rgba(color.r, color.g, color.b, opacity * color.a); }
 
+    readonly property color desktopTint: tint(customBackgroundColor, topOpacity)
+    readonly property color screenTint: tint(lowerColor, bottomOpacity)
+    readonly property bool varyingGradient: backgroundType === 5 && !Qt.colorEqual(desktopTint, screenTint)
+
     Shape {
         id: base
         anchors.fill: parent
@@ -43,8 +47,8 @@ Item {
         containsMode: Shape.FillContains
         ShapePath {
             strokeWidth: -1
-            fillColor: root.tint(root.customBackgroundColor, root.tintOpacity)
-            fillGradient: root.backgroundType === 5 ? colors : null
+            fillColor: root.backgroundType === 5 ? root.desktopTint : root.tint(root.customBackgroundColor, root.tintOpacity)
+            fillGradient: root.varyingGradient ? colors : null
             PathSvg { path: root.drawing.fill }
         }
     }
@@ -53,17 +57,17 @@ Item {
         id: colors
         x1: root.desktopSide.x; y1: root.desktopSide.y
         x2: root.screenSide.x; y2: root.screenSide.y
-        GradientStop { id: start; position: 0; color: root.tint(root.customBackgroundColor, root.topOpacity) }
+        GradientStop { position: 0; color: root.desktopTint }
         GradientStop {
             position: root.midpoint
             color: {
-                const a = start.color, b = end.color, sum = a.a + b.a;
+                const a = root.desktopTint, b = root.screenTint, sum = a.a + b.a;
                 if (!sum) return "transparent";
                 return Qt.rgba((a.r*a.a + b.r*b.a) / sum, (a.g*a.a + b.g*b.a) / sum,
                                (a.b*a.a + b.b*b.a) / sum, sum / 2);
             }
         }
-        GradientStop { id: end; position: 1; color: root.tint(root.lowerColor, root.bottomOpacity) }
+        GradientStop { position: 1; color: root.screenTint }
     }
     Loader {
         id: glowLoader
