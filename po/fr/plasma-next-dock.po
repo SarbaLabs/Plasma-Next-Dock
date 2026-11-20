@@ -69,12 +69,6 @@ msgstr "Rayon des coins (px) :"
 msgid "Enable hover glow"
 msgstr "Activer le halo au survol"
 
-msgid "Animate dock appearance and disappearance"
-msgstr "Animer l’apparition et la disparition du dock"
-
-msgid "Uses KWin's Sliding Popups effect and system animation speed. No system setting is changed."
-msgstr "Utilise l’effet de glissement de KWin et la vitesse d’animation du système. Aucun réglage système n’est modifié."
-
 msgid "Hide when a window overlaps the capsule"
 msgstr "Masquer lorsqu’une fenêtre chevauche la capsule"
 
@@ -179,18 +173,6 @@ msgstr "Arrondi des coins (%) :"
 
 msgid "Segment spacing (px):"
 msgstr "Espacement des segments (px) :"
-
-msgid "Thickness alignment:"
-msgstr "Alignement des épaisseurs :"
-
-msgid "Toward capsule edge"
-msgstr "Vers le bord de la capsule"
-
-msgid "Centered"
-msgstr "Centré"
-
-msgid "Toward icon"
-msgstr "Vers l’icône"
 
 msgid "State dimensions"
 msgstr "Dimensions selon l’état"

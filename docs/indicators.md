@@ -33,7 +33,7 @@ embedded QML, desktop entry and translation catalog.
 | Active resize; length / thickness | On; 20 / 5 px |
 | Hover resize; separate dimensions | Off; on, 24 / 6 px |
 | Group dimensions | Off; 8 / 4 px |
-| Corner roundness / thickness alignment | 100% / centered |
+| Corner roundness | 100% |
 | Maximum segments | 4, configurable 1–8 |
 | Highlight group active / dim inactive | On / on |
 | Inactive opacity | 55% |
@@ -63,6 +63,8 @@ Frames are bounded along the task axis to avoid painting into the neighboring
 slot. The existing rounded capsule, native preview origin adapter, context menus
 and ungrouped collision model are unchanged.
 
+Segments of different thicknesses share the same center line.
+
 ## Reveal animation
 
 KWin's Sliding Popups effect observes window hidden-state changes, including
@@ -72,8 +74,7 @@ with offset zero. The compositor animates the entire surface; local magnificatio
 continues normally. Input corridor, edge activation and capsule-only avoidance are
 not expanded or replaced. The window is never unmapped to implement dodge.
 
-The persistent revealAnimation setting defaults to true. Turning it off removes
-the dock's slide hint. If Sliding Popups is disabled/unavailable, normal immediate
+Each screen-edge surface requests the slide hint when it is created. If Sliding Popups is disabled/unavailable, normal immediate
 hide/recall remains usable. No effect is enabled globally by the installer.
 
 The Wayland slide protocol exposes location/offset but no per-window timing.
@@ -100,7 +101,7 @@ Licensing/provenance of reused indicator components is in licensing.md.
 - Apply/Close, mode switching and process restart preserve settings. French session
   translates settings and existing context menus; English remains source fallback.
 - Hidden dock: edge reveal slides inward, leaving slides outward; rapid reversals,
-  edge-only corridor use, animation toggle, disabled Sliding Popups, repeated
+  edge-only corridor use, disabled Sliding Popups, repeated
   overlap and recall. Confirm native speed feels right on the maintainer's system.
 - Previews and their inward placement, grouped activation/close, drag reorder,
   Pin/Unpin, native actions/Places/recents and glow continue to work.

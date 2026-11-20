@@ -30,7 +30,6 @@ QQC2.ScrollView {
     property alias cfg_indicatorLength: indicatorLengthControl.value
     property alias cfg_indicatorRoundness: indicatorRoundnessControl.value
     property alias cfg_indicatorSpacing: indicatorSpacingControl.value
-    property alias cfg_indicatorAlignment: indicatorAlignmentControl.currentIndex
     property alias cfg_indicatorResizeActive: indicatorResizeActiveControl.checked
     property alias cfg_indicatorActiveThickness: indicatorActiveThicknessControl.value
     property alias cfg_indicatorActiveLength: indicatorActiveLengthControl.value
@@ -65,7 +64,6 @@ QQC2.ScrollView {
         indicatorLength: cfg_indicatorLength,
         indicatorRoundness: cfg_indicatorRoundness,
         indicatorSpacing: cfg_indicatorSpacing,
-        indicatorAlignment: cfg_indicatorAlignment,
         indicatorResizeActive: cfg_indicatorResizeActive,
         indicatorActiveThickness: cfg_indicatorActiveThickness,
         indicatorActiveLength: cfg_indicatorActiveLength,
@@ -198,14 +196,6 @@ QQC2.ScrollView {
             Kirigami.FormData.label: i18n("Segment spacing (px):")
             from: 0; to: 16; value: 2
             editable: true
-        }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: indicatorAlignmentControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Thickness alignment:")
-            model: [i18n("Toward capsule edge"), i18n("Centered"), i18n("Toward icon")]
-            currentIndex: 1
         }
         Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("State dimensions") }
         QQC2.CheckBox {

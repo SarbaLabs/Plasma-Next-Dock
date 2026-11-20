@@ -933,3 +933,10 @@ With the pointer away from the dock, the group picker stayed visible during an
 idle pause. Right followed by Enter then activated the second probe window.
 The QML regression test waits beyond Plasma’s deferred tooltip dismissal before
 selecting the second card.
+
+## Appearance and indicator settings cleanup
+
+Checked the settings window on KWin Wayland with a demo profile. The settings
+tree omitted the reveal animation switch and thickness alignment selector, and
+retained the inactive, active, hover and group thickness controls. The settings
+test also feeds both retired keys through profile normalization.

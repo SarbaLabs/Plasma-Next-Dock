@@ -375,7 +375,7 @@ parity work stays tracked explicitly in the roadmap.
 
 The **Indicators** settings tab offers macOS (default), native Plasma theme and
 Custom modes. Custom indicators support dots, a shared line or individual dashes;
-state-specific sizes, up to eight window segments, alignment, roundness, spacing,
+state-specific sizes, up to eight window segments, roundness, spacing,
 accent/icon/custom colors, separate unfocused color, opacity and minimized-window
 desaturation. Settings persist when switching modes. A live configuration preview
 shows six example windows. No unsupported overflow + is included.
@@ -385,8 +385,7 @@ Enabled / Disabled controls. Mode default enables them in Plasma mode and keeps
 them off in macOS/Custom. The provisional numeric group label is replaced by this
 optional native symbol. Existing macOS running dots retain their geometry/colors.
 
-**Animate dock appearance and disappearance** enables KWin's native Sliding Popups
-hint (on by default). It uses the system effect and animation speed; no global
+The dock always requests KWin's native Sliding Popups effect for hiding and reveal. It uses the system effect and animation speed; no global
 settings are changed. If the effect is disabled/unavailable, edge recall still
 works immediately. Wayland's slide protocol exposes no per-window duration, so
 there is no misleading local duration slider and no competing QML animation.
