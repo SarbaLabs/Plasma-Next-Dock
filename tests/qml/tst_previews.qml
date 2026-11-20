@@ -74,6 +74,29 @@ TestCase {
         compare(testEnvironment.activatedPreview(), "First window");
         tryCompare(panel, "displayed", false);
     }
+    function test_keyboardChoosesGroupMember() {
+        tryCompare(dock, "status", Loader.Ready);
+        dock.item.beginKeyboard();
+        const owner = dock.item.keyboardItem.previewOwner;
+        const panel = findChild(dock.item, "taskPreview");
+        panel.showForKeyboard(owner);
+        tryCompare(panel, "displayed", true);
+        // Demo tasks have no native windows. Attach the two-window fixture.
+        panel.keyboardOwner = null;
+        windowPreviews.select(testPreviewModel, 0);
+        panel.keyboardOwner = owner;
+        // Plasma defers shared tooltip dismissal after a sibling area is deactivated.
+        wait(1000);
+        compare(panel.displayed, true);
+        compare(panel.keyboardOwner, owner);
+        verify(panel.moveKeyboardSelection(Qt.Key_Home));
+        verify(panel.moveKeyboardSelection(Qt.Key_Right));
+        tryVerify(() => findChild(panel, "previewActivate1") !== null);
+        verify(panel.activateKeyboardWindow());
+        tryCompare(panel, "displayed", false);
+        compare(testEnvironment.activatedPreview(), "Second window");
+        dock.item.keyboardItem = null;
+    }
     function test_groupCardsRouteToIndividualWindows() {
         tryCompare(dock, "status", Loader.Ready);
         const owner = findChild(dock.item, "taskTip0");

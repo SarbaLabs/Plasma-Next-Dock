@@ -348,3 +348,10 @@ Each dock can offset its aligned end along the screen edge with a saved margin.
 Each dock now exposes glow radius, intensity and opacity. The reference fork at
 cd5fa9d9 uses a fixed 70 px default; Next Dock retains automatic radius for
 existing profiles and offers the same 1–256 px manual range.
+
+## Keyboard navigation, first stage
+
+The global focus shortcut, visual-order traversal, activation and Escape are
+implemented. Menu and Shift+F10 open the selected task’s context menu.
+Enter on a group opens its previews for keyboard selection, including off-screen cards.
+The picker stays open while waiting for the next key.

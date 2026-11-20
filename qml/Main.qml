@@ -63,8 +63,72 @@ Item {
     readonly property bool dragging: dragIndex >= 0
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
+    property Item keyboardItem: null
+    readonly property bool keyboardActive: keyboardItem !== null
+    onKeyboardActiveChanged: {
+        if (!keyboardActive && previewPanel.keyboardOwner) previewPanel.dismiss();
+        refreshHover();
+    }
+    function selectKeyboardRow(row) {
+        keyboardItem = repeater.itemAt(row);
+        if (!keyboardItem) return;
+        const icon = keyboardItem.iconItem;
+        const rect = icon.mapToItem(viewport.contentItem, Qt.rect(0, 0, icon.width, icon.height));
+        if (rect.x < viewport.contentX) viewport.contentX = Math.max(0, rect.x);
+        else if (rect.x + rect.width > viewport.contentX + viewport.width)
+            viewport.contentX = Math.min(viewport.contentWidth - viewport.width, rect.x + rect.width - viewport.width);
+    }
+    function beginKeyboard() {
+        if (!repeater.count || contextMenu.visibleMenu || dragging || externalDrop.containsDrag) return;
+        previewPanel.dismiss();
+        selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0);
+        forceActiveFocus(Qt.ShortcutFocusReason);
+    }
+    Keys.onPressed: event => {
+        if (!keyboardActive || contextMenu.visibleMenu) return;
+        const selected = keyboardItem;
+        const index = selected.index;
+        if (index < 0 || repeater.itemAt(index) !== selected) { keyboardItem = null; return; }
+        if (previewPanel.keyboardOwner && event.modifiers === Qt.NoModifier) {
+            if (event.key === Qt.Key_Escape) previewPanel.dismiss();
+            else if ([Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].includes(event.key)) {
+                if (!event.isAutoRepeat && previewPanel.activateKeyboardWindow()) keyboardItem = null;
+            } else if (!previewPanel.moveKeyboardSelection(event.key)) return;
+            event.accepted = true;
+            return;
+        }
+        if ((event.key === Qt.Key_Menu && event.modifiers === Qt.NoModifier)
+            || (event.key === Qt.Key_F10 && event.modifiers === Qt.ShiftModifier)) {
+            event.accepted = true;
+            if (!event.isAutoRepeat) {
+                const icon = selected.iconItem;
+                showContextMenu(index, icon.mapToItem(root, icon.width / 2, icon.height / 2));
+            }
+            return;
+        }
+        if (event.modifiers !== Qt.NoModifier) return;
+        const forward = reverseLayout ? -1 : 1;
+        switch (event.key) {
+        case Qt.Key_Escape: keyboardItem = null; break;
+        case Qt.Key_Home: selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0); break;
+        case Qt.Key_End: selectKeyboardRow(reverseLayout ? 0 : repeater.count - 1); break;
+        case Qt.Key_Return: case Qt.Key_Enter: case Qt.Key_Space:
+            if (event.isAutoRepeat) break;
+            if (selected.model.IsGroupParent) previewPanel.showForKeyboard(selected.previewOwner);
+            else { keyboardItem = null; taskSource.item.activate(index); }
+            break;
+        default: {
+            const next = vertical ? Qt.Key_Down : Qt.Key_Right;
+            const previous = vertical ? Qt.Key_Up : Qt.Key_Left;
+            if (event.key !== next && event.key !== previous) return;
+            const delta = event.key === next ? forward : -forward;
+            selectKeyboardRow((index + delta + repeater.count) % repeater.count);
+        }
+        }
+        event.accepted = true;
+    }
     function refreshHover() {
-        dockController.setHovered(dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
+        dockController.setHovered(keyboardActive || dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -420,6 +484,15 @@ Item {
                             onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
                         }
                     }
+                    Rectangle {
+                        visible: root.keyboardItem === slot
+                        anchors.fill: icon
+                        radius: 5
+                        color: "transparent"
+                        border.width: 2
+                        border.color: Kirigami.Theme.focusColor
+                        z: icon.z + 1
+                    }
                     Kirigami.Icon {
                         id: icon
                         objectName: "icon" + slot.index
@@ -454,7 +527,9 @@ Item {
                             textFormat: Text.PlainText
                             mainItem: previewPanel
                             interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
-                            active: !root.dragging && !contextMenu.visibleMenu
+                            // Deactivating any ToolTipArea schedules dismissal of Plasma's shared popup.
+                            // Settle the active areas when selecting the task, before Enter opens it.
+                            active: !root.dragging && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
                             onAboutToShow: {
                                 previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
                                 forceWindows = false;
@@ -563,25 +638,25 @@ Item {
                 root.dragIndex = targetIndex;
         }
     }
+    function showContextMenu(row, position) {
+        previewPanel.dismiss();
+        // Include magnified icons so the menu does not cover their inner edge.
+        let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
+        for (let i = 0; i < repeater.count; ++i) {
+            const icon = repeater.itemAt(i).iconItem;
+            const p = icon.mapToItem(root, 0, 0);
+            if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
+            left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
+            right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
+        }
+        const anchor = Interaction.menuAnchor(dockOptions.edge,
+            Qt.rect(left, top, right - left, bottom - top), position, 6);
+        contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
+                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
+    }
     TapHandler {
         acceptedButtons: Qt.RightButton
-        onTapped: eventPoint => {
-            previewPanel.dismiss();
-            const row = dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false);
-            // Include magnified icons so the menu does not cover their inner edge.
-            let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
-            for (let i = 0; i < repeater.count; ++i) {
-                const icon = repeater.itemAt(i).iconItem;
-                const p = icon.mapToItem(root, 0, 0);
-                if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
-                left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
-                right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
-            }
-            const anchor = Interaction.menuAnchor(dockOptions.edge,
-                Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
-            contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
-                               row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
-        }
+        onTapped: eventPoint => root.showContextMenu(dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false), eventPoint.position)
     }
     ExternalDrop {
         id: externalDrop

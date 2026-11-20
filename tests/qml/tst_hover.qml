@@ -12,6 +12,46 @@ TestCase {
     Rectangle { anchors.fill: parent; color: "#ff00ff"; z: -1 }
     Loader { id: dock; source: "qrc:/qml/Main.qml" }
     function initTestCase() { testCase.Window.window.color = "transparent"; }
+    function test_keyboardNavigation() {
+        tryCompare(dock, "status", Loader.Ready);
+        dock.item.beginKeyboard();
+        verify(dock.item.keyboardActive);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Right);
+        compare(dock.item.keyboardItem.index, 1);
+        keyClick(Qt.Key_End);
+        compare(dock.item.keyboardItem.index, 4);
+        keyClick(Qt.Key_Right);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Left);
+        compare(dock.item.keyboardItem.index, 4);
+        keyClick(Qt.Key_Home);
+        compare(dock.item.keyboardItem.index, 0);
+        keyClick(Qt.Key_Escape);
+        verify(!dock.item.keyboardActive);
+        dock.item.beginKeyboard();
+        keyClick(Qt.Key_Return);
+        verify(!dock.item.keyboardActive);
+    }
+    function test_keyboardContextMenu_data() {
+        return [{tag: "Menu", key: Qt.Key_Menu, modifiers: Qt.NoModifier},
+                {tag: "Shift-F10", key: Qt.Key_F10, modifiers: Qt.ShiftModifier}];
+    }
+    function test_keyboardContextMenu(data) {
+        tryCompare(dock, "status", Loader.Ready);
+        const menu = findChild(dock.item, "dockMenu");
+        dock.item.beginKeyboard();
+        keyClick(Qt.Key_Right);
+        keyClick(data.key, data.modifiers);
+        tryCompare(menu, "visibleMenu", true);
+        menu.close();
+        tryCompare(menu, "visibleMenu", false);
+        compare(dock.item.keyboardItem.index, 1);
+        dock.item.keyboardItem = null;
+        // Offscreen QMenu dismissal does not restore the fixture window.
+        testCase.Window.window.requestActivate();
+        tryCompare(testCase.Window.window, "active", true);
+    }
     function test_magnificationContinuesAndResets() {
         tryCompare(dock, "status", Loader.Ready);
         const first = findChild(dock.item, "task0");

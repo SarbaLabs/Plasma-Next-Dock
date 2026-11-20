@@ -911,3 +911,25 @@ Wayland desktop with a temporary dark solid capsule. At 150% intensity and
 65% opacity, the wider orange glow extended beyond the icon while the smaller
 one stayed close to the pointer. QML tests exercise Apply/reopen, delivery of the
 three settings to the glow and unloading it at zero intensity or opacity.
+
+## Keyboard navigation on KWin Wayland
+
+From a maximized probe window, Meta+Alt+Space revealed an auto-hidden bottom
+dock and outlined Dolphin. Right moved the outline to Firefox, End selected the
+last task, and Escape dismissed the dock. The QML fixture covers traversal,
+wrapping, Home/End, Escape and Enter without launching user applications.
+Repeating the shortcut selected a second, vertical dock; Down moved its
+outline to Firefox. KWin reported the probe window active again after Escape.
+
+On KWin Wayland, Menu opened the selected Firefox launcher menu. Escape
+returned to that icon, Right moved to Konsole, and Shift+F10 opened its menu.
+
+Four disposable windows formed a group on a horizontal dock under KWin. Enter
+opened its previews. End scrolled the fourth card into view, and Enter activated
+its window. Escape returned to the group; after reopening, Right and Enter
+activated the second window, verified via KWin’s active window.
+
+With the pointer away from the dock, the group picker stayed visible during an
+idle pause. Right followed by Enter then activated the second probe window.
+The QML regression test waits beyond Plasma’s deferred tooltip dismissal before
+selecting the second card.

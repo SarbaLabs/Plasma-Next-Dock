@@ -11,6 +11,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QScreen>
+#include <QAction>
+#include <KGlobalAccel>
 #include <QDir>
 #include <QTimer>
 #include <QLockFile>
@@ -159,6 +161,29 @@ int main(int argc, char **argv)
     refresh();
     for (const auto &entry : hosts) if (entry.second->failed()) return 1;
     if (configFailed && smoke) return 1;
+    QAction focusDock(i18n("Focus Plasma Next Dock"));
+    if (wayland && !demo && !smoke) {
+        focusDock.setObjectName(QStringLiteral("focus-dock"));
+        focusDock.setProperty("componentDisplayName", QStringLiteral("Plasma Next Dock"));
+        const QKeySequence shortcut(Qt::META | Qt::ALT | Qt::Key_Space);
+        KGlobalAccel::setGlobalShortcut(&focusDock, shortcut);
+        QObject::connect(&focusDock, &QAction::triggered, &connections, [&] {
+            const auto &list = profiles.profiles();
+            int first = profiles.selectedIndex();
+            for (int i = 0; i < list.size(); ++i) {
+                const auto it = hosts.find(list[i]);
+                if (it != hosts.end() && it->second->keyboardActive()) {
+                    it->second->endKeyboard();
+                    first = (i + 1) % list.size();
+                    break;
+                }
+            }
+            for (int i = 0; i < list.size(); ++i) {
+                const auto it = hosts.find(list[(first + i) % list.size()]);
+                if (it != hosts.end() && it->second->beginKeyboard()) break;
+            }
+        });
+    }
     if (parser.isSet("settings")) profiles.current()->configure();
     if (smoke) QTimer::singleShot(700, &app, [&] {
         const QString configCapture = qEnvironmentVariable("PND_TEST_CAPTURE_SETTINGS");
