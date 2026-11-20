@@ -35,6 +35,7 @@ TestCase {
                 filterActivity: false, filterScreen: true, onlyMinimized: true});
             tryCompare(live.tasks, "groupMode", TaskManager.TasksModel.GroupDisabled);
             compare(live.tasks.sortMode, TaskManager.TasksModel.SortLastActivated);
+            verify(!live.tasks.separateLaunchers && !live.tasks.taskReorderingEnabled);
             compare(live.tasks.filterByVirtualDesktop, false);
             compare(live.tasks.filterByActivity, false);
             compare(live.tasks.filterByScreen, true);
@@ -50,6 +51,10 @@ TestCase {
             compare(saved.launchers, [], "The restoration snapshot must not follow launcher mutations");
             dockSettings.apply({taskSort: 1});
             tryCompare(live.tasks, "sortMode", TaskManager.TasksModel.SortAlpha);
+            verify(!live.moveTask(0, 1));
+            dockSettings.apply({taskSort: 0});
+            tryCompare(live.tasks, "sortMode", TaskManager.TasksModel.SortManual);
+            verify(live.tasks.separateLaunchers && live.tasks.taskReorderingEnabled);
         } finally {
             try {
                 verify(dockSettings.apply(saved));

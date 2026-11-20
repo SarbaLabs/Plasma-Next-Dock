@@ -815,3 +815,15 @@ msgstr "Épaisseur (px) :"
 
 msgid "Length (px):"
 msgstr "Longueur (px) :"
+
+msgid "Applications and sorting"
+msgstr "Applications et tri"
+
+msgid "Manual reordering is unavailable with this sort order."
+msgstr "La réorganisation manuelle est indisponible avec cet ordre de tri."
+
+msgid "Drag to reorder"
+msgstr "Glisser pour réorganiser"
+
+msgid "Window grouping"
+msgstr "Regroupement des fenêtres"

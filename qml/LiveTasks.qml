@@ -28,8 +28,9 @@ Item {
     function publishMinimizeTarget(row, rect, delegate) {
         tasks.requestPublishDelegateGeometry(tasks.makeModelIndex(row), rect, delegate);
     }
-    function moveTask(from, to) { return tasks.move(from, to); }
+    function moveTask(from, to) { return tasks.separateLaunchers && tasks.move(from, to); }
     function finishMove() {
+        if (!tasks.separateLaunchers) return;
         tasks.syncLaunchers();
         dockSettings.saveLaunchers(tasks.launcherList);
     }
@@ -77,7 +78,9 @@ Item {
         groupInline: false
         groupingWindowTasksThreshold: -1
         sortMode: source.selectedSort
-        separateLaunchers: true
+        // KDE pins launchers to their saved positions when this is enabled.
+        separateLaunchers: source.selectedSort === TaskManager.TasksModel.SortManual
+        taskReorderingEnabled: separateLaunchers
         launchInPlace: true
         virtualDesktop: desktops.currentDesktop
         activity: activities.currentActivity

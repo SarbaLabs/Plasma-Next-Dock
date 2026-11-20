@@ -4,13 +4,13 @@ import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+SettingsForm {
     id: page
     objectName: "behaviorSettings"
     property var values: ({})
-    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "taskSort", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "layoutDirection", "showSeparator", "revealAttention", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "bounceHeight", "bounceSpeed", "bounceCount"]) copy[key] = configuration[key]; values = copy; }
+    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "layoutDirection", "showSeparator", "revealAttention", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "bounceHeight", "bounceSpeed", "bounceCount"]) copy[key] = configuration[key]; values = copy; }
     function change(key, value) { const copy = Object.assign({}, values); copy[key] = value; values = copy; }
-    Controls.Label { text: i18n("Grouping and sorting"); font.bold: true; Kirigami.FormData.isSection: true }
+    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Window grouping") }
     Controls.CheckBox {
         objectName: "groupApplicationsControl"
         text: i18n("Group windows by application")
@@ -26,15 +26,7 @@ Kirigami.FormLayout {
         currentIndex: page.values.groupClick || 0
         onActivated: page.change("groupClick", currentIndex)
     }
-    Controls.ComboBox {
-        objectName: "taskSortControl"
-        implicitWidth: Kirigami.Units.gridUnit * 18
-        Kirigami.FormData.label: i18n("Sort order:")
-        model: [i18n("Manually"), i18n("Alphabetically"), i18n("Last activated"), i18n("Virtual desktop"), i18n("Activity")]
-        currentIndex: page.values.taskSort || 0
-        onActivated: page.change("taskSort", currentIndex)
-    }
-    Controls.Label { text: i18n("Mouse actions"); font.bold: true; Kirigami.FormData.isSection: true }
+    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Mouse actions") }
     Controls.CheckBox {
         objectName: "minimizeActiveControl"
         text: i18n("Minimize the active task on click")
@@ -64,7 +56,7 @@ Kirigami.FormLayout {
         checked: page.values.skipMinimized === true
         onToggled: page.change("skipMinimized", checked)
     }
-    Controls.Label { text: i18n("Filters"); font.bold: true; Kirigami.FormData.isSection: true }
+    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Filters") }
     Controls.CheckBox {
         objectName: "filterScreenControl"
         text: i18n("Only tasks on this screen")
@@ -89,7 +81,7 @@ Kirigami.FormLayout {
         checked: page.values.onlyMinimized === true
         onToggled: page.change("onlyMinimized", checked)
     }
-    Controls.Label { text: i18n("Layout and attention"); font.bold: true; Kirigami.FormData.isSection: true }
+    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Layout and attention") }
     Controls.ComboBox {
         objectName: "layoutDirectionControl"
         implicitWidth: Kirigami.Units.gridUnit * 18
@@ -110,6 +102,6 @@ Kirigami.FormLayout {
         checked: page.values.revealAttention === true
         onToggled: page.change("revealAttention", checked)
     }
-    Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Overflow scrolling takes priority over window cycling. Manual dragging is available only with manual sorting.") }
-    Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Reversing the direction also moves unpinned applications to the opposite side. Display filters do not change window avoidance.") }
+    Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Overflow scrolling takes priority over window cycling. Manual dragging is available only with manual sorting.") }
+    Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Reversing the direction also moves unpinned applications to the opposite side. Display filters do not change window avoidance.") }
 }

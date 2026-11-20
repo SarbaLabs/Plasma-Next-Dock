@@ -140,6 +140,9 @@ int main(int argc, char **argv)
             host->update(configWindow->isVisible() && profiles.current() == profile);
             if (host->failed()) { configFailed = true; app.exit(1); }
         }
+        const auto selected = hosts.find(profiles.current());
+        auto *root = selected == hosts.end() ? nullptr : selected->second->view()->rootObject();
+        configWindow->setProperty("selectedTasks", root ? root->property("presentationTasks") : QVariant::fromValue<QObject *>(nullptr));
     };
     auto topologyChanged = [&] { outputs(); refresh(); };
     QObject::connect(&app, &QGuiApplication::screenAdded, &connections, topologyChanged);

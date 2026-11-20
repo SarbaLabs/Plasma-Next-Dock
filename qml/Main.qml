@@ -11,6 +11,7 @@ import "code/TaskBehavior.js" as Behavior
 
 Item {
     id: root
+    readonly property QtObject presentationTasks: dockOptions.demo ? null : taskSource.item?.tasks ?? null
     Mpris.Mpris2Model { id: statusPlayers }
     Loader {
         id: audioService

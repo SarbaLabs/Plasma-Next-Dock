@@ -87,271 +87,279 @@ QQC2.ScrollView {
         selectedColor: root.cfg_indicatorCustomColor
         onAccepted: root.cfg_indicatorCustomColor = selectedColor
     }
-    Kirigami.FormLayout {
+    ColumnLayout {
         width: root.availableWidth
-        anchors.margins: 16
         QQC2.Label {
+            objectName: "indicatorIntroduction"
             Layout.fillWidth: true
+            Layout.minimumWidth: 0
+            Layout.leftMargin: Kirigami.Units.largeSpacing
+            Layout.rightMargin: Kirigami.Units.largeSpacing + root.effectiveScrollBarWidth
             wrapMode: Text.WordWrap
             text: i18n("Mode default keeps macOS unchanged. Plasma enables native task frames and the group symbol. Overrides apply only to this dock.")
         }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: indicatorModeControl
-            objectName: "indicatorModeControl"
-            visible: true
-            Kirigami.FormData.label: i18n("Indicator mode:")
-            model: [i18n("macOS"), i18n("Plasma"), i18n("Custom")]
-            currentIndex: 0
-        }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: nativeGroupIndicatorControl
-            visible: true
-            Kirigami.FormData.label: i18n("Native group symbol:")
-            model: [i18n("Mode default"), i18n("Enabled"), i18n("Disabled")]
-            currentIndex: 0
-        }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: taskDecorationsControl
-            visible: true
-            Kirigami.FormData.label: i18n("Plasma task decorations:")
-            model: [i18n("Mode default"), i18n("Enabled"), i18n("Disabled")]
-            currentIndex: 0
-        }
-        Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Custom indicators") }
-        QQC2.CheckBox {
-            id: customIndicatorsEnabledControl
-            visible: root.custom
-            text: i18n("Show running indicators")
-            checked: true
-        }
-        QQC2.CheckBox {
-            id: indicatorAnimationsControl
-            visible: root.customEnabled
-            text: i18n("Animate state changes")
-            checked: true
-        }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: indicatorStyleControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Style:")
-            model: [i18n("Dots"), i18n("Line"), i18n("Dashes")]
-            currentIndex: 0
-        }
-        QQC2.CheckBox {
-            id: indicatorOverrideControl
-            visible: root.customEnabled
-            text: i18n("Override indicator position")
-            checked: false
-        }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: indicatorEdgeControl
-            visible: root.customEnabled && root.cfg_indicatorOverride
-            Kirigami.FormData.label: i18n("Position:")
-            model: [i18n("Bottom"), i18n("Top"), i18n("Left"), i18n("Right")]
-            currentIndex: 0
-        }
-        QQC2.SpinBox {
-            id: indicatorEdgeDistanceControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Distance from capsule edge (px):")
-            from: 0; to: 32; value: 2
-            editable: true
-        }
-        QQC2.SpinBox {
-            id: indicatorRoundnessControl
-            visible: root.customEnabled && root.cfg_indicatorStyle !== 0
-            Kirigami.FormData.label: i18n("Corner roundness (%):")
-            from: 0; to: 100; value: 100
-            editable: true
-        }
-        QQC2.SpinBox {
-            id: indicatorSpacingControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Segment spacing (px):")
-            from: 0; to: 16; value: 2
-            editable: true
-        }
-        QQC2.CheckBox {
-            id: indicatorResizeActiveControl
-            visible: root.customEnabled
-            text: i18n("Resize on activation")
-            checked: true
-        }
-        Kirigami.Separator { visible: root.customEnabled && root.cfg_indicatorResizeActive; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Active") }
-        RowLayout {
-            visible: root.customEnabled && root.cfg_indicatorResizeActive
-            Measure {
-                id: indicatorActiveThicknessControl
-                caption: i18n("Thickness (px):")
-                from: 1; to: 24; value: 5
-            }
-            Measure {
-                id: indicatorActiveLengthControl
-                visible: root.cfg_indicatorStyle !== 0
-                caption: i18n("Length (px):")
-                from: 1; to: 160; value: 20
-            }
-        }
-        Kirigami.Separator { visible: root.customEnabled; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Inactive") }
-        RowLayout {
-            visible: root.customEnabled
-            Measure {
-                id: indicatorThicknessControl
-                caption: i18n("Thickness (px):")
-                from: 1; to: 24; value: 4
-            }
-            Measure {
-                id: indicatorLengthControl
-                visible: root.cfg_indicatorStyle !== 0
-                caption: i18n("Length (px):")
-                from: 1; to: 160; value: 12
-            }
-        }
-        QQC2.CheckBox {
-            id: indicatorResizeHoverControl
-            visible: root.customEnabled
-            text: i18n("Resize on hover")
-            checked: false
-        }
-        QQC2.CheckBox {
-            id: indicatorHoverSeparateControl
-            visible: root.customEnabled && root.cfg_indicatorResizeHover
-            text: i18n("Use separate hover dimensions")
-            checked: true
-        }
-        QQC2.SpinBox {
-            id: indicatorHoverThicknessControl
-            visible: root.customEnabled && root.cfg_indicatorResizeHover && root.cfg_indicatorHoverSeparate
-            Kirigami.FormData.label: i18n("Hover thickness (px):")
-            from: 1; to: 24; value: 6
-            editable: true
-        }
-        QQC2.SpinBox {
-            id: indicatorHoverLengthControl
-            visible: root.customEnabled && root.cfg_indicatorResizeHover && root.cfg_indicatorHoverSeparate && root.cfg_indicatorStyle !== 0
-            Kirigami.FormData.label: i18n("Hover length (px):")
-            from: 1; to: 160; value: 24
-            editable: true
-        }
-        QQC2.CheckBox {
-            id: indicatorGroupSeparateControl
-            visible: root.customEnabled
-            text: i18n("Use separate grouped dimensions")
-            checked: false
-        }
-        QQC2.SpinBox {
-            id: indicatorGroupThicknessControl
-            visible: root.customEnabled && root.cfg_indicatorGroupSeparate
-            Kirigami.FormData.label: i18n("Grouped thickness (px):")
-            from: 1; to: 24; value: 4
-            editable: true
-        }
-        QQC2.SpinBox {
-            id: indicatorGroupLengthControl
-            visible: root.customEnabled && root.cfg_indicatorGroupSeparate && root.cfg_indicatorStyle !== 0
-            Kirigami.FormData.label: i18n("Grouped length (px):")
-            from: 1; to: 160; value: 8
-            editable: true
-        }
-        Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Multiple windows") }
-        QQC2.SpinBox {
-            id: indicatorMaxSegmentsControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Maximum window segments:")
-            from: 1; to: 8; value: 4
-            editable: true
-        }
-        QQC2.CheckBox {
-            id: indicatorHighlightActiveControl
-            visible: root.customEnabled
-            text: i18n("Highlight the active window in a group")
-            checked: true
-        }
-        QQC2.CheckBox {
-            id: indicatorDimInactiveControl
-            visible: root.customEnabled
-            text: i18n("Dim inactive segments")
-            checked: true
-        }
-        QQC2.SpinBox {
-            id: indicatorInactiveOpacityControl
-            visible: root.customEnabled && (root.cfg_indicatorDimInactive || root.cfg_indicatorHighlightActive)
-            Kirigami.FormData.label: i18n("Inactive opacity (%):")
-            from: 0; to: 100; value: 55
-            editable: true
-        }
-        QQC2.CheckBox {
-            id: indicatorDesaturateControl
-            visible: root.customEnabled
-            text: i18n("Desaturate minimized windows")
-            checked: false
-        }
-        Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Colors") }
-        QQC2.ComboBox {
-            implicitWidth: Kirigami.Units.gridUnit * 16
-            id: indicatorColorSourceControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Indicator color:")
-            model: [i18n("Plasma accent"), i18n("Application icon"), i18n("Custom color")]
-            currentIndex: 0
-        }
-        QQC2.Button {
-            visible: root.customEnabled && root.cfg_indicatorColorSource === 2
-            Kirigami.FormData.label: i18n("Custom color:")
-            text: root.cfg_indicatorCustomColor.toString()
-            onClicked: colorDialog.open()
-        }
-        QQC2.CheckBox {
-            id: unfocusedColorEnabled
-            visible: root.customEnabled
-            text: i18n("Use a separate unfocused indicator color")
-        }
-        QQC2.Button {
-            visible: root.customEnabled && root.cfg_indicatorUnfocusedColorEnabled
-            Kirigami.FormData.label: i18n("Unfocused color:")
-            text: root.cfg_indicatorUnfocusedColor.toString()
-            onClicked: unfocusedDialog.open()
-        }
-        QtDialogs.ColorDialog {
-            id: unfocusedDialog
-            selectedColor: root.cfg_indicatorUnfocusedColor
-            onAccepted: root.cfg_indicatorUnfocusedColor = selectedColor
-        }
-        QQC2.Label {
-            visible: root.customEnabled
+        SettingsForm {
             Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            text: i18n("Indicators fit within the task slot and capsule padding. Lines use a shared length; dashes use a length per window. Hover dimensions take precedence over active and grouped dimensions. Icon colors fall back to the Plasma accent.")
-        }
-        Item {
-            visible: root.customEnabled
-            implicitWidth: 200
-            implicitHeight: 100
-            Kirigami.FormData.label: i18n("Preview (hover to test):")
-            Rectangle {
-                anchors.centerIn: parent
-                width: 180; height: 70; radius: 12
-                color: Kirigami.Theme.alternateBackgroundColor
+            Layout.minimumWidth: 0
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: indicatorModeControl
+                objectName: "indicatorModeControl"
+                visible: true
+                Kirigami.FormData.label: i18n("Indicator mode:")
+                model: [i18n("macOS"), i18n("Plasma"), i18n("Custom")]
+                currentIndex: 0
             }
-            CustomIndicators {
-                anchors.centerIn: parent
-                width: 140; height: 40
-                configuration: root.previewConfiguration
-                windowCount: 6
-                activeIndex: 1
-                horizontalPadding: 12; verticalPadding: 12
-                minimizedWindows: [true, false, false, false, false, false]
-                hovered: previewHover.hovered
-                HoverHandler { id: previewHover }
-                Text {
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: nativeGroupIndicatorControl
+                visible: true
+                Kirigami.FormData.label: i18n("Native group symbol:")
+                model: [i18n("Mode default"), i18n("Enabled"), i18n("Disabled")]
+                currentIndex: 0
+            }
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: taskDecorationsControl
+                visible: true
+                Kirigami.FormData.label: i18n("Plasma task decorations:")
+                model: [i18n("Mode default"), i18n("Enabled"), i18n("Disabled")]
+                currentIndex: 0
+            }
+            Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Custom indicators") }
+            QQC2.CheckBox {
+                id: customIndicatorsEnabledControl
+                visible: root.custom
+                text: i18n("Show running indicators")
+                checked: true
+            }
+            QQC2.CheckBox {
+                id: indicatorAnimationsControl
+                visible: root.customEnabled
+                text: i18n("Animate state changes")
+                checked: true
+            }
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: indicatorStyleControl
+                visible: root.customEnabled
+                Kirigami.FormData.label: i18n("Style:")
+                model: [i18n("Dots"), i18n("Line"), i18n("Dashes")]
+                currentIndex: 0
+            }
+            QQC2.CheckBox {
+                id: indicatorOverrideControl
+                visible: root.customEnabled
+                text: i18n("Override indicator position")
+                checked: false
+            }
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: indicatorEdgeControl
+                visible: root.customEnabled && root.cfg_indicatorOverride
+                Kirigami.FormData.label: i18n("Position:")
+                model: [i18n("Bottom"), i18n("Top"), i18n("Left"), i18n("Right")]
+                currentIndex: 0
+            }
+            QQC2.SpinBox {
+                id: indicatorEdgeDistanceControl
+                visible: root.customEnabled
+                Kirigami.FormData.label: i18n("Distance from capsule edge (px):")
+                from: 0; to: 32; value: 2
+                editable: true
+            }
+            QQC2.SpinBox {
+                id: indicatorRoundnessControl
+                visible: root.customEnabled && root.cfg_indicatorStyle !== 0
+                Kirigami.FormData.label: i18n("Corner roundness (%):")
+                from: 0; to: 100; value: 100
+                editable: true
+            }
+            QQC2.SpinBox {
+                id: indicatorSpacingControl
+                visible: root.customEnabled
+                Kirigami.FormData.label: i18n("Segment spacing (px):")
+                from: 0; to: 16; value: 2
+                editable: true
+            }
+            QQC2.CheckBox {
+                id: indicatorResizeActiveControl
+                visible: root.customEnabled
+                text: i18n("Resize on activation")
+                checked: true
+            }
+            Kirigami.Separator { visible: root.customEnabled && root.cfg_indicatorResizeActive; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Active") }
+            RowLayout {
+                visible: root.customEnabled && root.cfg_indicatorResizeActive
+                Measure {
+                    id: indicatorActiveThicknessControl
+                    caption: i18n("Thickness (px):")
+                    from: 1; to: 24; value: 5
+                }
+                Measure {
+                    id: indicatorActiveLengthControl
+                    visible: root.cfg_indicatorStyle !== 0
+                    caption: i18n("Length (px):")
+                    from: 1; to: 160; value: 20
+                }
+            }
+            Kirigami.Separator { visible: root.customEnabled; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Inactive") }
+            RowLayout {
+                visible: root.customEnabled
+                Measure {
+                    id: indicatorThicknessControl
+                    caption: i18n("Thickness (px):")
+                    from: 1; to: 24; value: 4
+                }
+                Measure {
+                    id: indicatorLengthControl
+                    visible: root.cfg_indicatorStyle !== 0
+                    caption: i18n("Length (px):")
+                    from: 1; to: 160; value: 12
+                }
+            }
+            QQC2.CheckBox {
+                id: indicatorResizeHoverControl
+                visible: root.customEnabled
+                text: i18n("Resize on hover")
+                checked: false
+            }
+            QQC2.CheckBox {
+                id: indicatorHoverSeparateControl
+                visible: root.customEnabled && root.cfg_indicatorResizeHover
+                text: i18n("Use separate hover dimensions")
+                checked: true
+            }
+            QQC2.SpinBox {
+                id: indicatorHoverThicknessControl
+                visible: root.customEnabled && root.cfg_indicatorResizeHover && root.cfg_indicatorHoverSeparate
+                Kirigami.FormData.label: i18n("Hover thickness (px):")
+                from: 1; to: 24; value: 6
+                editable: true
+            }
+            QQC2.SpinBox {
+                id: indicatorHoverLengthControl
+                visible: root.customEnabled && root.cfg_indicatorResizeHover && root.cfg_indicatorHoverSeparate && root.cfg_indicatorStyle !== 0
+                Kirigami.FormData.label: i18n("Hover length (px):")
+                from: 1; to: 160; value: 24
+                editable: true
+            }
+            QQC2.CheckBox {
+                id: indicatorGroupSeparateControl
+                visible: root.customEnabled
+                text: i18n("Use separate grouped dimensions")
+                checked: false
+            }
+            QQC2.SpinBox {
+                id: indicatorGroupThicknessControl
+                visible: root.customEnabled && root.cfg_indicatorGroupSeparate
+                Kirigami.FormData.label: i18n("Grouped thickness (px):")
+                from: 1; to: 24; value: 4
+                editable: true
+            }
+            QQC2.SpinBox {
+                id: indicatorGroupLengthControl
+                visible: root.customEnabled && root.cfg_indicatorGroupSeparate && root.cfg_indicatorStyle !== 0
+                Kirigami.FormData.label: i18n("Grouped length (px):")
+                from: 1; to: 160; value: 8
+                editable: true
+            }
+            Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Multiple windows") }
+            QQC2.SpinBox {
+                id: indicatorMaxSegmentsControl
+                visible: root.customEnabled
+                Kirigami.FormData.label: i18n("Maximum window segments:")
+                from: 1; to: 8; value: 4
+                editable: true
+            }
+            QQC2.CheckBox {
+                id: indicatorHighlightActiveControl
+                visible: root.customEnabled
+                text: i18n("Highlight the active window in a group")
+                checked: true
+            }
+            QQC2.CheckBox {
+                id: indicatorDimInactiveControl
+                visible: root.customEnabled
+                text: i18n("Dim inactive segments")
+                checked: true
+            }
+            QQC2.SpinBox {
+                id: indicatorInactiveOpacityControl
+                visible: root.customEnabled && (root.cfg_indicatorDimInactive || root.cfg_indicatorHighlightActive)
+                Kirigami.FormData.label: i18n("Inactive opacity (%):")
+                from: 0; to: 100; value: 55
+                editable: true
+            }
+            QQC2.CheckBox {
+                id: indicatorDesaturateControl
+                visible: root.customEnabled
+                text: i18n("Desaturate minimized windows")
+                checked: false
+            }
+            Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Colors") }
+            QQC2.ComboBox {
+                implicitWidth: Kirigami.Units.gridUnit * 16
+                id: indicatorColorSourceControl
+                visible: root.customEnabled
+                Kirigami.FormData.label: i18n("Indicator color:")
+                model: [i18n("Plasma accent"), i18n("Application icon"), i18n("Custom color")]
+                currentIndex: 0
+            }
+            QQC2.Button {
+                visible: root.customEnabled && root.cfg_indicatorColorSource === 2
+                Kirigami.FormData.label: i18n("Custom color:")
+                text: root.cfg_indicatorCustomColor.toString()
+                onClicked: colorDialog.open()
+            }
+            QQC2.CheckBox {
+                id: unfocusedColorEnabled
+                visible: root.customEnabled
+                text: i18n("Use a separate unfocused indicator color")
+            }
+            QQC2.Button {
+                visible: root.customEnabled && root.cfg_indicatorUnfocusedColorEnabled
+                Kirigami.FormData.label: i18n("Unfocused color:")
+                text: root.cfg_indicatorUnfocusedColor.toString()
+                onClicked: unfocusedDialog.open()
+            }
+            QtDialogs.ColorDialog {
+                id: unfocusedDialog
+                selectedColor: root.cfg_indicatorUnfocusedColor
+                onAccepted: root.cfg_indicatorUnfocusedColor = selectedColor
+            }
+            QQC2.Label {
+                visible: root.customEnabled
+                Layout.fillWidth: true
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 22
+                wrapMode: Text.WordWrap
+                text: i18n("Indicators fit within the task slot and capsule padding. Lines use a shared length; dashes use a length per window. Hover dimensions take precedence over active and grouped dimensions. Icon colors fall back to the Plasma accent.")
+            }
+            Item {
+                visible: root.customEnabled
+                implicitWidth: 200
+                implicitHeight: 100
+                Kirigami.FormData.label: i18n("Preview (hover to test):")
+                Rectangle {
                     anchors.centerIn: parent
-                    text: i18n("6 windows")
-                    color: Kirigami.Theme.textColor
+                    width: 180; height: 70; radius: 12
+                    color: Kirigami.Theme.alternateBackgroundColor
+                }
+                CustomIndicators {
+                    anchors.centerIn: parent
+                    width: 140; height: 40
+                    configuration: root.previewConfiguration
+                    windowCount: 6
+                    activeIndex: 1
+                    horizontalPadding: 12; verticalPadding: 12
+                    minimizedWindows: [true, false, false, false, false, false]
+                    hovered: previewHover.hovered
+                    HoverHandler { id: previewHover }
+                    Text {
+                        anchors.centerIn: parent
+                        text: i18n("6 windows")
+                        color: Kirigami.Theme.textColor
+                    }
                 }
             }
         }

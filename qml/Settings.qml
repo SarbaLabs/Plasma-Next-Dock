@@ -31,10 +31,10 @@ Controls.ApplicationWindow {
         parent: window.contentItem
         onChosen: url => {
             const list = launcherResolver.insert(dockSettings.values.launchers, [url], "");
-            if (dockSettings.saveLaunchers(list)) window.launcherError = "";
+            dockSettings.saveLaunchers(list);
         }
     }
-    property string launcherError: ""
+    property QtObject selectedTasks: null
     function openSettings() {
         login.checked = login.saved = dockSettings.startsAtLogin();
         loginError.visible = false;
@@ -79,13 +79,6 @@ Controls.ApplicationWindow {
         indicators.load(v);
         behavior.load(v);
         visible = true;
-    }
-    function moveLauncher(index, delta) {
-        const list = dockSettings.values.launchers.slice();
-        const target = index + delta;
-        if (target < 0 || target >= list.length) return;
-        const entry = list.splice(index, 1)[0]; list.splice(target, 0, entry);
-        dockSettings.saveLaunchers(list);
     }
     footer: Controls.DialogButtonBox {
         objectName: "settingsButtons"
@@ -171,7 +164,7 @@ Controls.ApplicationWindow {
         {title: i18n("Icons and animations"), icon: "preferences-desktop-icons"},
         {title: i18n("Indicators"), icon: "view-statistics"},
         {title: i18n("Behavior"), icon: "input-mouse"},
-        {title: i18n("Pinned applications"), icon: "view-list-details"}
+        {title: i18n("Applications and sorting"), icon: "view-list-details"}
     ]
     RowLayout {
         anchors.fill: parent
@@ -221,7 +214,7 @@ Controls.ApplicationWindow {
                     ColumnLayout {
                         width: parent.width
                         spacing: Kirigami.Units.largeSpacing
-                        Kirigami.FormLayout {
+                        SettingsForm {
                             Layout.fillWidth: true
                             Controls.ComboBox {
                                 id: screen
@@ -281,7 +274,7 @@ Controls.ApplicationWindow {
                                 Kirigami.FormData.label: i18n("Visibility:")
                                 model: [i18n("Always visible"), i18n("Auto hide"), i18n("Dodge windows"), i18n("Windows go below")]
                             }
-                            Controls.Label { text: i18n("Session"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Session") }
                             Controls.CheckBox {
                                 id: login
                                 objectName: "startAtLoginControl"
@@ -306,7 +299,7 @@ Controls.ApplicationWindow {
                     ColumnLayout {
                         width: parent.width
                         spacing: Kirigami.Units.largeSpacing
-                        Kirigami.FormLayout {
+                        SettingsForm {
                             Layout.fillWidth: true
                             Controls.ComboBox {
                                 id: backgroundType; objectName: "backgroundTypeControl"
@@ -363,7 +356,7 @@ Controls.ApplicationWindow {
                                 from: 1; to: 99; editable: true
                             }
                             Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
-                            Controls.Label { text: i18n("Corners and border"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
                             RowLayout {
                                 id: corners
                                 Kirigami.FormData.label: i18n("Corner radii (px):")
@@ -406,7 +399,7 @@ Controls.ApplicationWindow {
                                     onToggled: corners.sync(topLeft.value)
                                 }
                             }
-                            Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Negative corner radii curve outward along the dock.") }
+                            Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Negative corner radii curve outward along the dock.") }
                             Controls.SpinBox {
                                 id: borderWidth; objectName: "borderWidthControl"; Kirigami.FormData.label: i18n("Border thickness (px):")
                                 from: 0; to: 12; editable: true
@@ -436,7 +429,7 @@ Controls.ApplicationWindow {
                                     from: 0; to: 64
                                 }
                             }
-                            Controls.Label { text: i18n("Hover glow"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Hover glow") }
                             Controls.CheckBox { id: glow; objectName: "glowControl"; text: i18n("Enable hover glow") }
                             Controls.SpinBox {
                                 id: glowRadius; objectName: "glowRadiusControl"; visible: glow.checked
@@ -461,7 +454,7 @@ Controls.ApplicationWindow {
                     ColumnLayout {
                         width: parent.width
                         spacing: Kirigami.Units.largeSpacing
-                        Kirigami.FormLayout {
+                        SettingsForm {
                             Layout.fillWidth: true
                             Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
                             Controls.SpinBox { id: iconSpacing; objectName: "iconSpacingControl"; Kirigami.FormData.label: i18n("Space between icons (px):"); from: 0; to: 64; editable: true }
@@ -500,16 +493,16 @@ Controls.ApplicationWindow {
                                 Kirigami.FormData.label: i18n("Tint saturation (%):")
                                 from: 0; to: 100; editable: true
                             }
-                            Controls.Label { text: i18n("Pointer effects"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Pointer effects") }
                             Controls.CheckBox { id: iconHover; text: i18n("Highlight icons on hover") }
-                            Controls.Label { text: i18n("Icon bounce"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Icon bounce") }
                             Controls.CheckBox { objectName: "bounceEnabledControl"; text: i18n("Enable icon bounce"); checked: behavior.values.bounceEnabled === true; onToggled: behavior.change("bounceEnabled", checked) }
                             Controls.CheckBox { objectName: "bounceOnLaunchControl"; text: i18n("Bounce when launching an application"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnLaunch === true; onToggled: behavior.change("bounceOnLaunch", checked) }
                             Controls.CheckBox { objectName: "bounceOnAttentionControl"; text: i18n("Bounce when an application requests attention"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnAttention === true; onToggled: behavior.change("bounceOnAttention", checked) }
                             Controls.SpinBox { objectName: "bounceHeightControl"; Kirigami.FormData.label: i18n("Bounce height (px, 0 = automatic):"); enabled: behavior.values.bounceEnabled === true; from: 0; to: 64; value: behavior.values.bounceHeight || 0; editable: true; onValueModified: behavior.change("bounceHeight", value) }
                             Controls.SpinBox { objectName: "bounceSpeedControl"; Kirigami.FormData.label: i18n("Bounce speed (%):"); enabled: behavior.values.bounceEnabled === true; from: 50; to: 200; stepSize: 10; value: behavior.values.bounceSpeed || 100; editable: true; onValueModified: behavior.change("bounceSpeed", value) }
                             Controls.SpinBox { objectName: "bounceCountControl"; Kirigami.FormData.label: i18n("Launch and test repetitions:"); enabled: behavior.values.bounceEnabled === true; from: 1; to: 5; value: behavior.values.bounceCount || 3; editable: true; onValueModified: behavior.change("bounceCount", value) }
-                            Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it.") }
+                            Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it.") }
                         }
                     }
                 }
@@ -520,9 +513,9 @@ Controls.ApplicationWindow {
                         width: parent.width
                         spacing: Kirigami.Units.largeSpacing
                         BehaviorSettings { id: behavior; Layout.fillWidth: true }
-                        Kirigami.FormLayout {
+                        SettingsForm {
                             Layout.fillWidth: true
-                            Controls.Label { text: i18n("Previews and media"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Previews and media") }
                             Controls.CheckBox { id: windowPreviews; objectName: "windowPreviewsControl"; text: i18n("Show window previews on hover") }
                             Controls.CheckBox {
                                 id: highlightPreview
@@ -537,47 +530,9 @@ Controls.ApplicationWindow {
                         }
                     }
                 }
-                Controls.ScrollView {
-                    contentWidth: availableWidth
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: Kirigami.Units.largeSpacing
-                        Controls.Label {
-                            Layout.fillWidth: true; Layout.leftMargin: 16; Layout.rightMargin: 16
-                            text: i18n("Pin running applications from the dock's right-click menu. Changes to this list are saved immediately.")
-                            wrapMode: Text.WordWrap
-                        }
-                        Repeater {
-                            model: dockSettings.values.launchers
-                            delegate: RowLayout {
-                                required property int index
-                                required property string modelData
-                                Layout.fillWidth: true; Layout.leftMargin: 16; Layout.rightMargin: 16
-                                Controls.Label { text: modelData; elide: Text.ElideMiddle; Layout.fillWidth: true }
-                                Controls.ToolButton { text: i18n("Up"); enabled: index > 0; onClicked: window.moveLauncher(index, -1) }
-                                Controls.ToolButton { text: i18n("Down"); enabled: index + 1 < dockSettings.values.launchers.length; onClicked: window.moveLauncher(index, 1) }
-                                Controls.ToolButton {
-                                    text: i18n("Remove")
-                                    onClicked: {
-                                        const list = dockSettings.values.launchers.slice(); list.splice(index, 1);
-                                        dockSettings.saveLaunchers(list);
-                                    }
-                                }
-                            }
-                        }
-                        Controls.Button {
-                            Layout.leftMargin: 16
-                            text: i18n("Add an application…")
-                            onClicked: applicationChooser.open()
-                        }
-                        Controls.Label {
-                            Layout.fillWidth: true; Layout.margins: 16
-                            visible: text.length > 0
-                            text: dockSettings.error || window.launcherError
-                            color: Kirigami.Theme.negativeTextColor
-                            wrapMode: Text.WordWrap
-                        }
-                    }
+                ApplicationsSettings {
+                    tasks: window.selectedTasks
+                    onAddRequested: applicationChooser.open()
                 }
             }
         }
