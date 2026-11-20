@@ -743,3 +743,60 @@ msgstr "Saturation de la teinte (%) :"
 
 msgid "Centered"
 msgstr "Centré"
+
+msgid "Selected dock:"
+msgstr "Dock sélectionné :"
+
+msgid "Position and visibility"
+msgstr "Position et visibilité"
+
+msgid "Appearance"
+msgstr "Apparence"
+
+msgid "Icons and animations"
+msgstr "Icônes et animations"
+
+msgid "Outer margins (px):"
+msgstr "Marges extérieures (px) :"
+
+msgid "Screen edge"
+msgstr "Bord de l’écran"
+
+msgid "Session"
+msgstr "Session"
+
+msgid "Corners and border"
+msgstr "Coins et bordure"
+
+msgid "Corner radii (px):"
+msgstr "Rayons des coins (px) :"
+
+msgid "Top left"
+msgstr "Haut gauche"
+
+msgid "Top right"
+msgstr "Haut droit"
+
+msgid "Bottom left"
+msgstr "Bas gauche"
+
+msgid "Bottom right"
+msgstr "Bas droit"
+
+msgid "Inner padding (px):"
+msgstr "Marges intérieures (px) :"
+
+msgid "Along the dock"
+msgstr "Aux extrémités"
+
+msgid "Across the dock"
+msgstr "Dans l’épaisseur"
+
+msgid "Hover glow"
+msgstr "Halo au survol"
+
+msgid "Pointer effects"
+msgstr "Effets au survol"
+
+msgid "Previews and media"
+msgstr "Aperçus et médias"

@@ -365,3 +365,10 @@ share a center line, with independently configurable state thicknesses.
 
 Each dock can display original, grayscale or tinted grayscale task icons.
 The tint uses a fixed color or a system palette role, with adjustable saturation.
+
+## Configuration layout
+
+Six sidebar sections separate placement, appearance, icons and animations,
+indicators, behavior, and pinned applications. The header selects docks by
+number and screen and provides add/remove actions. Corner radii follow their
+physical positions; padding and edge offsets keep their per-dock semantics.

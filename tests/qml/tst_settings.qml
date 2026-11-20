@@ -113,6 +113,10 @@ TestCase {
         compare(findChild(window, "outlineColorControl").enabled, false);
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "topLeftControl").value, 0);
+        const navigation = findChild(window, "settingsNavigation");
+        compare(navigation.count, 6);
+        navigation.currentIndex = 1;
+        tryCompare(findChild(window, "backgroundTypeControl"), "visible", true);
         findChild(window, "backgroundTypeControl").currentIndex = 2;
         verify(!findChild(window, "backgroundOpacityControl").visible);
         verify(findChild(window, "upperColorControl").visible);
