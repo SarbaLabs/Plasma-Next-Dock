@@ -360,3 +360,8 @@ The picker stays open while waiting for the next key.
 
 Dock hide and reveal always use the native slide hint. Custom indicator segments
 share a center line, with independently configurable state thicknesses.
+
+## Icon colors
+
+Each dock can display original, grayscale or tinted grayscale task icons.
+The tint uses a fixed color or a system palette role, with adjustable saturation.

@@ -940,3 +940,11 @@ Checked the settings window on KWin Wayland with a demo profile. The settings
 tree omitted the reveal animation switch and thickness alignment selector, and
 retained the inactive, active, hover and group thickness controls. The settings
 test also feeds both retired keys through profile normalization.
+
+## Icon colors on KWin Wayland
+
+Compared the same Dolphin, Firefox, Konsole and VS Code icons on three
+simultaneous docks: original colors, grayscale and a custom red tint at 100%.
+Shadows and highlights remained distinct. Switched the tinted profile to
+the system highlight at 50% and verified the softer blue tint. The settings
+test exercises Apply and reopen with a custom tint and intermediate saturation.

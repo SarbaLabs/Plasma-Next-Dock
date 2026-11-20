@@ -722,3 +722,24 @@ msgstr "Opacité du halo (%) :"
 
 msgid "Focus Plasma Next Dock"
 msgstr "Donner le focus à Plasma Next Dock"
+
+msgid "Icon colors:"
+msgstr "Couleurs des icônes :"
+
+msgid "Original colors"
+msgstr "Couleurs d’origine"
+
+msgid "Grayscale"
+msgstr "Niveaux de gris"
+
+msgid "Tint grayscale icons"
+msgstr "Teinter les icônes en niveaux de gris"
+
+msgid "Icon tint:"
+msgstr "Teinte des icônes :"
+
+msgid "Tint saturation (%):"
+msgstr "Saturation de la teinte (%) :"
+
+msgid "Centered"
+msgstr "Centré"

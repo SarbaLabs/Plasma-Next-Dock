@@ -161,7 +161,7 @@ its margin; centered docks ignore it.
 Dependencies (the KDE runtime packages are usually already installed):
 
 ```bash
-paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-wayland qt6-svg plasma-pa \
+paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-svg plasma-pa \
     layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
     ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kglobalaccel kwindowsystem gettext
 ```
@@ -370,6 +370,14 @@ interface for older KWin permission checks.
 [Preview architecture and manual checks](docs/window-previews.md) describe the
 headless test limitations. Three-mode indicator customization from our older dock is now available; remaining
 parity work stays tracked explicitly in the roadmap.
+
+## Icon colors
+
+Under **Appearance and launchers**, each dock can use original icon colors
+(the default) or grayscale. Enable **Tint grayscale icons** to select a fixed
+color or a system palette role. Tint saturation ranges from 0% (pure grayscale)
+to 100%. The filter applies to launcher and task artwork, preserving transparency
+and leaving status badges and indicators in their configured colors.
 
 ## Advanced indicators and reveal animation
 
