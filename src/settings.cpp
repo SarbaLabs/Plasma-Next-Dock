@@ -35,6 +35,8 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
+        {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
+        {"iconTintColor", "#3daee9"}, {"iconTintSaturation", 100},
         {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
@@ -125,7 +127,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         number(key, -96, 96, true);
     }
     if (!input.contains("borderRole") && !result["borderUseTheme"].toBool()) result["borderRole"] = "custom";
-    for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor"})
+    for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor", "iconTintColor"})
         if (!QColor::isValidColorName(result[key].toString())) result[key] = defaults()[key];
     for (const auto key : {"borderOpacity", "gradientTopOpacity", "gradientBottomOpacity"}) number(key, 0, 1, false);
     number("backgroundOpacity", 0, 1, false);
@@ -172,6 +174,9 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["glow"] = result["glow"].toBool();
     number("glowRadius", 0, 256, true);
     number("glowIntensity", 0, 200, true);
+    result["grayscaleIcons"] = result["grayscaleIcons"].toBool();
+    result["tintIcons"] = result["tintIcons"].toBool();
+    number("iconTintSaturation", 0, 100, true);
     number("glowOpacity", 0, 100, true);
     if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 3;
     number("visibilityMode", 0, 3, true);

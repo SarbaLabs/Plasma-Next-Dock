@@ -73,6 +73,11 @@ TestCase {
         findChild(window, "glowRadiusControl").value = 116;
         findChild(window, "glowIntensityControl").value = 150;
         findChild(window, "glowOpacityControl").value = 65;
+        findChild(window, "iconColorsControl").currentIndex = 1;
+        findChild(window, "tintIconsControl").checked = true;
+        findChild(window, "iconTintControl").role = "custom";
+        findChild(window, "iconTintControl").fixedColor = "#e83a65";
+        findChild(window, "iconTintSaturationControl").value = 72;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
@@ -85,6 +90,11 @@ TestCase {
         compare(dockSettings.values.indicatorMaxSegments, 7);
         window.close();
         window.openSettings();
+        compare(findChild(window, "iconColorsControl").currentIndex, 1);
+        compare(findChild(window, "tintIconsControl").checked, true);
+        compare(findChild(window, "iconTintControl").role, "custom");
+        compare(findChild(window, "iconTintControl").fixedColor, "#e83a65");
+        compare(findChild(window, "iconTintSaturationControl").value, 72);
         compare(spacing.value, 40);
         compare(findChild(window, "glowRadiusControl").value, 116);
         compare(findChild(window, "glowIntensityControl").value, 150);
@@ -123,7 +133,7 @@ TestCase {
         compare(dockSettings.values.gradientBottomOpacity, 0.75);
         compare(dockSettings.values.bottomLeftRadius, -22);
         window.close();
-        dockSettings.apply({glow: false, glowRadius: 0, glowIntensity: 100, glowOpacity: 30, bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
+        dockSettings.apply({grayscaleIcons: false, tintIcons: false, iconTintRole: "highlight", iconTintColor: "#3daee9", iconTintSaturation: 100, glow: false, glowRadius: 0, glowIntensity: 100, glowOpacity: 30, bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();
     }
 }

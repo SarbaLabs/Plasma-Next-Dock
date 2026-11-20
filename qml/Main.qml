@@ -493,7 +493,7 @@ Item {
                         border.color: Kirigami.Theme.focusColor
                         z: icon.z + 1
                     }
-                    Kirigami.Icon {
+                    Item {
                         id: icon
                         objectName: "icon" + slot.index
                         width: slot.size; height: width
@@ -504,10 +504,21 @@ Item {
                             ? root.edgeSpacing + root.taskPadding + lift + bounce.offset
                             : slot.height - height - root.edgeSpacing - root.taskPadding - lift - bounce.offset
                         rotation: root.vertical ? -90 : 0
-                        source: slot.model.decoration
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
-                        roundToIconSize: false
-                        active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
+                        readonly property bool active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
+                        Kirigami.Icon {
+                            anchors.fill: parent
+                            source: slot.model.decoration
+                            roundToIconSize: false
+                            active: icon.active
+                            layer.enabled: dockOptions.grayscaleIcons === true
+                            layer.smooth: true
+                            layer.effect: ShaderEffect {
+                                property color tint: dockPalette.resolve(dockOptions.iconTintRole, dockOptions.iconTintColor, Kirigami.Theme.highlightColor)
+                                property real strength: dockOptions.tintIcons ? dockOptions.iconTintSaturation / 100 : 0
+                                fragmentShader: "qrc:/shaders/iconcolor.frag.qsb"
+                            }
+                        }
                         PlasmaCore.ToolTipArea {
                             id: taskTip
                             property bool forceWindows: false

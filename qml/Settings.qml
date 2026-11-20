@@ -44,6 +44,10 @@ Controls.ApplicationWindow {
         window.profileError = "";
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
+        iconColors.currentIndex = v.grayscaleIcons ? 1 : 0;
+        tintIcons.checked = v.tintIcons;
+        iconTint.role = v.iconTintRole; iconTint.fixedColor = v.iconTintColor;
+        tintSaturation.value = v.iconTintSaturation;
         spacing.value = v.spacing;
         glow.checked = v.glow;
         glowRadius.value = v.glowRadius; glowIntensity.value = v.glowIntensity; glowOpacity.value = v.glowOpacity;
@@ -91,6 +95,8 @@ Controls.ApplicationWindow {
             }
             window.profileError = "";
             if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: window.draftScreen,
+            grayscaleIcons: iconColors.currentIndex === 1, tintIcons: tintIcons.checked,
+            iconTintRole: iconTint.role, iconTintColor: iconTint.fixedColor.toString(), iconTintSaturation: tintSaturation.value,
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.mode, systemBlur: systemBlur.checked, gradientMidpoint: midpoint.value, glassOpacity: glassOpacity.value / 100, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderRole: outline.role, borderColor: outline.fixedColor.toString(), borderOpacity: borderOpacity.value / 100,
@@ -231,6 +237,28 @@ Controls.ApplicationWindow {
                 }
                 Controls.SpinBox { id: spacing; objectName: "spacingControl"; Kirigami.FormData.label: i18n("Distance from edge (px):"); from: 0; to: 128; editable: true }
                 Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
+                Controls.ComboBox {
+                    id: iconColors; objectName: "iconColorsControl"
+                    Kirigami.FormData.label: i18n("Icon colors:")
+                    model: [i18n("Original colors"), i18n("Grayscale")]
+                }
+                Controls.CheckBox {
+                    id: tintIcons; objectName: "tintIconsControl"
+                    visible: iconColors.currentIndex === 1
+                    text: i18n("Tint grayscale icons")
+                }
+                ColorSetting {
+                    id: iconTint; objectName: "iconTintControl"; paletteSource: dockPalette
+                    visible: tintIcons.visible && tintIcons.checked
+                    defaultColor: Kirigami.Theme.highlightColor
+                    Kirigami.FormData.label: i18n("Icon tint:")
+                }
+                Controls.SpinBox {
+                    id: tintSaturation; objectName: "iconTintSaturationControl"
+                    visible: iconTint.visible
+                    Kirigami.FormData.label: i18n("Tint saturation (%):")
+                    from: 0; to: 100; editable: true
+                }
                 Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
                 Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
                 Controls.SpinBox { id: hoverLift; objectName: "hoverLiftControl"; Kirigami.FormData.label: i18n("Hover lift (px):"); from: 0; to: 64; editable: true }
