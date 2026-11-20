@@ -1,5 +1,36 @@
 # Development status and roadmap
 
+## Next steps after PR #26
+
+1. **Fix the gradient background.** With identical colors and opacities on the
+   desktop and screen-edge sides, the capsule should look the same as a Solid
+   background with that color and opacity. The reported defect is a visible band
+   in the middle. Compare both modes over the same desktop with the same blur
+   setting, including partial opacity and different gradient midpoints.
+2. **Refine the configuration window.**
+   - Fix the introductory text in Indicators so it wraps inside the available
+     width and stays clear of the vertical scrollbar. Check the French text.
+   - Use Appearance as the layout reference across sections. At normal window
+     widths, place the main labels on the left and their related controls on
+     the right. Keep narrow layouts readable.
+   - Rename Pinned applications to **Applications and sorting** (*Applications
+     et tri* in French). Move the sort order control here from Behavior, put
+     **Add an application** at the top, and show pinned apps by icon and name.
+     Support drag-and-drop reordering in manual sort mode. Review the
+     maintainer’s forthcoming layout and interaction details before implementing
+     this page.
+3. **Investigate Debian 13 as the minimum supported platform.** Target KDE
+   Plasma 6.3.6 and Qt 6.8.2 if feasible. Build, install and exercise the dock
+   on that Wayland stack, checking runtime features and private API dependencies.
+   Record the tested versions and any blockers before declaring support.
+4. **Clean up and reorganize the code.** Remove obsolete, unused and redundant
+   code. Group functions and components by responsibility and clarify the file
+   structure and dependencies between modules. Add concise comments above
+   important blocks to explain their purpose and technical choices. Simplify
+   where that improves readability. Preserve existing features and saved
+   configurations, using automated tests and the established desktop regression
+   scenarios to verify each change.
+
 ## 2026-11-13 — Standalone foundation
 
 The maintainer created SarbaLabs/Plasma-Next-Dock and authorized initial development,
