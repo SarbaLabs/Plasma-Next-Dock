@@ -82,10 +82,20 @@ Item {
         forceActiveFocus(Qt.ShortcutFocusReason);
     }
     Keys.onPressed: event => {
-        if (!keyboardActive || event.modifiers !== Qt.NoModifier) return;
+        if (!keyboardActive || contextMenu.visibleMenu) return;
         const selected = keyboardItem;
         const index = selected.index;
         if (index < 0 || repeater.itemAt(index) !== selected) { keyboardItem = null; return; }
+        if ((event.key === Qt.Key_Menu && event.modifiers === Qt.NoModifier)
+            || (event.key === Qt.Key_F10 && event.modifiers === Qt.ShiftModifier)) {
+            event.accepted = true;
+            if (!event.isAutoRepeat) {
+                const icon = selected.iconItem;
+                showContextMenu(index, icon.mapToItem(root, icon.width / 2, icon.height / 2));
+            }
+            return;
+        }
+        if (event.modifiers !== Qt.NoModifier) return;
         const forward = reverseLayout ? -1 : 1;
         switch (event.key) {
         case Qt.Key_Escape: keyboardItem = null; break;
@@ -615,25 +625,25 @@ Item {
                 root.dragIndex = targetIndex;
         }
     }
+    function showContextMenu(row, position) {
+        previewPanel.dismiss();
+        // Include magnified icons so the menu does not cover their inner edge.
+        let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
+        for (let i = 0; i < repeater.count; ++i) {
+            const icon = repeater.itemAt(i).iconItem;
+            const p = icon.mapToItem(root, 0, 0);
+            if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
+            left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
+            right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
+        }
+        const anchor = Interaction.menuAnchor(dockOptions.edge,
+            Qt.rect(left, top, right - left, bottom - top), position, 6);
+        contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
+                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
+    }
     TapHandler {
         acceptedButtons: Qt.RightButton
-        onTapped: eventPoint => {
-            previewPanel.dismiss();
-            const row = dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false);
-            // Include magnified icons so the menu does not cover their inner edge.
-            let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
-            for (let i = 0; i < repeater.count; ++i) {
-                const icon = repeater.itemAt(i).iconItem;
-                const p = icon.mapToItem(root, 0, 0);
-                if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
-                left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
-                right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
-            }
-            const anchor = Interaction.menuAnchor(dockOptions.edge,
-                Qt.rect(left, top, right - left, bottom - top), eventPoint.position, 6);
-            contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
-                               row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
-        }
+        onTapped: eventPoint => root.showContextMenu(dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false), eventPoint.position)
     }
     ExternalDrop {
         id: externalDrop

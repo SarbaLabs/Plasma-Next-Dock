@@ -920,3 +920,6 @@ last task, and Escape dismissed the dock. The QML fixture covers traversal,
 wrapping, Home/End, Escape and Enter without launching user applications.
 Repeating the shortcut selected a second, vertical dock; Down moved its
 outline to Firefox. KWin reported the probe window active again after Escape.
+
+On KWin Wayland, Menu opened the selected Firefox launcher menu. Escape
+returned to that icon, Right moved to Konsole, and Shift+F10 opened its menu.

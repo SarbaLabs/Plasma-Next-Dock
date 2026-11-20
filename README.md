@@ -135,7 +135,8 @@ Settings → Keyboard → Shortcuts.
 
 Use Left/Right on a horizontal dock or Up/Down on a vertical dock. Home and
 End select the first and last icon in visual order. Enter or Space activates
-the selected task or launcher; for a group it activates a member. Escape
+the selected task or launcher; for a group it activates a member. Menu or Shift+F10 opens the selected icon’s
+context menu. Escape closes the menu and returns to that icon. A second Escape
 exits navigation. Outside this mode the dock requests no keyboard focus.
 
 ## Visibility and alignment
