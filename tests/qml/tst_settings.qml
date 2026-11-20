@@ -136,6 +136,25 @@ TestCase {
         compare(dockSettings.values.gradientTopOpacity, 0);
         compare(dockSettings.values.gradientBottomOpacity, 0.75);
         compare(dockSettings.values.bottomLeftRadius, -22);
+        const link = findChild(window, "linkCornersControl");
+        const corners = ["topLeft", "topRight", "bottomLeft", "bottomRight"].map(
+            name => findChild(window, name + "Control"));
+        verify(!link.checked);
+        link.click();
+        for (const corner of corners) compare(corner.value, 0);
+        for (let i = 0; i < corners.length; ++i) {
+            corners[i].edited(-12 - i);
+            for (const corner of corners) compare(corner.value, -12 - i);
+        }
+        buttons.applied();
+        window.openSettings();
+        verify(link.checked);
+        compare(dockSettings.values.topRightRadius, -15);
+        link.click();
+        corners[1].value = 8;
+        corners[1].edited(8);
+        compare(corners[0].value, -15);
+        buttons.applied();
         window.close();
         dockSettings.apply({grayscaleIcons: false, tintIcons: false, iconTintRole: "highlight", iconTintColor: "#3daee9", iconTintSaturation: 100, glow: false, glowRadius: 0, glowIntensity: 100, glowOpacity: 30, bounceHeight: 0, bounceOnLaunch: true, launchers: [], layoutDirection: 0, minimizeActive: false, showWindowPreviews: true, highlightPreviewWindow: true, showAudioIndicator: true, muteOnClick: true, showMediaControls: true, showBadges: true, showProgress: true, blastRadius: 2, hoverLift: 0, backgroundType: 0, backgroundOpacity: 0.35, borderWidth: 1, borderUseTheme: true, borderColor: "#808080", iconSpacing: 10, horizontalPadding: 12, verticalPadding: 10, radius: 10, spacing: 8, indicatorMode: 0, indicatorMaxSegments: 4});
         window.destroy();

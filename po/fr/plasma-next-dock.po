@@ -800,3 +800,18 @@ msgstr "Effets au survol"
 
 msgid "Previews and media"
 msgstr "Aperçus et médias"
+
+msgid "Link corners"
+msgstr "Lier les coins"
+
+msgid "Active"
+msgstr "Actifs"
+
+msgid "Inactive"
+msgstr "Inactifs"
+
+msgid "Thickness (px):"
+msgstr "Épaisseur (px) :"
+
+msgid "Length (px):"
+msgstr "Longueur (px) :"

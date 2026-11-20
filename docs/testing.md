@@ -956,3 +956,9 @@ Appearance, checked the physical order of the four corner controls, added a
 second demo dock, opened its removal confirmation and switched back to Dock 1
 with the toolbar selector. Both entries showed the connector and monitor name.
 The settings fixture exercises navigation and applying drafts across pages.
+
+On KWin Wayland, enabling linked corners and incrementing the bottom-right
+radius changed all four fields from 10 to 11. The settings fixture also checks
+negative edits from every corner, Apply/reopen and independent edits after
+unlinking. Inspected the paired zoom/lift fields and both pairs of dimensions
+in the custom dash indicator layout.

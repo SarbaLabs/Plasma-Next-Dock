@@ -47,7 +47,7 @@ QVariantMap DockSettings::defaults()
         {"layoutDirection", 0}, {"showSeparator", true}, {"revealAttention", false},
         {"showWindowPreviews", true}, {"highlightPreviewWindow", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
         {"showMediaControls", true}, {"showBadges", true}, {"showProgress", true},
-        {"topLeftRadius", 10}, {"topRightRadius", 10}, {"bottomRightRadius", 10}, {"bottomLeftRadius", 10},
+        {"linkCornerRadii", false}, {"topLeftRadius", 10}, {"topRightRadius", 10}, {"bottomRightRadius", 10}, {"bottomLeftRadius", 10},
         {"backgroundRole", "automatic"}, {"backgroundColor", "#303030"}, {"gradientTopRole", "window"}, {"gradientTopColor", "#303030"}, {"gradientBottomRole", "highlight"},
         {"gradientBottomColor", "#3daee9"}, {"gradientTopOpacity", 1.0}, {"gradientBottomOpacity", 1.0},
         {"borderRole", "automatic"}, {"borderOpacity", 1.0}, {"backgroundType", 0}, {"backgroundOpacity", 1.0}, {"glassOpacity", 0.35}, {"systemBlur", false}, {"gradientMidpoint", 50},
@@ -122,6 +122,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["systemBlur"] = result["systemBlur"].toBool();
     number("gradientMidpoint", 1, 99, true);
     number("glassOpacity", 0, 1, false);
+    result["linkCornerRadii"] = result["linkCornerRadii"].toBool();
     for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"}) {
         if (!input.contains(key)) result[key] = result["radius"];
         number(key, -96, 96, true);

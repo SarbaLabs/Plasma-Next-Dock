@@ -163,20 +163,6 @@ QQC2.ScrollView {
             editable: true
         }
         QQC2.SpinBox {
-            id: indicatorThicknessControl
-            visible: root.customEnabled
-            Kirigami.FormData.label: i18n("Inactive thickness (px):")
-            from: 1; to: 24; value: 4
-            editable: true
-        }
-        QQC2.SpinBox {
-            id: indicatorLengthControl
-            visible: root.customEnabled && root.cfg_indicatorStyle !== 0
-            Kirigami.FormData.label: i18n("Inactive length (px):")
-            from: 1; to: 160; value: 12
-            editable: true
-        }
-        QQC2.SpinBox {
             id: indicatorRoundnessControl
             visible: root.customEnabled && root.cfg_indicatorStyle !== 0
             Kirigami.FormData.label: i18n("Corner roundness (%):")
@@ -190,26 +176,41 @@ QQC2.ScrollView {
             from: 0; to: 16; value: 2
             editable: true
         }
-        Kirigami.Separator { visible: root.custom; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("State dimensions") }
         QQC2.CheckBox {
             id: indicatorResizeActiveControl
             visible: root.customEnabled
             text: i18n("Resize on activation")
             checked: true
         }
-        QQC2.SpinBox {
-            id: indicatorActiveThicknessControl
+        Kirigami.Separator { visible: root.customEnabled && root.cfg_indicatorResizeActive; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Active") }
+        RowLayout {
             visible: root.customEnabled && root.cfg_indicatorResizeActive
-            Kirigami.FormData.label: i18n("Active thickness (px):")
-            from: 1; to: 24; value: 5
-            editable: true
+            Measure {
+                id: indicatorActiveThicknessControl
+                caption: i18n("Thickness (px):")
+                from: 1; to: 24; value: 5
+            }
+            Measure {
+                id: indicatorActiveLengthControl
+                visible: root.cfg_indicatorStyle !== 0
+                caption: i18n("Length (px):")
+                from: 1; to: 160; value: 20
+            }
         }
-        QQC2.SpinBox {
-            id: indicatorActiveLengthControl
-            visible: root.customEnabled && root.cfg_indicatorResizeActive && root.cfg_indicatorStyle !== 0
-            Kirigami.FormData.label: i18n("Active length (px):")
-            from: 1; to: 160; value: 20
-            editable: true
+        Kirigami.Separator { visible: root.customEnabled; Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Inactive") }
+        RowLayout {
+            visible: root.customEnabled
+            Measure {
+                id: indicatorThicknessControl
+                caption: i18n("Thickness (px):")
+                from: 1; to: 24; value: 4
+            }
+            Measure {
+                id: indicatorLengthControl
+                visible: root.cfg_indicatorStyle !== 0
+                caption: i18n("Length (px):")
+                from: 1; to: 160; value: 12
+            }
         }
         QQC2.CheckBox {
             id: indicatorResizeHoverControl

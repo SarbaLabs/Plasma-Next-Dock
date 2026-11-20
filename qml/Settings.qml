@@ -65,6 +65,7 @@ Controls.ApplicationWindow {
         upper.role = v.gradientTopRole; upper.fixedColor = v.gradientTopColor;
         lower.role = v.gradientBottomRole; lower.fixedColor = v.gradientBottomColor;
         outline.role = v.borderRole; outline.fixedColor = v.borderColor;
+        linkCorners.checked = v.linkCornerRadii;
         topLeft.value = v.topLeftRadius;
         topRight.value = v.topRightRadius;
         bottomLeft.value = v.bottomLeftRadius;
@@ -109,7 +110,7 @@ Controls.ApplicationWindow {
             highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
+            linkCornerRadii: linkCorners.checked, topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
             glowRadius: glowRadius.value, glowIntensity: glowIntensity.value, glowOpacity: glowOpacity.value,
             dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex}))) return;
             if (login.checked !== login.saved) {
@@ -163,14 +164,6 @@ Controls.ApplicationWindow {
             wrapMode: Text.WordWrap
             color: Kirigami.Theme.negativeTextColor
         }
-    }
-    component Measure: ColumnLayout {
-        property string caption
-        property alias value: field.value
-        property alias from: field.from
-        property alias to: field.to
-        Controls.Label { text: parent.caption }
-        Controls.SpinBox { id: field; editable: true; Accessible.name: parent.caption }
     }
     readonly property var sections: [
         {title: i18n("Position and visibility"), icon: "preferences-desktop-display"},
@@ -371,28 +364,46 @@ Controls.ApplicationWindow {
                             }
                             Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
                             Controls.Label { text: i18n("Corners and border"); font.bold: true; Kirigami.FormData.isSection: true }
-                            GridLayout {
-                                columns: 2
+                            RowLayout {
+                                id: corners
                                 Kirigami.FormData.label: i18n("Corner radii (px):")
-                                Measure {
-                                    id: topLeft; objectName: "topLeftControl"
-                                    caption: i18n("Top left")
-                                    from: -96; to: 96
+                                function sync(value) {
+                                    if (linkCorners.checked)
+                                        for (const corner of [topLeft, topRight, bottomLeft, bottomRight])
+                                            corner.value = value;
                                 }
-                                Measure {
-                                    id: topRight; objectName: "topRightControl"
-                                    caption: i18n("Top right")
-                                    from: -96; to: 96
+                                GridLayout {
+                                    columns: 2
+                                    Measure {
+                                        id: topLeft; objectName: "topLeftControl"
+                                        caption: i18n("Top left")
+                                        from: -96; to: 96
+                                        onEdited: value => corners.sync(value)
+                                    }
+                                    Measure {
+                                        id: topRight; objectName: "topRightControl"
+                                        caption: i18n("Top right")
+                                        from: -96; to: 96
+                                        onEdited: value => corners.sync(value)
+                                    }
+                                    Measure {
+                                        id: bottomLeft; objectName: "bottomLeftControl"
+                                        caption: i18n("Bottom left")
+                                        from: -96; to: 96
+                                        onEdited: value => corners.sync(value)
+                                    }
+                                    Measure {
+                                        id: bottomRight; objectName: "bottomRightControl"
+                                        caption: i18n("Bottom right")
+                                        from: -96; to: 96
+                                        onEdited: value => corners.sync(value)
+                                    }
                                 }
-                                Measure {
-                                    id: bottomLeft; objectName: "bottomLeftControl"
-                                    caption: i18n("Bottom left")
-                                    from: -96; to: 96
-                                }
-                                Measure {
-                                    id: bottomRight; objectName: "bottomRightControl"
-                                    caption: i18n("Bottom right")
-                                    from: -96; to: 96
+                                Controls.CheckBox {
+                                    id: linkCorners; objectName: "linkCornersControl"
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: i18n("Link corners")
+                                    onToggled: corners.sync(topLeft.value)
                                 }
                             }
                             Controls.Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: i18n("Negative corner radii curve outward along the dock.") }
@@ -454,6 +465,19 @@ Controls.ApplicationWindow {
                             Layout.fillWidth: true
                             Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
                             Controls.SpinBox { id: iconSpacing; objectName: "iconSpacingControl"; Kirigami.FormData.label: i18n("Space between icons (px):"); from: 0; to: 64; editable: true }
+                            RowLayout {
+                                Measure {
+                                    id: zoom; objectName: "zoomControl"
+                                    caption: i18n("Magnification (%):")
+                                    from: 100; to: 250; stepSize: 5
+                                }
+                                Measure {
+                                    id: hoverLift; objectName: "hoverLiftControl"
+                                    caption: i18n("Hover lift (px):")
+                                    from: 0; to: 64
+                                }
+                            }
+                            Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
                             Controls.ComboBox {
                                 id: iconColors; objectName: "iconColorsControl"
                                 Kirigami.FormData.label: i18n("Icon colors:")
@@ -478,9 +502,6 @@ Controls.ApplicationWindow {
                             }
                             Controls.Label { text: i18n("Pointer effects"); font.bold: true; Kirigami.FormData.isSection: true }
                             Controls.CheckBox { id: iconHover; text: i18n("Highlight icons on hover") }
-                            Controls.SpinBox { id: zoom; objectName: "zoomControl"; Kirigami.FormData.label: i18n("Magnification (%):"); from: 100; to: 250; stepSize: 5; editable: true }
-                            Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
-                            Controls.SpinBox { id: hoverLift; objectName: "hoverLiftControl"; Kirigami.FormData.label: i18n("Hover lift (px):"); from: 0; to: 64; editable: true }
                             Controls.Label { text: i18n("Icon bounce"); font.bold: true; Kirigami.FormData.isSection: true }
                             Controls.CheckBox { objectName: "bounceEnabledControl"; text: i18n("Enable icon bounce"); checked: behavior.values.bounceEnabled === true; onToggled: behavior.change("bounceEnabled", checked) }
                             Controls.CheckBox { objectName: "bounceOnLaunchControl"; text: i18n("Bounce when launching an application"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnLaunch === true; onToggled: behavior.change("bounceOnLaunch", checked) }
