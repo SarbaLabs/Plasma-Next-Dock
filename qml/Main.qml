@@ -65,7 +65,10 @@ Item {
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
     property Item keyboardItem: null
     readonly property bool keyboardActive: keyboardItem !== null
-    onKeyboardActiveChanged: refreshHover()
+    onKeyboardActiveChanged: {
+        if (!keyboardActive && previewPanel.keyboardOwner) previewPanel.dismiss();
+        refreshHover();
+    }
     function selectKeyboardRow(row) {
         keyboardItem = repeater.itemAt(row);
         if (!keyboardItem) return;
@@ -86,6 +89,14 @@ Item {
         const selected = keyboardItem;
         const index = selected.index;
         if (index < 0 || repeater.itemAt(index) !== selected) { keyboardItem = null; return; }
+        if (previewPanel.keyboardOwner && event.modifiers === Qt.NoModifier) {
+            if (event.key === Qt.Key_Escape) previewPanel.dismiss();
+            else if ([Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space].includes(event.key)) {
+                if (!event.isAutoRepeat && previewPanel.activateKeyboardWindow()) keyboardItem = null;
+            } else if (!previewPanel.moveKeyboardSelection(event.key)) return;
+            event.accepted = true;
+            return;
+        }
         if ((event.key === Qt.Key_Menu && event.modifiers === Qt.NoModifier)
             || (event.key === Qt.Key_F10 && event.modifiers === Qt.ShiftModifier)) {
             event.accepted = true;
@@ -102,9 +113,9 @@ Item {
         case Qt.Key_Home: selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0); break;
         case Qt.Key_End: selectKeyboardRow(reverseLayout ? 0 : repeater.count - 1); break;
         case Qt.Key_Return: case Qt.Key_Enter: case Qt.Key_Space:
-            keyboardItem = null;
-            if (selected.model.IsGroupParent) taskSource.item.activateGroupFromKeyboard(index);
-            else taskSource.item.activate(index);
+            if (event.isAutoRepeat) break;
+            if (selected.model.IsGroupParent) previewPanel.showForKeyboard(selected.previewOwner);
+            else { keyboardItem = null; taskSource.item.activate(index); }
             break;
         default: {
             const next = vertical ? Qt.Key_Down : Qt.Key_Right;
@@ -516,7 +527,7 @@ Item {
                             textFormat: Text.PlainText
                             mainItem: previewPanel
                             interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
-                            active: !root.dragging && !contextMenu.visibleMenu
+                            active: !root.dragging && !contextMenu.visibleMenu && (!previewPanel.keyboardOwner || previewPanel.keyboardOwner === taskTip)
                             onAboutToShow: {
                                 previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
                                 forceWindows = false;

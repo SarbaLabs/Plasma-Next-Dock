@@ -923,3 +923,8 @@ outline to Firefox. KWin reported the probe window active again after Escape.
 
 On KWin Wayland, Menu opened the selected Firefox launcher menu. Escape
 returned to that icon, Right moved to Konsole, and Shift+F10 opened its menu.
+
+Four disposable windows formed a group on a horizontal dock under KWin. Enter
+opened its previews. End scrolled the fourth card into view, and Enter activated
+its window. Escape returned to the group; after reopening, Right and Enter
+activated the second window, verified via KWin’s active window.

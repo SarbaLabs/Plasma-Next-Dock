@@ -353,4 +353,4 @@ existing profiles and offers the same 1–256 px manual range.
 
 The global focus shortcut, visual-order traversal, activation and Escape are
 implemented. Menu and Shift+F10 open the selected task’s context menu.
-Choosing a particular group member remains follow-up work.
+Enter on a group opens its previews for keyboard selection, including off-screen cards.

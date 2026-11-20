@@ -11,6 +11,32 @@ Item {
     // Plasma's tooltip sets this to its current owner before displaying us.
     property PlasmaCore.ToolTipArea toolTip: null
     property PlasmaCore.ToolTipArea dragOwner: null
+    property PlasmaCore.ToolTipArea keyboardOwner: null
+    function showForKeyboard(owner) {
+        owner.showGroupWindows();
+        keyboardOwner = owner;
+        list.currentIndex = 0;
+        list.positionViewAtBeginning();
+    }
+    function moveKeyboardSelection(key) {
+        if (!visibleWindows) return false;
+        const forward = vertical ? Qt.Key_Down : Qt.Key_Right;
+        const back = vertical ? Qt.Key_Up : Qt.Key_Left;
+        const direction = !vertical && list.effectiveLayoutDirection === Qt.RightToLeft ? -1 : 1;
+        if (key === Qt.Key_Home) list.currentIndex = direction > 0 ? 0 : visibleWindows - 1;
+        else if (key === Qt.Key_End) list.currentIndex = direction > 0 ? visibleWindows - 1 : 0;
+        else if (key === forward || key === back)
+            list.currentIndex = (list.currentIndex + (key === forward ? direction : -direction) + visibleWindows) % visibleWindows;
+        else return false;
+        list.positionViewAtIndex(list.currentIndex, ListView.Contain);
+        return true;
+    }
+    function activateKeyboardWindow() {
+        if (!displayed || toolTip !== keyboardOwner || !list.currentItem || list.currentIndex < 0) return false;
+        windowPreviews.activate(list.currentIndex);
+        dismiss();
+        return true;
+    }
     function showForDrag(owner) {
         handover.stop();
         dragOwner = owner;
@@ -36,9 +62,10 @@ Item {
     readonly property bool mediaAvailable: dockOptions.showMediaControls !== false
         && !!(status?.player?.canControl || status?.streams?.length)
     property Item hoveredCard: null
+    readonly property Item highlightedCard: keyboardOwner ? list.currentItem : hoveredCard
     readonly property string highlightId: displayed && windowsEnabled && !dragOwner && !dockOptions.demo
-        && dockOptions.highlightPreviewWindow !== false && hoveredCard?.onScreen
-        ? hoveredCard.windowId : ""
+        && dockOptions.highlightPreviewWindow !== false && highlightedCard?.onScreen
+        ? highlightedCard.windowId : ""
     onHighlightIdChanged: windowPreviews.highlight(highlightId)
     property bool windowsEnabled: true
     readonly property int visibleWindows: windowsEnabled ? windowPreviews.count : 0
@@ -46,18 +73,20 @@ Item {
     readonly property bool displayed: Window.window !== null && Window.window !== dockWindow && Window.window.visible
     // A shared Plasma tooltip briefly detaches this item while changing owners.
     // Release the model only after that synchronous reparenting has finished.
-    onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) { panel.dragOwner = null; windowPreviews.clear(); } })
+    onDisplayedChanged: if (!displayed) Qt.callLater(() => { if (!panel.displayed) { panel.keyboardOwner = null; panel.dragOwner = null; windowPreviews.clear(); } })
     visible: false
     implicitWidth: visibleWindows ? Math.min(outputSize.width - 32, vertical ? 240 : Math.min(visibleWindows, 3) * 240) : Math.min(outputSize.width - 32, Math.max(mediaAvailable ? 260 : 80, heading.implicitWidth + 24))
     implicitHeight: Math.min(outputSize.height - 32, (visibleWindows ? 32 + (vertical ? Math.min(visibleWindows, 3) : 1) * 180 : 36) + (media.item && media.item.visible ? media.item.implicitHeight + 12 : 0))
     width: Math.max(32, implicitWidth)
     height: Math.max(32, implicitHeight)
     function dismiss() {
+        keyboardOwner = null;
         const owner = toolTip;
         if (owner && typeof owner.hideImmediately === "function") owner.hideImmediately();
     }
     Connections {
         target: windowPreviews
+        function onModelAboutToBeReset() { if (panel.keyboardOwner) panel.dismiss(); }
         function onTargetGone() { if (panel.displayed) panel.dismiss(); }
     }
     Controls.Label {
@@ -106,6 +135,12 @@ Item {
                 radius: 5
                 color: card.active || cardDrag.candidate === card ? Kirigami.Theme.highlightColor : "transparent"
                 opacity: 0.18
+            }
+            Rectangle {
+                anchors.fill: parent; anchors.margins: 3
+                visible: !!panel.keyboardOwner && card.ListView.isCurrentItem
+                color: "transparent"; radius: 5
+                border.width: 2; border.color: Kirigami.Theme.focusColor
             }
             Controls.ToolButton {
                 id: activate
