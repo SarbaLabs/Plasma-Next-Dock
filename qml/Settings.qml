@@ -274,7 +274,7 @@ Controls.ApplicationWindow {
                                 Kirigami.FormData.label: i18n("Visibility:")
                                 model: [i18n("Always visible"), i18n("Auto hide"), i18n("Dodge windows"), i18n("Windows go below")]
                             }
-                            Controls.Label { text: i18n("Session"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Session") }
                             Controls.CheckBox {
                                 id: login
                                 objectName: "startAtLoginControl"
@@ -356,7 +356,7 @@ Controls.ApplicationWindow {
                                 from: 1; to: 99; editable: true
                             }
                             Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
-                            Controls.Label { text: i18n("Corners and border"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
                             RowLayout {
                                 id: corners
                                 Kirigami.FormData.label: i18n("Corner radii (px):")
@@ -429,7 +429,7 @@ Controls.ApplicationWindow {
                                     from: 0; to: 64
                                 }
                             }
-                            Controls.Label { text: i18n("Hover glow"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Hover glow") }
                             Controls.CheckBox { id: glow; objectName: "glowControl"; text: i18n("Enable hover glow") }
                             Controls.SpinBox {
                                 id: glowRadius; objectName: "glowRadiusControl"; visible: glow.checked
@@ -493,9 +493,9 @@ Controls.ApplicationWindow {
                                 Kirigami.FormData.label: i18n("Tint saturation (%):")
                                 from: 0; to: 100; editable: true
                             }
-                            Controls.Label { text: i18n("Pointer effects"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Pointer effects") }
                             Controls.CheckBox { id: iconHover; text: i18n("Highlight icons on hover") }
-                            Controls.Label { text: i18n("Icon bounce"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Icon bounce") }
                             Controls.CheckBox { objectName: "bounceEnabledControl"; text: i18n("Enable icon bounce"); checked: behavior.values.bounceEnabled === true; onToggled: behavior.change("bounceEnabled", checked) }
                             Controls.CheckBox { objectName: "bounceOnLaunchControl"; text: i18n("Bounce when launching an application"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnLaunch === true; onToggled: behavior.change("bounceOnLaunch", checked) }
                             Controls.CheckBox { objectName: "bounceOnAttentionControl"; text: i18n("Bounce when an application requests attention"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnAttention === true; onToggled: behavior.change("bounceOnAttention", checked) }
@@ -515,7 +515,7 @@ Controls.ApplicationWindow {
                         BehaviorSettings { id: behavior; Layout.fillWidth: true }
                         SettingsForm {
                             Layout.fillWidth: true
-                            Controls.Label { text: i18n("Previews and media"); font.bold: true; Kirigami.FormData.isSection: true }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Previews and media") }
                             Controls.CheckBox { id: windowPreviews; objectName: "windowPreviewsControl"; text: i18n("Show window previews on hover") }
                             Controls.CheckBox {
                                 id: highlightPreview

@@ -991,3 +991,6 @@ modes and removed an app from the Activity view. The saved manual order of
 the remaining pins survived. At a 630 px window width the French Indicators
 introduction wrapped to three lines inside the content area. At the default
 width the screen label and selector occupied the same row.
+
+Verified on KDE Wayland that the French window grouping and mouse actions
+subheadings are centered above full-width section rules in the Behavior form.
