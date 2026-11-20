@@ -980,3 +980,14 @@ to #cc4422 produced a visible blue-to-red gradient. The old build also matched
 for this temporary profile; the maintainer's original band was not reproduced.
 The QML test compares complete rendered capsules at 0%, 40% and 100% opacity
 and three midpoints, independently of the saved Solid opacity.
+
+## Applications and sorting
+
+On KWin Wayland with an isolated profile, dragged Firefox behind Dolphin with
+the row handle, selected alphabetical sorting and saw Dolphin, Firefox and
+Konsole in that order both in settings and on the dock. Switching back to
+manual restored Konsole, Dolphin, Firefox. Checked the other three automatic
+modes and removed an app from the Activity view. The saved manual order of
+the remaining pins survived. At a 630 px window width the French Indicators
+introduction wrapped to three lines inside the content area. At the default
+width the screen label and selector occupied the same row.

@@ -20,6 +20,14 @@ QVariantList LauncherResolver::applications() const
                               {"url", "applications:" + s->storageId()}};
     return result;
 }
+QVariantMap LauncherResolver::describe(const QUrl &url) const
+{
+    const auto service = url.isLocalFile() ? KService::serviceByDesktopPath(url.toLocalFile())
+                                           : KService::serviceByStorageId(url.path());
+    return {{"url", url.toString(QUrl::FullyEncoded)},
+            {"name", service ? service->name() : QFileInfo(url.path()).completeBaseName()},
+            {"icon", service ? service->icon() : QStringLiteral("application-x-executable")}};
+}
 static QString resolveLauncher(const QUrl &url, const KService::List &services)
 {
     if (!url.isValid() || url.hasQuery() || url.hasFragment()) return {};

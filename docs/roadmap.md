@@ -417,3 +417,12 @@ icons and scrolls.
 Matching resolved endpoint colors and opacities now use the Solid fill path.
 A fully transparent gradient suppresses hover glow like a fully transparent
 Solid background. Desktop comparison and regression coverage are in docs/testing.md.
+
+## Applications and sorting
+
+The settings sidebar now includes Applications and sorting. Sort changes and pin
+edits take effect immediately for the selected dock. Manual sorting provides a
+drag handle and move buttons. Automatic sorting follows the native task model
+and preserves the stored manual order. The desktop settings forms use side-by-side
+labels and fields and collapse on narrow windows. The Indicators introduction
+wraps above its form with space reserved for the scrollbar.

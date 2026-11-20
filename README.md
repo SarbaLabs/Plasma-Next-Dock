@@ -70,7 +70,7 @@ edge gives the first dock priority until their positions separate.
 
 ## Adding applications and external drops
 
-Configure → Pinned applications → Add an application opens a searchable list
+Configure → Applications and sorting → Add an application opens a searchable list
 of installed applications. Names and icons come from KDE's application catalog.
 Launcher changes are immediate; duplicates are not added.
 
@@ -256,11 +256,10 @@ dock is already running, use its menu instead of starting a second process).
   pointer threshold, suppresses activation and saves pinned order when released.
   KDE keeps pinned and unpinned tasks in their respective groups; only pinned
   application order persists after restart.
-- **Pinned applications** lists saved launchers in order. Use **Up**, **Down** or
-  **Remove**; these actions save immediately. You can add an installed application's
-  desktop entry ID (for example `org.kde.dolphin.desktop`) without opening it first.
-  This initial UI is not a searchable application catalog; unavailable desktop
-  entries may not produce a task until their application is installed.
+- **Applications and sorting** shows pinned apps by name and icon. The sort selector
+  applies immediately to the selected dock. Drag a handle or use the up/down
+  buttons in manual mode. Automatic modes use the task model's visual order;
+  returning to manual restores the saved pin order. Add and remove work in every mode.
 - The dock stays visible while its menu or configuration window is open.
 
 Settings live in `$XDG_CONFIG_HOME/plasma-next-dock.ini`, normally
