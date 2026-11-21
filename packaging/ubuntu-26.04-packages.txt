@@ -1,0 +1,2 @@
+qt6-base-dev-tools
+kf6-breeze-icon-theme
