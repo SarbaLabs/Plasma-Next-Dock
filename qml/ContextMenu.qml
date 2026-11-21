@@ -59,11 +59,10 @@ Item {
     function get(role) { return menuTarget.data(role); }
     function kde(context, text) {
         const translated = i18ndc(domain, context, text);
-        // Plasma 6.3 stored these headings without a translation context.
-        // Prefer the current catalog entry; retain compatibility with older KDE.
-        if (context === "@title:group for section of menu items" && translated === text)
-            return i18nd(domain, text);
-        return translated;
+        if (translated !== text) return translated;
+        // Plasma 6.3 used a separate group-close context and stored most
+        // other window actions directly under their source text.
+        return text === "&Close All" ? i18ndc(domain, "@item:inmenu", text) : i18nd(domain, text);
     }
     function request(method, argument) {
         if (!menuTarget.valid || !source || !source.tasks) return;

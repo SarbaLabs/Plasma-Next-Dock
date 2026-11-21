@@ -156,7 +156,16 @@ the other end of the screen during magnification. The alignment margin offsets
 that end along the edge, for example below a top panel. Each dock remembers
 its margin; centered docks ignore it.
 
-## Build and install on CachyOS / Arch
+## Build and install
+
+On **Debian 13 with Plasma Wayland**, run `./install.sh` as your desktop user.
+The script detects Debian 13 and uses APT for missing packages from
+[the dependency list](packaging/debian-13-packages.txt). Only that step requires
+administrator privileges. The source, CMake build and user installation are shared
+across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
+to limit peak memory use.
+
+### CachyOS / Arch dependencies
 
 Dependencies (the KDE runtime packages are usually already installed):
 
@@ -169,6 +178,8 @@ paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-shadertools qt6-w
 Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
 native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
 
+### Install or update from source
+
 To install the current main branch:
 
 ```bash
@@ -180,7 +191,7 @@ cd Plasma-Next-Dock
 ```
 
 The script builds, runs the available tests, and installs the executable and its
-own application launcher and translation catalog under **`~/.local`**. It requires no `sudo`, creates no
+own application launcher and translation catalog under **`~/.local`**. The dock installation creates no
 autostart entry and does not restart Plasma Shell. Change the destination only
 when needed with `PLASMA_NEXT_DOCK_PREFIX=/your/prefix ./install.sh`.
 

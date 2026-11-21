@@ -25,7 +25,7 @@ function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpa
     const crossScale = Math.min(1, (crossAvailable - gap) / (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4));
     const minimumScale = Math.min(1, 24 / preferred, crossScale);
     const scale = Math.min(crossScale, Math.max(minimumScale, Math.min(1, available / natural)));
-    return { scale: scale, base: preferred * scale,
+    return { scale: scale, base: preferred * scale, restingLength: resting * scale,
         length: Math.min(available, natural * scale),
         depth: (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4) * scale + gap,
         gap: gap };

@@ -994,3 +994,29 @@ width the screen label and selector occupied the same row.
 
 Verified on KDE Wayland that the French window grouping and mouse actions
 subheadings are centered above full-width section rules in the Behavior form.
+
+## Debian 13.7 Plasma Wayland
+
+On amd64 with Plasma and KWin 6.3.6 and Qt 6.8.2, the installer resolved missing
+APT packages, built the shared sources, passed all 15 CTest entries and installed
+the dock and desktop launcher under the desktop user's prefix. A second install
+exercised the update path. The settings smoke test selects the KDE desktop
+controls style to cover the removal dialog sizing on Qt 6.8.
+
+On the active Virtio Wayland output, captures from the installed executable showed
+the Dolphin launcher, a running task and the French configuration window with the
+virtual monitor name. A protocol trace confirmed bindings to layer shell v5,
+screen edge manager v1 and Plasma window management v17. Plasma Shell owned the
+Unity and JobViewServer bus names during the test. Badge and progress delivery
+still need interactive verification alongside previews, edge recall and minimize
+animations. KWin reported its blur effect unloaded with this virtual GPU; check
+blur and GPU-dependent rendering after switching the VM to the iGPU.
+
+The maintainer confirmed blur on both Virtio and the Intel iGPU. On Debian
+Virtio, stationary-pointer desktop captures reproduced a stale capsule outline
+when the icon size changed from 52 to 28 to 64 px. Deriving its length from
+the slot metrics before Row polish restored both rounded ends in all three
+captures. Opening and closing an unpinned window was also checked. The initial
+intermittent failure on close did not reproduce in the baseline run.
+French menu tests check Close, Close All and More against the installed KDE
+catalogs on both distributions.

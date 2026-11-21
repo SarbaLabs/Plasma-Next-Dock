@@ -195,7 +195,10 @@ Item {
     readonly property int reservedThickness: Math.ceil(edgeSpacing + barThickness + (dockOptions.borderWidth ?? 1))
     readonly property real alignmentFactor: (dockOptions.dockAlignment ?? 1) / 2
     readonly property real barStart: endClearance + (length - barLength) * alignmentFactor
-    readonly property real barLength: Math.min(length, Math.max(1, taskRow.width + 2 * endPadding))
+    // Row updates its implicit width during polish. Size the painted path from
+    // the same slot metrics before polish so an idle frame has the final shape.
+    readonly property real occupiedLength: layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
+    readonly property real barLength: Math.min(length, Math.max(1, occupiedLength))
 
     function updatePointer(position) {
         const coordinate = vertical ? position.y : position.x;
@@ -358,7 +361,7 @@ Item {
         y: (root.height - height) / 2 + (!root.vertical ? (dockOptions.edge === 1 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
         rotation: root.vertical ? 90 : 0
         clip: true
-        contentWidth: Math.max(width, taskRow.width + 2 * root.endPadding)
+        contentWidth: Math.max(width, root.occupiedLength)
         contentHeight: height
         boundsBehavior: Flickable.StopAtBounds
         // Left-button gestures belong to reorder, not competing flick grabs.
