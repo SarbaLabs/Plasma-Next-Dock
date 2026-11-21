@@ -17,12 +17,17 @@ Controls.ApplicationWindow {
     readonly property var screenNames: outputNames.indexOf(draftScreen) < 0 ? outputNames.concat([draftScreen]) : outputNames
     Controls.Dialog {
         id: confirmRemoval
+        implicitWidth: Math.min(window.contentItem.width, Math.max(implicitFooterWidth, removalMessage.implicitWidth + leftPadding + rightPadding))
         parent: window.contentItem
         anchors.centerIn: parent
         modal: true
         title: i18n("Remove %1?", window.profiles ? window.profiles.labels[window.profiles.selectedIndex] || "" : "")
         standardButtons: Controls.Dialog.Ok | Controls.Dialog.Cancel
-        Controls.Label { text: i18n("Its settings and pinned applications will be removed.") }
+        contentItem: Controls.Label {
+            id: removalMessage
+            text: i18n("Its settings and pinned applications will be removed.")
+            wrapMode: Text.WordWrap
+        }
         onAccepted: if (!window.profiles.removeSelected()) window.profileError = i18n("Could not remove the dock.")
     }
     DockPalette { id: dockPalette }

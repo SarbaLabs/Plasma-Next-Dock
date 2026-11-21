@@ -2,10 +2,29 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+# Resolve Debian 13 package names before CMake probes the installed Qt/KDE APIs.
+if [[ -r /etc/os-release ]]; then
+    . /etc/os-release
+    if [[ "${ID:-}" == debian && "${VERSION_ID:-}" == 13 ]]; then
+        mapfile -t packages < packaging/debian-13-packages.txt
+        missing=()
+        for package in "${packages[@]}"; do
+            if [[ "$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null || true)" != installed ]]; then
+                missing+=("$package")
+            fi
+        done
+        if (( ${#missing[@]} )); then
+            elevate=()
+            if (( EUID != 0 )); then elevate=(sudo); fi
+            "${elevate[@]}" apt-get update
+            "${elevate[@]}" apt-get install -y --no-remove --no-install-recommends "${missing[@]}"
+        fi
+    fi
+fi
 # This project never installs into plasmashell's plasmoid/plugin directories.
 prefix="${PLASMA_NEXT_DOCK_PREFIX:-$HOME/.local}"
 cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="$prefix" -DBUILD_TESTING=ON
-cmake --build build --parallel "$(nproc)"
+cmake --build build --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-$(nproc)}"
 ctest --test-dir build --output-on-failure
 cmake --install build
 printf '\nInstalled Plasma Next Dock to %s\n' "$prefix"

@@ -22,7 +22,9 @@
 3. **Investigate Debian 13 as the minimum supported platform.** Target KDE
    Plasma 6.3.6 and Qt 6.8.2 if feasible. Build, install and exercise the dock
    on that Wayland stack, checking runtime features and private API dependencies.
-   Record the tested versions and any blockers before declaring support.
+   Debian 13.7 now passes compilation, installation, CTest and a live KWin
+   startup with the settings window. Hardware-accelerated effects and desktop
+   interactions remain to be checked; see [Debian results](testing.md#debian-137-plasma-wayland).
 4. **Clean up and reorganize the code.** Remove obsolete, unused and redundant
    code. Group functions and components by responsibility and clarify the file
    structure and dependencies between modules. Add concise comments above
