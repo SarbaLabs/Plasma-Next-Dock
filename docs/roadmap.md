@@ -435,3 +435,9 @@ Appearance and Icons and animations each have a per-dock drop shadow with a
 palette or fixed color, strength, size and screen-relative X/Y offsets.
 Debian 13 installs the Qt Quick Effects runtime through the shared installer.
 See the [Debian visual checks](testing.md#drop-shadows-on-debian-137).
+
+## Kubuntu 26.04 LTS
+
+The shared installer now resolves the Kubuntu 26.04 and Debian 13 package sets.
+Kubuntu 26.04.1 passed compilation, installation and live Plasma Wayland checks.
+See the [tested versions and results](testing.md#kubuntu-26041-lts-plasma-wayland).
