@@ -6,6 +6,7 @@ Item {
     id: root
     visible: false
     SystemPalette { id: system; colorGroup: SystemPalette.Active }
+    readonly property color shadowColor: system.shadow
     readonly property var keys: ["custom", "automatic", "window", "windowText", "base", "alternateBase",
         "text", "highlight", "highlightedText", "button", "buttonText", "link", "disabled", "positive", "neutral", "negative"]
     readonly property var labels: [i18n("Fixed color"), i18n("Theme default"), i18n("Window background"), i18n("Window text"),

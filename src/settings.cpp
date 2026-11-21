@@ -35,6 +35,8 @@ bool DockSettings::setStartAtLogin(bool enabled)
 QVariantMap DockSettings::defaults()
 {
     return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
+        {"dockShadowRole", "custom"}, {"dockShadowColor", "#000000"}, {"dockShadowX", 0}, {"dockShadowY", 2}, {"dockShadowStrength", 0}, {"dockShadowSize", 12},
+        {"iconShadowRole", "custom"}, {"iconShadowColor", "#000000"}, {"iconShadowX", 0}, {"iconShadowY", 2}, {"iconShadowStrength", 0}, {"iconShadowSize", 6},
         {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
         {"iconTintColor", "#3daee9"}, {"iconTintSaturation", 100},
         {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}},
@@ -128,7 +130,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         number(key, -96, 96, true);
     }
     if (!input.contains("borderRole") && !result["borderUseTheme"].toBool()) result["borderRole"] = "custom";
-    for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor", "iconTintColor"})
+    for (const auto key : {"backgroundColor", "gradientTopColor", "gradientBottomColor", "iconTintColor", "dockShadowColor", "iconShadowColor"})
         if (!QColor::isValidColorName(result[key].toString())) result[key] = defaults()[key];
     for (const auto key : {"borderOpacity", "gradientTopOpacity", "gradientBottomOpacity"}) number(key, 0, 1, false);
     number("backgroundOpacity", 0, 1, false);
@@ -173,6 +175,9 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
         result[key] = result[key].toBool();
     result["screen"] = result["screen"].toString();
     result["glow"] = result["glow"].toBool();
+    for (const auto key : {"dockShadowStrength", "iconShadowStrength"}) number(key, 0, 100, true);
+    for (const auto key : {"dockShadowX", "dockShadowY", "iconShadowX", "iconShadowY"}) number(key, -32, 32, true);
+    for (const auto key : {"dockShadowSize", "iconShadowSize"}) number(key, 0, 32, true);
     number("glowRadius", 0, 256, true);
     number("glowIntensity", 0, 200, true);
     result["grayscaleIcons"] = result["grayscaleIcons"].toBool();

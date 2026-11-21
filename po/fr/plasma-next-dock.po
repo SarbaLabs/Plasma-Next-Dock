@@ -827,3 +827,18 @@ msgstr "Glisser pour réorganiser"
 
 msgid "Window grouping"
 msgstr "Regroupement des fenêtres"
+
+msgid "Drop shadow"
+msgstr "Ombre portée"
+
+msgid "Color:"
+msgstr "Couleur :"
+
+msgid "Strength (%):"
+msgstr "Force (%) :"
+
+msgid "Size (px):"
+msgstr "Taille (px) :"
+
+msgid "Offset (px):"
+msgstr "Décalage (px) :"

@@ -86,7 +86,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
             if (!m_view.isActive() && keyboardActive()) endKeyboard();
         });
         connect(m_view.rootObject(), SIGNAL(reservedThicknessChanged()), this, SLOT(position()));
-        connect(m_view.rootObject(), SIGNAL(effectiveAlignmentMarginChanged()), this, SLOT(position()));
+        connect(m_view.rootObject(), SIGNAL(surfaceMarginChanged()), this, SLOT(position()));
     }
     position();
     if (!m_failed) m_view.show();
@@ -134,7 +134,7 @@ void DockHost::position()
 {
     const auto alignment = static_cast<DockGeometry::Alignment>(m_settings->values()["dockAlignment"].toInt());
     const QRect output = m_screen->geometry();
-    const int margin = m_view.rootObject() ? m_view.rootObject()->property("effectiveAlignmentMargin").toInt() : 0;
+    const int margin = m_view.rootObject() ? m_view.rootObject()->property("surfaceMargin").toInt() : 0;
     const auto margins = DockGeometry::alignmentMargins(output.size(), m_view.size(), m_edge, alignment, margin);
     const QRect rect = DockGeometry::surface(output.marginsRemoved(margins), m_view.size(), m_edge, alignment);
     m_controller.setSurfaceOrigin(rect.topLeft());

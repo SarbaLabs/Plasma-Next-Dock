@@ -29,7 +29,7 @@ public:
     void setEdgeAvailable(bool available);
     void setVisibility(DockGeometry::Visibility mode);
     void setSurfaceOrigin(QPoint origin);
-    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {});
+    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {}, QRectF interactionBounds = {});
     Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void evaluate();
