@@ -23,8 +23,8 @@
    Plasma 6.3.6 and Qt 6.8.2 if feasible. Build, install and exercise the dock
    on that Wayland stack, checking runtime features and private API dependencies.
    Debian 13.7 now passes compilation, installation, CTest and a live KWin
-   startup with the settings window. Hardware-accelerated effects and desktop
-   interactions remain to be checked; see [Debian results](testing.md#debian-137-plasma-wayland).
+   startup with the settings window. The maintainer confirmed blur on Virtio and the Intel iGPU. Remaining
+   desktop interaction checks are tracked separately; see [Debian results](testing.md#debian-137-plasma-wayland).
 4. **Clean up and reorganize the code.** Remove obsolete, unused and redundant
    code. Group functions and components by responsibility and clarify the file
    structure and dependencies between modules. Add concise comments above

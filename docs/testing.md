@@ -1011,3 +1011,12 @@ Unity and JobViewServer bus names during the test. Badge and progress delivery
 still need interactive verification alongside previews, edge recall and minimize
 animations. KWin reported its blur effect unloaded with this virtual GPU; check
 blur and GPU-dependent rendering after switching the VM to the iGPU.
+
+The maintainer confirmed blur on both Virtio and the Intel iGPU. On Debian
+Virtio, stationary-pointer desktop captures reproduced a stale capsule outline
+when the icon size changed from 52 to 28 to 64 px. Deriving its length from
+the slot metrics before Row polish restored both rounded ends in all three
+captures. Opening and closing an unpinned window was also checked. The initial
+intermittent failure on close did not reproduce in the baseline run.
+French menu tests check Close, Close All and More against the installed KDE
+catalogs on both distributions.

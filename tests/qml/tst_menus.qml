@@ -94,6 +94,9 @@ TestCase {
         testEnvironment.language("fr");
         verify(loader.item.kde("@title:group for section of menu items", "Recent Files") !== "Recent Files");
         verify(loader.item.kde("@title:group for section of menu items", "Actions").length > 0);
+        compare(loader.item.kde("@action:inmenu", "&Close").replace("&", ""), "Fermer");
+        compare(loader.item.kde("@action:inmenu", "&Close All").replace("&", ""), "Tout fermer");
+        compare(loader.item.kde("item:inmenu opens submenu", "More"), "Plus");
     }
     function test_targetDisappearsAndBackgroundMenu() {
         loader.item.showAt(Qt.point(100, 100), source, 0);

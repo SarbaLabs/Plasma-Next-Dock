@@ -18,6 +18,21 @@ TestCase {
         verify(tasks.count > 0);
         compare(dock.item.layoutCount, tasks.count);
     }
+    function test_capsuleResizesBeforeRowPolish() {
+        tryCompare(dock, "status", Loader.Ready);
+        const root = dock.item;
+        const capsule = findChild(root, "capsuleBackground");
+        const original = dockOptions.iconSize;
+        try {
+            for (const size of [52, 28, 64]) {
+                testEnvironment.behaviorOptions({iconSize: size});
+                const count = root.layoutCount;
+                const expected = count * root.base + (count - 1) * (dockOptions.iconSpacing ?? 10) * root.fitScale
+                    + root.dividerSpan + 2 * root.endPadding;
+                fuzzyCompare(root.vertical ? capsule.height : capsule.width, Math.min(expected, root.length), 0.01);
+            }
+        } finally { testEnvironment.behaviorOptions({iconSize: original}); }
+    }
     function test_radiusBudgetAndLift() {
         for (let r = 0; r <= 8; ++r) {
             for (let p = 0; p < 1; p += 0.05) {
