@@ -1020,3 +1020,12 @@ captures. Opening and closing an unpinned window was also checked. The initial
 intermittent failure on close did not reproduce in the baseline run.
 French menu tests check Close, Close All and More against the installed KDE
 catalogs on both distributions.
+
+### Drop shadows on Debian 13.7
+
+Live Qt 6.8.2 Wayland captures on Virtio compared the default, capsule-only,
+icon-only and combined shadows. Distinct fixed colors and opposite signed
+offsets made each silhouette visible. Captures of the combined effects on all
+four edges included grayscale icons, a negative capsule corner and an enlarged
+middle icon. The settings test applies and reopens independent color roles,
+strength, size and signed offsets.

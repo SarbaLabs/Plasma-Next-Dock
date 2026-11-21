@@ -54,6 +54,12 @@ Controls.ApplicationWindow {
         iconTint.role = v.iconTintRole; iconTint.fixedColor = v.iconTintColor;
         tintSaturation.value = v.iconTintSaturation;
         spacing.value = v.spacing;
+        dockShadowX.value = v.dockShadowX; dockShadowY.value = v.dockShadowY;
+        dockShadowColor.role = v.dockShadowRole; dockShadowColor.fixedColor = v.dockShadowColor;
+        dockShadowStrength.value = v.dockShadowStrength; dockShadowSize.value = v.dockShadowSize;
+        iconShadowX.value = v.iconShadowX; iconShadowY.value = v.iconShadowY;
+        iconShadowColor.role = v.iconShadowRole; iconShadowColor.fixedColor = v.iconShadowColor;
+        iconShadowStrength.value = v.iconShadowStrength; iconShadowSize.value = v.iconShadowSize;
         glow.checked = v.glow;
         glowRadius.value = v.glowRadius; glowIntensity.value = v.glowIntensity; glowOpacity.value = v.glowOpacity;
         alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
@@ -101,6 +107,12 @@ Controls.ApplicationWindow {
             iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
             backgroundType: backgroundType.mode, systemBlur: systemBlur.checked, gradientMidpoint: midpoint.value, glassOpacity: glassOpacity.value / 100, backgroundOpacity: backgroundOpacity.value / 100,
             borderWidth: borderWidth.value, borderRole: outline.role, borderColor: outline.fixedColor.toString(), borderOpacity: borderOpacity.value / 100,
+            dockShadowX: dockShadowX.value, dockShadowY: dockShadowY.value,
+            dockShadowRole: dockShadowColor.role, dockShadowColor: dockShadowColor.fixedColor.toString(),
+            dockShadowStrength: dockShadowStrength.value, dockShadowSize: dockShadowSize.value,
+            iconShadowX: iconShadowX.value, iconShadowY: iconShadowY.value,
+            iconShadowRole: iconShadowColor.role, iconShadowColor: iconShadowColor.fixedColor.toString(),
+            iconShadowStrength: iconShadowStrength.value, iconShadowSize: iconShadowSize.value,
             backgroundRole: fill.role, backgroundColor: fill.fixedColor.toString(),
             gradientTopRole: upper.role, gradientTopColor: upper.fixedColor.toString(), gradientTopOpacity: topOpacity.value / 100,
             gradientBottomRole: lower.role, gradientBottomColor: lower.fixedColor.toString(), gradientBottomOpacity: bottomOpacity.value / 100,
@@ -434,6 +446,24 @@ Controls.ApplicationWindow {
                                     from: 0; to: 64
                                 }
                             }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Drop shadow") }
+                            ColorSetting {
+                                id: dockShadowColor; objectName: "dockShadowColorControl"; paletteSource: dockPalette; defaultColor: dockPalette.shadowColor
+                                Kirigami.FormData.label: i18n("Color:")
+                            }
+                            Controls.SpinBox {
+                                id: dockShadowStrength; objectName: "dockShadowStrengthControl"; from: 0; to: 100; editable: true
+                                Kirigami.FormData.label: i18n("Strength (%):")
+                            }
+                            Controls.SpinBox {
+                                id: dockShadowSize; objectName: "dockShadowSizeControl"; from: 0; to: 32; editable: true
+                                Kirigami.FormData.label: i18n("Size (px):")
+                            }
+                            RowLayout {
+                                Kirigami.FormData.label: i18n("Offset (px):")
+                                Measure { id: dockShadowX; objectName: "dockShadowXControl"; caption: "X"; from: -32; to: 32 }
+                                Measure { id: dockShadowY; objectName: "dockShadowYControl"; caption: "Y"; from: -32; to: 32 }
+                            }
                             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Hover glow") }
                             Controls.CheckBox { id: glow; objectName: "glowControl"; text: i18n("Enable hover glow") }
                             Controls.SpinBox {
@@ -497,6 +527,24 @@ Controls.ApplicationWindow {
                                 visible: iconTint.visible
                                 Kirigami.FormData.label: i18n("Tint saturation (%):")
                                 from: 0; to: 100; editable: true
+                            }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Drop shadow") }
+                            ColorSetting {
+                                id: iconShadowColor; objectName: "iconShadowColorControl"; paletteSource: dockPalette; defaultColor: dockPalette.shadowColor
+                                Kirigami.FormData.label: i18n("Color:")
+                            }
+                            Controls.SpinBox {
+                                id: iconShadowStrength; objectName: "iconShadowStrengthControl"; from: 0; to: 100; editable: true
+                                Kirigami.FormData.label: i18n("Strength (%):")
+                            }
+                            Controls.SpinBox {
+                                id: iconShadowSize; objectName: "iconShadowSizeControl"; from: 0; to: 32; editable: true
+                                Kirigami.FormData.label: i18n("Size (px):")
+                            }
+                            RowLayout {
+                                Kirigami.FormData.label: i18n("Offset (px):")
+                                Measure { id: iconShadowX; objectName: "iconShadowXControl"; caption: "X"; from: -32; to: 32 }
+                                Measure { id: iconShadowY; objectName: "iconShadowYControl"; caption: "Y"; from: -32; to: 32 }
                             }
                             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Pointer effects") }
                             Controls.CheckBox { id: iconHover; text: i18n("Highlight icons on hover") }

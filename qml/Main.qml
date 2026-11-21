@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Window
+import QtQuick.Effects
 import org.kde.plasma.private.mpris as Mpris
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
@@ -58,8 +59,25 @@ Item {
     readonly property real length: layoutMetrics.length
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
     readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
-    width: vertical ? depth + (dockOptions.borderWidth ?? 1) : length + 2 * endClearance
-    height: vertical ? length + 2 * endClearance : depth + (dockOptions.borderWidth ?? 1)
+    readonly property bool dockShadowEnabled: dockOptions.dockShadowStrength > 0 && GraphicsInfo.api !== GraphicsInfo.Software
+    readonly property bool iconShadowEnabled: dockOptions.iconShadowStrength > 0 && GraphicsInfo.api !== GraphicsInfo.Software
+    readonly property int dockShadowPad: dockShadowEnabled ? (dockOptions.dockShadowSize + Math.max(Math.abs(dockOptions.dockShadowX), Math.abs(dockOptions.dockShadowY))) : 0
+    readonly property int iconShadowPad: iconShadowEnabled ? (dockOptions.iconShadowSize + Math.max(Math.abs(dockOptions.iconShadowX), Math.abs(dockOptions.iconShadowY))) : 0
+    readonly property int shadowExtent: Math.max(dockShadowPad, iconShadowPad)
+    readonly property real canvasLength: length + 2 * endClearance
+    readonly property real canvasDepth: depth + (dockOptions.borderWidth ?? 1)
+    // Add transparent drawing space without moving the dock at an aligned end.
+    readonly property real freeLength: Math.max(0, (vertical ? outputSize.height : outputSize.width) - canvasLength)
+    readonly property int alignedPad: Math.min(shadowExtent, effectiveAlignmentMargin)
+    readonly property int freePad: Math.min(shadowExtent, Math.floor(alignmentFactor === 0.5 ? freeLength / 2 : Math.max(0, freeLength - effectiveAlignmentMargin)))
+    readonly property int startPad: alignmentFactor === 0 ? alignedPad : freePad
+    readonly property int endPad: alignmentFactor === 1 ? alignedPad : freePad
+    readonly property int surfaceMargin: effectiveAlignmentMargin - alignedPad
+    readonly property real inwardPad: Math.min(shadowExtent, Math.max(0, (vertical ? outputSize.width : outputSize.height) - canvasDepth))
+    width: vertical ? canvasDepth + inwardPad : canvasLength + startPad + endPad
+    height: vertical ? canvasLength + startPad + endPad : canvasDepth + inwardPad
+    readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,
+        vertical ? startPad : (dockOptions.edge === 0 ? inwardPad : 0), vertical ? canvasDepth : canvasLength, vertical ? canvasLength : canvasDepth)
     property int dragIndex: -1
     readonly property bool dragging: dragIndex >= 0
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
@@ -194,7 +212,7 @@ Item {
     readonly property real barThickness: base + 2 * taskPadding
     readonly property int reservedThickness: Math.ceil(edgeSpacing + barThickness + (dockOptions.borderWidth ?? 1))
     readonly property real alignmentFactor: (dockOptions.dockAlignment ?? 1) / 2
-    readonly property real barStart: endClearance + (length - barLength) * alignmentFactor
+    readonly property real barStart: startPad + endClearance + (length - barLength) * alignmentFactor
     // Row updates its implicit width during polish. Size the painted path from
     // the same slot metrics before polish so an idle frame has the final shape.
     readonly property real occupiedLength: layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
@@ -228,7 +246,7 @@ Item {
             if (!slot) continue;
             icons.push(slot.inputItem.mapToItem(root, Qt.rect(0, 0, slot.inputItem.width, slot.inputItem.height)));
         }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, icons, dockOptions.edge, bar.corners);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, icons, dockOptions.edge, bar.corners, root.interactionBounds);
     }
     // KDE reads the delegate rectangle in surface-local coordinates on Wayland.
     // Use an unrotated item so vertical docks and clipped ends map correctly.
@@ -315,7 +333,23 @@ Item {
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
         dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
     readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
+    Item {
+        id: dockArtwork
+        anchors.fill: parent
+        layer.enabled: root.dockShadowEnabled
+        layer.effect: MultiEffect {
+            autoPaddingEnabled: false
+            shadowEnabled: true
+            blurMax: Math.max(1, dockOptions.dockShadowSize ?? 0)
+            shadowBlur: dockOptions.dockShadowSize > 0 ? 1 : 0
+            shadowHorizontalOffset: dockOptions.dockShadowX ?? 0
+            shadowVerticalOffset: dockOptions.dockShadowY ?? 2
+            shadowOpacity: (dockOptions.dockShadowStrength ?? 0) / 100
+            shadowColor: dockPalette.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor ?? "black", dockPalette.shadowColor)
+        }
+    }
     CapsuleBackground {
+        parent: dockArtwork
         id: bar
         objectName: "capsuleBackground"
         x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : root.barStart
@@ -357,10 +391,10 @@ Item {
         objectName: "taskViewport"
         width: root.length
         height: root.depth
-        x: (root.width - width) / 2 + (root.vertical ? (dockOptions.edge === 2 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
-        y: (root.height - height) / 2 + (!root.vertical ? (dockOptions.edge === 1 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
+        x: root.interactionBounds.x + (root.interactionBounds.width - width) / 2 + (root.vertical ? (dockOptions.edge === 2 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
+        y: root.interactionBounds.y + (root.interactionBounds.height - height) / 2 + (!root.vertical ? (dockOptions.edge === 1 ? -1 : 1) * (dockOptions.borderWidth ?? 1) / 2 : 0)
         rotation: root.vertical ? 90 : 0
-        clip: true
+        clip: !root.iconShadowEnabled || contentWidth > width
         contentWidth: Math.max(width, root.occupiedLength)
         contentHeight: height
         boundsBehavior: Flickable.StopAtBounds
@@ -550,8 +584,27 @@ Item {
                         rotation: root.vertical ? -90 : 0
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         readonly property bool active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
+                        Item {
+                            id: iconArtwork
+                            anchors.centerIn: parent
+                            width: icon.width + 2 * root.iconShadowPad
+                            height: icon.height + 2 * root.iconShadowPad
+                            layer.enabled: root.iconShadowEnabled
+                            layer.effect: MultiEffect {
+                                autoPaddingEnabled: false
+                                shadowEnabled: true
+                                blurMax: Math.max(1, dockOptions.iconShadowSize ?? 0)
+                                shadowBlur: dockOptions.iconShadowSize > 0 ? 1 : 0
+                                shadowHorizontalOffset: dockOptions.iconShadowX ?? 0
+                                shadowVerticalOffset: dockOptions.iconShadowY ?? 2
+                                shadowOpacity: (dockOptions.iconShadowStrength ?? 0) / 100
+                                shadowColor: dockPalette.resolve(dockOptions.iconShadowRole, dockOptions.iconShadowColor ?? "black", dockPalette.shadowColor)
+                            }
+                        }
                         Kirigami.Icon {
-                            anchors.fill: parent
+                            parent: iconArtwork
+                            anchors.centerIn: parent
+                            width: icon.width; height: icon.height
                             source: slot.model.decoration
                             roundToIconSize: false
                             active: icon.active

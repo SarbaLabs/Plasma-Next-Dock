@@ -78,6 +78,13 @@ TestCase {
         findChild(window, "iconTintControl").role = "custom";
         findChild(window, "iconTintControl").fixedColor = "#e83a65";
         findChild(window, "iconTintSaturationControl").value = 72;
+        findChild(window, "dockShadowColorControl").role = "highlight";
+        findChild(window, "iconShadowColorControl").role = "custom";
+        findChild(window, "iconShadowColorControl").fixedColor = "#e83257";
+        findChild(window, "dockShadowStrengthControl").value = 72;
+        findChild(window, "iconShadowSizeControl").value = 21;
+        findChild(window, "dockShadowXControl").value = -15;
+        findChild(window, "iconShadowYControl").value = 19;
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
@@ -96,6 +103,12 @@ TestCase {
         compare(findChild(window, "iconTintControl").fixedColor, "#e83a65");
         compare(findChild(window, "iconTintSaturationControl").value, 72);
         compare(spacing.value, 40);
+        compare(findChild(window, "dockShadowColorControl").role, "highlight");
+        compare(findChild(window, "iconShadowColorControl").fixedColor, "#e83257");
+        compare(findChild(window, "dockShadowStrengthControl").value, 72);
+        compare(findChild(window, "iconShadowSizeControl").value, 21);
+        compare(findChild(window, "dockShadowXControl").value, -15);
+        compare(findChild(window, "iconShadowYControl").value, 19);
         compare(findChild(window, "glowRadiusControl").value, 116);
         compare(findChild(window, "glowIntensityControl").value, 150);
         compare(findChild(window, "glowOpacityControl").value, 65);

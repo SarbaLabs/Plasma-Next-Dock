@@ -115,15 +115,17 @@ QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corn
     }
     return {{"fill", DockGeometry::svgPath(fill)}, {"outline", outline}};
 }
-void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners)
+void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners, QRectF interactionBounds)
 {
     QList<QRectF> iconRects;
     for (const auto &icon : icons) iconRects << icon.toRectF();
     const QSize bounds = m_pointerTarget ? m_pointerTarget->size().toSize()
         : (m_window ? m_window->size() : QSize());
     const auto shape = corners.size() == 4 ? DockGeometry::capsule(rect, corners, edge >= DockGeometry::Left) : DockGeometry::capsule(rect, radius);
+    const QRect canvas(QPoint(), bounds);
+    const QRect hitBounds = interactionBounds.isEmpty() ? canvas : interactionBounds.toAlignedRect().intersected(canvas);
     const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects,
-        QRect(QPoint(), bounds), static_cast<DockGeometry::Edge>(edge), shape);
+        hitBounds, static_cast<DockGeometry::Edge>(edge), shape);
     if (input != m_lastInput) {
         m_lastInput = input;
         // Under Qt Wayland this is the surface input region, not a rendering clip.

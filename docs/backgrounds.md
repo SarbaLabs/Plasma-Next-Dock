@@ -143,3 +143,17 @@ stationary across its thickness. Larger radii reserve more length for neighborin
 zoom, so a crowded dock may shrink sooner. Check 100% magnification with lift,
 zero radius/lift, large radii, four edges, scrolling, previews and rapid pointer
 movement. These remain desktop acceptance items.
+
+## Drop shadows
+
+Each dock profile stores separate color roles, fixed colors, strength (0–100%),
+size (0–32 logical pixels) and signed X/Y offsets (−32 to 32 logical pixels)
+for the capsule and the icon artwork. Both strengths default to zero. Positive
+X moves the shadow right and positive Y moves it down, including on vertical
+docks. Zero size produces a sharp silhouette. The theme default uses the
+system shadow color. The icon shadow follows the icon alpha, zoom and bounce.
+
+Qt Quick Effects renders the shadows on an accelerated Qt Quick scene graph
+(including Mesa software OpenGL). The Qt Quick software adaptation bypasses
+the shader layers. Additional transparent drawing space stays outside the
+dock's input, dodge, blur and reservation geometry.

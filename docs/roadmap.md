@@ -428,3 +428,10 @@ drag handle and move buttons. Automatic sorting follows the native task model
 and preserves the stored manual order. The desktop settings forms use side-by-side
 labels and fields and collapse on narrow windows. The Indicators introduction
 wraps above its form with space reserved for the scrollbar.
+
+## Dock and icon drop shadows
+
+Appearance and Icons and animations each have a per-dock drop shadow with a
+palette or fixed color, strength, size and screen-relative X/Y offsets.
+Debian 13 installs the Qt Quick Effects runtime through the shared installer.
+See the [Debian visual checks](testing.md#drop-shadows-on-debian-137).
