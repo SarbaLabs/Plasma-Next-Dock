@@ -1045,6 +1045,11 @@ edge manager v1 and Plasma window management v20. With blur enabled, the dock
 sent and committed a blur region for its surface. KWin still reported blur
 loaded after a guest restart, and the installed desktop entry launched the dock.
 
+## Kubuntu 26.10
+
+The maintainer installed the dock and confirmed that it works on the Kubuntu
+26.10 desktop. The Ubuntu 26.10 container also passed the build and test suite.
+
 ## Fedora KDE 45 Plasma Wayland
 
 Tested on Fedora 45 x86_64 with Plasma and KWin 6.8.1, Qt 6.11.2 and Mesa

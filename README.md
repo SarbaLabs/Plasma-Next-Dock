@@ -169,23 +169,46 @@ the corresponding dependency in your distribution, then rerun `./install.sh`.
 
 A derivative can inherit these checks even if it has never been tested on
 a desktop. For unrecognized families, CMake checks the build dependencies.
-Kubuntu 26.10 has passed the container build and tests; desktop validation is pending.
 The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.
 
-### CachyOS / Arch dependencies
+### Dependencies by distribution family
 
-Dependencies (the KDE runtime packages are usually already installed):
+All builds need a C++20 toolchain, CMake 3.22 or newer, pkg-config and gettext.
+For Qt 6.8 or newer, install the development files for Qt Base (including
+private GUI headers), Declarative/Quick, Wayland Client and Shader Tools.
+The Wayland adapter also needs libwayland, LayerShellQt and Plasma Wayland
+Protocols. Rebuild after upgrading Qt's private headers.
+
+For the desktop session, use Plasma 6 on Wayland. The dock uses Plasma
+Workspace and Desktop, Qt SVG, Qt Quick Controls, Layouts, Dialogs, Shapes
+and Effects, Kirigami, Breeze icons, Plasma Audio Volume and KPipeWire.
+The build also links KDE Frameworks (KIO, KService, KI18n, KNotifications,
+KGlobalAccel and KWindowSystem) and Plasma Activities Stats. The installer
+builds the tests, so the package lists include the Qt test tools and D-Bus.
+
+| Family and tested desktop | Package names and distribution specifics | Full package list |
+| --- | --- | --- |
+| Debian 13.7 | APT. Debian 13 splits out `qt6-wayland-dev` and `qt6-wayland-dev-tools`. It uses `breeze-icon-theme`. Include `qt6-base-private-dev` for the Wayland adapter and `qml6-module-qtquick-effects` for drop shadows. | [Common APT packages](packaging/apt-common.txt) + [Debian 13 additions](packaging/debian-13-packages.txt) |
+| Kubuntu 26.04.1 LTS and 26.10 | APT. Both tested releases use `qt6-base-dev`, `qt6-base-private-dev`, `qt6-base-dev-tools` and `kf6-breeze-icon-theme`. Install the common QML runtime packages as well as the development files. | [Common APT packages](packaging/apt-common.txt) + [additions shared by both Kubuntu releases](packaging/ubuntu-26.04-packages.txt) |
+| Fedora KDE 45 | DNF. The private headers are in `qt6-qtbase-private-devel`. Qt Quick and shader tools use `qt6-qtdeclarative-devel` and `qt6-qtshadertools-devel`. Install `layer-shell-qt-devel` and `plasma-wayland-protocols-devel` for Wayland. | [Fedora RPM packages](packaging/fedora-45-packages.txt) |
+| openSUSE Leap 16.1 | Zypper. Use `qt6-gui-private-devel`, `qt6-waylandclient-devel` and `layer-shell-qt6-devel`. The QML runtime is split across packages including `qt6-declarative-imports`, `kf6-kirigami-imports` and `kpipewire6-imports`. Native Plasma menu translations come from `plasma6-desktop-lang`. | [Leap RPM packages](packaging/opensuse-leap-16.1-packages.txt) |
+| Arch family (tested on CachyOS) | Pacman or paru. Use `base-devel`, `qt6-base`, `qt6-declarative`, `qt6-shadertools`, `qt6-wayland`, `layer-shell-qt` and `plasma-wayland-protocols` alongside the KDE runtime packages. | [Arch packages](packaging/arch-packages.txt) |
+
+To install the full Kubuntu dependency set manually from the repository root
+on 26.04 or 26.10, run:
 
 ```bash
-paru -S --needed base-devel cmake qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-svg plasma-pa \
-    layer-shell-qt plasma-wayland-protocols plasma-workspace plasma-desktop kirigami breeze-icons \
-    ki18n kio kservice knotifications plasma-activities-stats plasma-integration kpipewire kglobalaccel kwindowsystem gettext
+sudo apt update
+mapfile -t packages < <(cat packaging/apt-common.txt packaging/ubuntu-26.04-packages.txt)
+sudo apt install "${packages[@]}"
+./install.sh
 ```
 
-Qt **6.8 or newer** is required. Building uses Qt's private GUI headers for the
-native Wayland surface adapter; rebuild after a Qt upgrade that changes them.
+On the Leap test desktop, Breeze Dark requested a missing wallpaper and the
+session showed a black background. Installing `breeze6-wallpapers` restored
+the theme. This package is optional for the dock.
 
 ### Install or update from source
 

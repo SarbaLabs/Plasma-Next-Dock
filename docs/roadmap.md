@@ -469,4 +469,4 @@ magnification.
 
 Before compiling, the installer reports missing packages and the manual
 installation command based on the distribution family and local repository metadata. Kubuntu 26.10
-shares the Kubuntu 26.04 package list. Desktop testing on 26.10 remains open.
+shares the Kubuntu 26.04 package list. The maintainer validated the dock on the Kubuntu 26.10 desktop.
