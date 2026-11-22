@@ -1097,3 +1097,14 @@ wall-clock times (one observation per mode, including event-loop work).
 The subsequent three transitions took 96–106 ms across the four modes after
 the change. The settings test also applies the fastest slider value and checks
 the saved duration when the dialog reopens.
+
+For continuous tracking, a separate Wayland probe swept a synthetic mouse
+across 17 demo icons every 900 ms, reversing at each end, with 2.2× zoom,
+icon and dock shadows at 50%, glow enabled and a 90 ms hover duration. Two
+9-second runs per binary sampled swap intervals on the render thread. The
+95th percentile in the middle eight seconds was 18 ms on c629461 and 10 ms
+with continuous tracking and stable artwork textures. At samples within 0.15
+of an icon center in logical index space, the median animated fraction of its
+available zoom rose from 0.20–0.24 to 0.71. These are measurements on the
+CachyOS test desktop with the same scripted input, not presentation timestamps
+from the maintainer's recording.

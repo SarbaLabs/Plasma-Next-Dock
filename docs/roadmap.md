@@ -461,3 +461,6 @@ Magnification defaults to 90 ms and can be adjusted per dock from 10 to
 140 ms in Icons and Animations. The dock uses elapsed-time Qt Quick animations
 and preserves its drawing options when settings visibility alone changes.
 See the [four-mode timing measurements](testing.md#hover-animation-timing-on-cachyos).
+During continuous movement, icons follow the latest pointer target on the next
+animation frame. Their artwork and shadow textures keep a stable size during
+magnification.

@@ -179,6 +179,14 @@ Item {
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
+    // Multiple neighbors advance in one animation tick. Publish their combined
+    // width once, so the capsule path and blur never see intermediate sums.
+    function syncAnimatedWeight() {
+        let sum = 0;
+        for (let row = 0; row < repeater.count; ++row)
+            sum += repeater.itemAt(row)?.animatedFactor ?? 0;
+        animatedWeight = sum;
+    }
     readonly property int blastRadius: dockOptions.blastRadius === undefined ? 2 : dockOptions.blastRadius
     readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
     readonly property real zoomBudgetScale: Math.min(1, zoomBudget / Math.max(zoomBudget, animatedWeight))
@@ -418,7 +426,7 @@ Item {
             Repeater {
                 id: repeater
                 model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
+                onCountChanged: { Qt.callLater(root.syncAnimatedWeight); Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
@@ -431,18 +439,34 @@ Item {
                     function restoreZoom() {
                         // A replacement can arrive at a different row. Reconcile
                         // its initial size before painting, without a shrink/grow.
-                        componentReady = false;
-                        animatedFactor = Qt.binding(() => slot.factor);
-                        componentReady = true;
+                        zoomFrames.stop();
+                        animatedFactor = factor;
                     }
                     property bool componentReady: false
-                    property real animatedFactor: factor
-                    property real reportedFactor: 0
-                    onAnimatedFactorChanged: {
-                        root.animatedWeight += animatedFactor - reportedFactor;
-                        reportedFactor = animatedFactor;
+                    property real animatedFactor: 0
+                    onFactorChanged: {
+                        if (!componentReady) return;
+                        zoomFrames.remaining = dockOptions.hoverDuration ?? 90;
+                        if (!zoomFrames.running) zoomFrames.start();
                     }
-                    Component.onDestruction: root.animatedWeight -= reportedFactor
+                    // Pointer events may arrive several times between paints. Update
+                    // the target immediately, but keep the active frame clock running.
+                    FrameAnimation {
+                        id: zoomFrames
+                        property real remaining: 0
+                        onTriggered: {
+                            const dt = frameTime * 1000;
+                            if (dt >= remaining || Math.abs(slot.factor - slot.animatedFactor) < 0.001) {
+                                slot.animatedFactor = slot.factor;
+                                stop();
+                            } else {
+                                const fraction = 1 - Math.pow(1 - dt / remaining, 3);
+                                slot.animatedFactor += (slot.factor - slot.animatedFactor) * fraction;
+                                remaining -= dt;
+                            }
+                        }
+                    }
+                    onAnimatedFactorChanged: Qt.callLater(root.syncAnimatedWeight)
                     readonly property real size: root.base + (root.maximum - root.base) * animatedFactor * root.zoomBudgetScale
                     property alias menuStatus: taskStatus
                     property alias previewOwner: taskTip
@@ -470,12 +494,11 @@ Item {
                         bounce.launch();
                     }
                     onLaunchKeyChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
-                    Component.onCompleted: { componentReady = true; root.queueDivider(); Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
+                    Component.onCompleted: { animatedFactor = factor; componentReady = true; root.queueDivider(); Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
                     readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
                     readonly property real iconOffset: root.reverseLayout ? 0 : extra
                     width: size + extra
                     height: viewport.height
-                    Behavior on animatedFactor { enabled: slot.componentReady; NumberAnimation { duration: dockOptions.hoverDuration ?? 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     // Follow the slot along the dock, but keep the capsule's
@@ -587,8 +610,10 @@ Item {
                         Item {
                             id: iconArtwork
                             anchors.centerIn: parent
-                            width: icon.width + 2 * root.iconShadowPad
-                            height: icon.height + 2 * root.iconShadowPad
+                            // Keep the shadow render targets at a stable resolution
+                            // while the painted icon moves and grows inside them.
+                            width: root.maximum + 2 * root.iconShadowPad
+                            height: width
                             layer.enabled: root.iconShadowEnabled
                             layer.effect: MultiEffect {
                                 autoPaddingEnabled: false
@@ -604,7 +629,9 @@ Item {
                         Kirigami.Icon {
                             parent: iconArtwork
                             anchors.centerIn: parent
-                            width: icon.width; height: icon.height
+                            width: root.maximum; height: width
+                            scale: width > 0 ? icon.width / width : 1
+                            smooth: true
                             source: slot.model.decoration
                             roundToIconSize: false
                             active: icon.active
