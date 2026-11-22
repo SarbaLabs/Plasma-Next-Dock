@@ -444,14 +444,14 @@ See the [tested versions and results](testing.md#kubuntu-26041-lts-plasma-waylan
 
 ## Fedora KDE 45
 
-The shared installer detects Fedora 45 and resolves RPM packages through DNF.
+The shared installer detects Fedora 45 and reports missing RPM packages with a DNF installation command.
 The dock passed build, install and live KWin checks on Plasma 6.8.1 and Qt
 6.11.2. See the [Fedora desktop checks](testing.md#fedora-kde-45-plasma-wayland).
 The maintainer also validated Fedora with Intel iGPU passthrough.
 
 ## openSUSE Leap 16.1
 
-The shared installer resolves dependencies with Zypper. The installed dock
+The shared installer reports missing dependencies with a Zypper installation command. The installed dock
 passed the automated suite and live Wayland checks on Plasma 6.6.4 and Qt
 6.11.0. See the [Leap desktop checks](testing.md#opensuse-leap-161-plasma-wayland).
 
@@ -464,3 +464,9 @@ See the [four-mode timing measurements](testing.md#hover-animation-timing-on-cac
 During continuous movement, icons follow the latest pointer target on the next
 animation frame. Their artwork and shadow textures keep a stable size during
 magnification.
+
+## Installer dependency checks
+
+Before compiling, the installer reports missing packages and the manual
+installation command on distributions with a package list. Kubuntu 26.10
+shares the Kubuntu 26.04 package list. Desktop testing on 26.10 remains open.

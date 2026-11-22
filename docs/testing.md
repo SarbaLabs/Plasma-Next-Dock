@@ -1108,3 +1108,12 @@ of an icon center in logical index space, the median animated fraction of its
 available zoom rose from 0.20–0.24 to 0.71. These are measurements on the
 CachyOS test desktop with the same scripted input, not presentation timestamps
 from the maintainer's recording.
+
+## Installer dependency reporting
+
+A shell fixture simulated missing and installed packages for Debian 13,
+Kubuntu 26.04 and 26.10, Fedora 45, Leap 16.1, Arch and CachyOS. With missing
+packages, the installer listed only those packages and exited before invoking
+CMake or installing packages. On rerun with the packages present, it reached
+configuration, compilation, CTest and installation. The Kubuntu 26.10 package
+names were also checked in the Ubuntu stonking amd64 main and universe indexes.
