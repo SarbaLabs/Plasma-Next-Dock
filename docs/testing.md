@@ -1060,3 +1060,21 @@ region via the background effect surface protocol. In a temporary profile the
 live task model pinned a running KCalc window, retained its launcher and icon
 after closing the process, and activated it to open another KCalc window. The
 saved launcher was `applications:org.kde.kcalc.desktop`.
+
+The maintainer also completed the Fedora desktop checks with Intel iGPU
+passthrough and confirmed the dock worked on that configuration.
+
+## openSUSE Leap 16.1 Plasma Wayland
+
+Tested on x86_64 with Plasma and KWin 6.6.4, Qt 6.11.0 and a Virtio display
+using Mesa llvmpipe. The shared installer installed the dependencies with
+Zypper, built the dock and passed all 15 CTest entries.
+
+The installed dock displayed Dolphin and Konsole on all four edges. Its French
+settings dialog identified the virtual output. KWin exposed layer shell v5,
+screen-edge manager v1 and Plasma window management v20. With system blur
+enabled, the dock sent a nonempty region through the KWin blur protocol.
+
+In a temporary profile the live task model pinned KCalc, retained its icon
+after closing its window and reopened KCalc from the saved launcher. The
+installed desktop entry also launched the dock in the user's KDE session.

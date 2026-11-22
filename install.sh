@@ -24,10 +24,14 @@ if [[ -r /etc/os-release ]]; then
             "${elevate[@]}" apt-get update
             "${elevate[@]}" apt-get install -y --no-remove --no-install-recommends "${missing[@]}"
         fi
-    elif [[ "${ID:-}-${VERSION_ID:-}" == fedora-45 ]]; then
-        mapfile -t packages < packaging/fedora-45-packages.txt
+    elif [[ "${ID:-}-${VERSION_ID:-}" == fedora-45 || "${ID:-}-${VERSION_ID:-}" == opensuse-leap-16.1 ]]; then
+        mapfile -t packages < "packaging/$ID-$VERSION_ID-packages.txt"
         if ! rpm -q "${packages[@]}" >/dev/null; then
-            "${elevate[@]}" dnf install -y "${packages[@]}"
+            if [[ "$ID" == opensuse-leap ]]; then
+                "${elevate[@]}" zypper --non-interactive install --no-recommends "${packages[@]}"
+            else
+                "${elevate[@]}" dnf install -y "${packages[@]}"
+            fi
         fi
     fi
 fi
