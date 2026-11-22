@@ -2,11 +2,16 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
-# Resolve Debian 13 package names before CMake probes the installed Qt/KDE APIs.
+# Resolve distribution package names before CMake probes the installed Qt/KDE APIs.
 if [[ -r /etc/os-release ]]; then
     . /etc/os-release
-    if [[ "${ID:-}" == debian && "${VERSION_ID:-}" == 13 ]]; then
-        mapfile -t packages < packaging/debian-13-packages.txt
+    case "${ID:-}-${VERSION_ID:-}" in
+        debian-13|ubuntu-26.04) manifest="packaging/$ID-$VERSION_ID-packages.txt" ;;
+        *) manifest="" ;;
+    esac
+    if [[ -n "$manifest" ]]; then
+        mapfile -t packages < packaging/apt-common.txt
+        mapfile -t -O "${#packages[@]}" packages < "$manifest"
         missing=()
         for package in "${packages[@]}"; do
             if [[ "$(dpkg-query -W -f='${db:Status-Status}' "$package" 2>/dev/null || true)" != installed ]]; then

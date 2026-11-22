@@ -1029,3 +1029,18 @@ offsets made each silhouette visible. Captures of the combined effects on all
 four edges included grayscale icons, a negative capsule corner and an enlarged
 middle icon. The settings test applies and reopens independent color roles,
 strength, size and signed offsets.
+
+## Kubuntu 26.04.1 LTS Plasma Wayland
+
+On amd64 with Plasma and KWin 6.6.6 and Qt 6.10.2, the installer resolved
+dependencies, built the dock and passed all 15 CTest entries. A staged install
+included the French catalog and the desktop entry with its absolute executable
+path and privileged Wayland interfaces.
+
+In the French Wayland session, the installed dock showed Dolphin and Konsole.
+A separate KDialog window appeared as a third task. The captures taken before
+opening it and after closing it were identical. The settings window rendered in
+French and identified the virtual output. The dock bound layer shell v5, screen
+edge manager v1 and Plasma window management v20. With blur enabled, the dock
+sent and committed a blur region for its surface. KWin still reported blur
+loaded after a guest restart, and the installed desktop entry launched the dock.

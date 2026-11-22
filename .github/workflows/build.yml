@@ -9,7 +9,19 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: debian:trixie
+    strategy:
+      matrix:
+        include:
+          - image: debian:trixie
+            manifest: debian-13
+            check: build
+          - image: ubuntu:26.04
+            manifest: ubuntu-26.04
+            check: Kubuntu 26.04 build
+    name: ${{ matrix.check }}
+    container: ${{ matrix.image }}
+    env:
+      DEBIAN_FRONTEND: noninteractive
     timeout-minutes: 15
     steps:
       - name: Prepare checkout
@@ -17,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          xargs apt-get install -y --no-install-recommends locales < packaging/debian-13-packages.txt
+          cat packaging/apt-common.txt packaging/${{ matrix.manifest }}-packages.txt | xargs apt-get install -y --no-install-recommends locales
           localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
       - name: Build
         run: |

@@ -158,9 +158,12 @@ its margin; centered docks ignore it.
 
 ## Build and install
 
-On **Debian 13 with Plasma Wayland**, run `./install.sh` as your desktop user.
-The script detects Debian 13 and uses APT for missing packages from
-[the dependency list](packaging/debian-13-packages.txt). Only that step requires
+On **Debian 13 or Kubuntu 26.04 LTS with Plasma Wayland**, run `./install.sh`
+as your desktop user. The installer reads the distribution and release from
+`/etc/os-release` and uses APT to install missing packages from the
+[shared list](packaging/apt-common.txt) and the matching
+[Debian](packaging/debian-13-packages.txt) or
+[Kubuntu](packaging/ubuntu-26.04-packages.txt) list. Only that step requires
 administrator privileges. The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.
