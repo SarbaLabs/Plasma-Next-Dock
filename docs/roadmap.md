@@ -447,3 +447,10 @@ See the [tested versions and results](testing.md#kubuntu-26041-lts-plasma-waylan
 The shared installer detects Fedora 45 and resolves RPM packages through DNF.
 The dock passed build, install and live KWin checks on Plasma 6.8.1 and Qt
 6.11.2. See the [Fedora desktop checks](testing.md#fedora-kde-45-plasma-wayland).
+The maintainer also validated Fedora with Intel iGPU passthrough.
+
+## openSUSE Leap 16.1
+
+The shared installer resolves dependencies with Zypper. The installed dock
+passed the automated suite and live Wayland checks on Plasma 6.6.4 and Qt
+6.11.0. See the [Leap desktop checks](testing.md#opensuse-leap-161-plasma-wayland).
