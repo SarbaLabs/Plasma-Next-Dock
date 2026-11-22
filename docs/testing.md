@@ -1129,3 +1129,11 @@ A mixed missing-package result suggested the confirmed package alone and
 listed the unconfirmed name separately. Supplying all dependencies on a
 second run allowed the build to start. These fixtures test installer logic;
 they do not qualify desktop behavior on those derivatives.
+
+On the neon test desktop, hover-and-render completed in 40.59 s and the next
+test, native-application-status, did not finish before manual interruption.
+On CachyOS the original private bus activated desktop portal services during
+this offscreen test. Its dedicated bus configuration now omits service
+activation directories. The audio model and launcher count/progress cases
+still pass. CTest limits this test to 60 seconds. To diagnose a timeout, run
+`ctest --test-dir build -V -R '^native-application-status$'`.
