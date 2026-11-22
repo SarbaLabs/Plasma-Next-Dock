@@ -842,3 +842,15 @@ msgstr "Taille (px) :"
 
 msgid "Offset (px):"
 msgstr "Décalage (px) :"
+
+msgid "Magnification animation"
+msgstr "Animation du grossissement"
+
+msgid "Hover animation speed:"
+msgstr "Vitesse de l’animation au survol :"
+
+msgid "Slow"
+msgstr "Lent"
+
+msgid "Very fast"
+msgstr "Très rapide"
