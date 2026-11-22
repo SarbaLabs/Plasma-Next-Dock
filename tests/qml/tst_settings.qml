@@ -59,6 +59,7 @@ TestCase {
         findChild(window, "topLeftControl").value = 0;
         findChild(window, "blastRadiusControl").value = 4;
         findChild(window, "hoverLiftControl").value = 6;
+        findChild(window, "hoverSpeedControl").value = 130;
         for (const name of ["windowPreviews", "highlightPreview", "audioIndicator", "muteOnClick", "mediaControls", "badges", "progress"])
             findChild(window, name + "Control").checked = false;
         const behavior = findChild(window, "behaviorSettings");
@@ -116,6 +117,8 @@ TestCase {
             compare(findChild(window, name + "Control").checked, false);
         compare(findChild(window, "blastRadiusControl").value, 4);
         compare(findChild(window, "hoverLiftControl").value, 6);
+        compare(dockSettings.values.hoverDuration, 10);
+        compare(findChild(window, "hoverSpeedControl").value, 130);
         compare(findChild(window, "backgroundTypeControl").currentIndex, 1);
         compare(findChild(window, "glassOpacityControl").value, 27);
         compare(findChild(window, "borderWidthControl").value, 0);

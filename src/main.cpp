@@ -22,6 +22,10 @@
 
 int main(int argc, char **argv)
 {
+    // Layer-shell frame callbacks can arrive more slowly than the output refresh.
+    // Keep Qt Quick transitions on elapsed time as auxiliary windows come and go.
+    if (!qEnvironmentVariableIsSet("QSG_USE_SIMPLE_ANIMATION_DRIVER"))
+        qputenv("QSG_USE_SIMPLE_ANIMATION_DRIVER", "1");
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain("plasma-next-dock");
     app.setQuitOnLastWindowClosed(false);

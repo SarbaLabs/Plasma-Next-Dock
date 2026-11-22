@@ -29,6 +29,7 @@ private:
     std::unique_ptr<QQuickWindow> m_reservation;
     DockSettings *m_settings;
     QScreen *m_screen;
+    QVariantMap m_options;
     bool m_demo;
     DockGeometry::Edge m_edge;
     QQuickView m_view;

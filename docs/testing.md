@@ -1078,3 +1078,22 @@ enabled, the dock sent a nonempty region through the KWin blur protocol.
 In a temporary profile the live task model pinned KCalc, retained its icon
 after closing its window and reopened KCalc from the saved launcher. The
 installed desktop entry also launched the dock in the user's KDE session.
+
+## Hover animation timing on CachyOS
+
+On the Astra-Playground Wayland desktop, a probe alternated the first icon's
+hover target in a live dock using a copy of the user's profile. It opened
+settings, applied two icon-size changes and closed the window. At the default
+90 ms duration, the transition started at settings dismissal took the following
+wall-clock times (one observation per mode, including event-loop work).
+
+| Visibility | Before | After |
+| --- | ---: | ---: |
+| Always visible | 195 ms | 113 ms |
+| Auto-hide | 241 ms | 101 ms |
+| Dodge windows | 202 ms | 108 ms |
+| Windows go below | 371 ms | 110 ms |
+
+The subsequent three transitions took 96–106 ms across the four modes after
+the change. The settings test also applies the fastest slider value and checks
+the saved duration when the dialog reopens.

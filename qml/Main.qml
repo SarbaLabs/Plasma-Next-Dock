@@ -475,7 +475,7 @@ Item {
                     readonly property real iconOffset: root.reverseLayout ? 0 : extra
                     width: size + extra
                     height: viewport.height
-                    Behavior on animatedFactor { enabled: slot.componentReady; NumberAnimation { duration: 90 } }
+                    Behavior on animatedFactor { enabled: slot.componentReady; NumberAnimation { duration: dockOptions.hoverDuration ?? 90 } }
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     // Follow the slot along the dock, but keep the capsule's

@@ -39,7 +39,7 @@ QVariantMap DockSettings::defaults()
         {"iconShadowRole", "custom"}, {"iconShadowColor", "#000000"}, {"iconShadowX", 0}, {"iconShadowY", 2}, {"iconShadowStrength", 0}, {"iconShadowSize", 6},
         {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
         {"iconTintColor", "#3daee9"}, {"iconTintSaturation", 100},
-        {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}},
+        {"hoverDuration", 90}, {"blastRadius", 2}, {"hoverLift", 0}, {"radius", 10}, {"spacing", 8}, {"glow", false}, {"glowRadius", 0}, {"glowIntensity", 100}, {"glowOpacity", 30}, {"dodge", true}, {"visibilityMode", 2}, {"dockAlignment", 1}, {"alignmentMargin", 0}, {"launchers", QStringList{}},
         {"bounceEnabled", true}, {"bounceOnLaunch", true}, {"bounceOnAttention", true},
         {"bounceHeight", 0}, {"bounceSpeed", 100}, {"bounceCount", 3},
         {"groupApplications", true}, {"groupingAppIdBlacklist", QStringList{}},
@@ -109,6 +109,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     }
     number("bounceHeight", 0, 64, true); number("bounceSpeed", 50, 200, true); number("bounceCount", 1, 5, true);
     number("edge", 0, 3, true); number("iconSize", 24, 96, true);
+    number("hoverDuration", 10, 140, true);
     number("blastRadius", 0, 8, true); number("hoverLift", 0, 64, true);
     number("zoom", 1, 2.5, false); number("radius", 0, 96, true); number("spacing", 0, 128, true);
     const int oldMode = result["backgroundType"].toInt();

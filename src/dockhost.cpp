@@ -99,8 +99,13 @@ DockHost::~DockHost()
 void DockHost::update(bool settingsOpen)
 {
     auto options = m_settings->values(); options["demo"] = m_demo;
-    m_view.rootContext()->setContextProperty("dockOptions", options);
-    m_backgroundEffects.configure(options);
+    // Opening or closing settings changes visibility policy even when all
+    // drawing options are identical. Keep the existing QML bindings intact.
+    if (options != m_options) {
+        m_options = options;
+        m_view.rootContext()->setContextProperty("dockOptions", options);
+        m_backgroundEffects.configure(options);
+    }
     const auto mode = static_cast<DockGeometry::Visibility>(options["visibilityMode"].toInt());
     m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::WindowsGoBelow : mode);
     position();

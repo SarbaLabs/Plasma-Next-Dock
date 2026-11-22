@@ -454,3 +454,10 @@ The maintainer also validated Fedora with Intel iGPU passthrough.
 The shared installer resolves dependencies with Zypper. The installed dock
 passed the automated suite and live Wayland checks on Plasma 6.6.4 and Qt
 6.11.0. See the [Leap desktop checks](testing.md#opensuse-leap-161-plasma-wayland).
+
+## Hover animation timing
+
+Magnification defaults to 90 ms and can be adjusted per dock from 10 to
+140 ms in Icons and Animations. The dock uses elapsed-time Qt Quick animations
+and preserves its drawing options when settings visibility alone changes.
+See the [four-mode timing measurements](testing.md#hover-animation-timing-on-cachyos).

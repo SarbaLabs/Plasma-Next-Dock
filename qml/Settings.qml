@@ -48,6 +48,7 @@ Controls.ApplicationWindow {
         window.draftScreen = v.screen;
         window.profileError = "";
         iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
+        hoverSpeed.value = 140 - (v.hoverDuration ?? 90);
         blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
         iconColors.currentIndex = v.grayscaleIcons ? 1 : 0;
         tintIcons.checked = v.tintIcons;
@@ -119,6 +120,7 @@ Controls.ApplicationWindow {
             iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
             highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
             showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
+            hoverDuration: 140 - hoverSpeed.value,
             blastRadius: blastRadius.value, hoverLift: hoverLift.value,
             linkCornerRadii: linkCorners.checked, topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
             glowRadius: glowRadius.value, glowIntensity: glowIntensity.value, glowOpacity: glowOpacity.value,
@@ -556,6 +558,19 @@ Controls.ApplicationWindow {
                             Controls.SpinBox { objectName: "bounceSpeedControl"; Kirigami.FormData.label: i18n("Bounce speed (%):"); enabled: behavior.values.bounceEnabled === true; from: 50; to: 200; stepSize: 10; value: behavior.values.bounceSpeed || 100; editable: true; onValueModified: behavior.change("bounceSpeed", value) }
                             Controls.SpinBox { objectName: "bounceCountControl"; Kirigami.FormData.label: i18n("Launch and test repetitions:"); enabled: behavior.values.bounceEnabled === true; from: 1; to: 5; value: behavior.values.bounceCount || 3; editable: true; onValueModified: behavior.change("bounceCount", value) }
                             Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it.") }
+                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Magnification animation") }
+                            RowLayout {
+                                Kirigami.FormData.label: i18n("Hover animation speed:")
+                                Controls.Label { text: i18n("Slow") }
+                                Controls.Slider {
+                                    id: hoverSpeed
+                                    objectName: "hoverSpeedControl"
+                                    Accessible.name: i18n("Hover animation speed:")
+                                    from: 0; to: 130; stepSize: 5
+                                    snapMode: Controls.Slider.SnapAlways
+                                }
+                                Controls.Label { text: i18n("Very fast") }
+                            }
                         }
                     }
                 }
