@@ -164,7 +164,9 @@ as your desktop user. The installer reads the distribution and release from
 [shared list](packaging/apt-common.txt) and the matching
 [Debian](packaging/debian-13-packages.txt) or
 [Kubuntu](packaging/ubuntu-26.04-packages.txt) list. Only that step requires
-administrator privileges. The source, CMake build and user installation are shared
+administrator privileges. On **Fedora KDE 45**, the same installer resolves
+[the Fedora dependencies](packaging/fedora-45-packages.txt) with DNF.
+The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.
 

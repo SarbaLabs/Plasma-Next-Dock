@@ -1044,3 +1044,19 @@ French and identified the virtual output. The dock bound layer shell v5, screen
 edge manager v1 and Plasma window management v20. With blur enabled, the dock
 sent and committed a blur region for its surface. KWin still reported blur
 loaded after a guest restart, and the installed desktop entry launched the dock.
+
+## Fedora KDE 45 Plasma Wayland
+
+Tested on Fedora 45 x86_64 with Plasma and KWin 6.8.1, Qt 6.11.2 and Mesa
+llvmpipe on a Virtio display. The shared installer resolved the RPM packages,
+built the dock and passed all 15 CTest entries. The staged install included the
+French catalog and a desktop entry pointing to the user-local executable.
+
+Captures from the installed executable showed the Dolphin and Konsole launchers
+on all four edges, and the French settings dialog identified the virtual output.
+KWin exposed layer shell v5, screen-edge manager v1 and Plasma window
+management v21 to the dock. With system blur enabled, it received a nonempty
+region via the background effect surface protocol. In a temporary profile the
+live task model pinned a running KCalc window, retained its launcher and icon
+after closing the process, and activated it to open another KCalc window. The
+saved launcher was `applications:org.kde.kcalc.desktop`.

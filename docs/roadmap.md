@@ -441,3 +441,9 @@ See the [Debian visual checks](testing.md#drop-shadows-on-debian-137).
 The shared installer now resolves the Kubuntu 26.04 and Debian 13 package sets.
 Kubuntu 26.04.1 passed compilation, installation and live Plasma Wayland checks.
 See the [tested versions and results](testing.md#kubuntu-26041-lts-plasma-wayland).
+
+## Fedora KDE 45
+
+The shared installer detects Fedora 45 and resolves RPM packages through DNF.
+The dock passed build, install and live KWin checks on Plasma 6.8.1 and Qt
+6.11.2. See the [Fedora desktop checks](testing.md#fedora-kde-45-plasma-wayland).
