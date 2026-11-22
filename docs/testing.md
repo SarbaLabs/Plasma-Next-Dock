@@ -1117,3 +1117,10 @@ packages, the installer listed only those packages and exited before invoking
 CMake or installing packages. On rerun with the packages present, it reached
 configuration, compilation, CTest and installation. The Kubuntu 26.10 package
 names were also checked in the Ubuntu stonking amd64 main and universe indexes.
+
+Family selection was also exercised with simulated os-release files and package
+databases for EndeavourOS, KDE neon, LMDE, Nobara and openSUSE Tumbleweed.
+A mixed missing-package result suggested the confirmed package alone and
+listed the unconfirmed name separately. Supplying all dependencies on a
+second run allowed the build to start. These fixtures test installer logic;
+they do not qualify desktop behavior on those derivatives.

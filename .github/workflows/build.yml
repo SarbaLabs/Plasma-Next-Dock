@@ -53,6 +53,7 @@ jobs:
           if ./install.sh > dependency-report.log 2>&1; then exit 1; fi
           grep -F 'Missing dependencies for' dependency-report.log
           grep -Fx 'Then run ./install.sh again.' dependency-report.log
+          grep -E '^  sudo (apt|dnf|zypper) install .*cmake' dependency-report.log
           test ! -e build
       - name: Install APT dependencies
         if: matrix.manager == 'apt'

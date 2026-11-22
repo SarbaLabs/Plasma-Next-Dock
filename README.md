@@ -158,12 +158,18 @@ its margin; centered docks ignore it.
 
 ## Build and install
 
-Run `./install.sh` as your desktop user. On Debian 13, Kubuntu 26.04 and
-26.10, Fedora KDE 45, openSUSE Leap 16.1 and Arch/CachyOS, it checks installed
-packages first. If any are missing, it lists them, prints an installation
-command for your package manager and exits before building. Run that command,
-then rerun `./install.sh`. Kubuntu 26.10 package names were checked against
-the amd64 archive; desktop validation is pending.
+Run `./install.sh` as your desktop user. The installer reads `ID` and
+`ID_LIKE` from os-release to select the distribution's package family. Before
+building, it checks the native package database. If dependencies are missing,
+it prints their names and suggests a command using APT, DNF, Zypper or
+pacman (paru when available to a non-root user). On OSTree-based Fedora it
+suggests rpm-ostree. Only names confirmed in local repository metadata appear
+in the command. If a name cannot be verified, refresh the metadata or look up
+the corresponding dependency in your distribution, then rerun `./install.sh`.
+
+A derivative can inherit these checks even if it has never been tested on
+a desktop. For unrecognized families, CMake checks the build dependencies.
+Kubuntu 26.10 has passed the container build and tests; desktop validation is pending.
 The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.
