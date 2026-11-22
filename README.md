@@ -165,7 +165,8 @@ as your desktop user. The installer reads the distribution and release from
 [Debian](packaging/debian-13-packages.txt) or
 [Kubuntu](packaging/ubuntu-26.04-packages.txt) list. Only that step requires
 administrator privileges. On **Fedora KDE 45**, the same installer resolves
-[the Fedora dependencies](packaging/fedora-45-packages.txt) with DNF.
+[the Fedora dependencies](packaging/fedora-45-packages.txt) with DNF. On **openSUSE Leap 16.1**, it installs the
+[Leap packages](packaging/opensuse-leap-16.1-packages.txt) with Zypper.
 The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.

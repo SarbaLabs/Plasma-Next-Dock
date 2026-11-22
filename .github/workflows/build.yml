@@ -13,14 +13,21 @@ jobs:
       matrix:
         include:
           - image: debian:trixie
+            manager: apt
             manifest: debian-13
             check: build
           - image: ubuntu:26.04
+            manager: apt
             manifest: ubuntu-26.04
             check: Kubuntu 26.04 build
           - image: registry.fedoraproject.org/fedora:45
+            manager: dnf
             manifest: fedora-45
             check: Fedora 45 build
+          - image: registry.opensuse.org/opensuse/leap:16.1
+            manager: zypper
+            manifest: opensuse-leap-16.1
+            check: openSUSE Leap 16.1 build
     name: ${{ matrix.check }}
     container: ${{ matrix.image }}
     env:
@@ -28,20 +35,26 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Prepare APT checkout
-        if: matrix.manifest != 'fedora-45'
+        if: matrix.manager == 'apt'
         run: apt-get update && apt-get install -y --no-install-recommends ca-certificates git
       - name: Prepare Fedora checkout
-        if: matrix.manifest == 'fedora-45'
+        if: matrix.manager == 'dnf'
         run: dnf install -y git findutils tar gzip
+      - name: Prepare openSUSE checkout
+        if: matrix.manager == 'zypper'
+        run: zypper --non-interactive install --no-recommends git-core findutils tar gzip
       - uses: actions/checkout@v4
       - name: Install APT dependencies
-        if: matrix.manifest != 'fedora-45'
+        if: matrix.manager == 'apt'
         run: |
           cat packaging/apt-common.txt packaging/${{ matrix.manifest }}-packages.txt | xargs apt-get install -y --no-install-recommends locales
           localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
       - name: Install Fedora dependencies
-        if: matrix.manifest == 'fedora-45'
+        if: matrix.manager == 'dnf'
         run: xargs dnf install -y glibc-langpack-fr < packaging/fedora-45-packages.txt
+      - name: Install openSUSE dependencies
+        if: matrix.manager == 'zypper'
+        run: xargs zypper --non-interactive install --no-recommends glibc-locale < packaging/opensuse-leap-16.1-packages.txt
       - name: Build
         run: |
           cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr
