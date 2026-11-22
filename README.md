@@ -196,6 +196,10 @@ builds the tests, so the package lists include the Qt test tools and D-Bus.
 | openSUSE Leap 16.1 | Zypper. Use `qt6-gui-private-devel`, `qt6-waylandclient-devel` and `layer-shell-qt6-devel`. The QML runtime is split across packages including `qt6-declarative-imports`, `kf6-kirigami-imports` and `kpipewire6-imports`. Native Plasma menu translations come from `plasma6-desktop-lang`. | [Leap RPM packages](packaging/opensuse-leap-16.1-packages.txt) |
 | Arch family (tested on CachyOS) | Pacman or paru. Use `base-devel`, `qt6-base`, `qt6-declarative`, `qt6-shadertools`, `qt6-wayland`, `layer-shell-qt` and `plasma-wayland-protocols` alongside the KDE runtime packages. | [Arch packages](packaging/arch-packages.txt) |
 
+On KDE neon, `qt6-svg` supplies both Qt SVG plugins, and
+`kf6-qqc2-desktop-style` supplies the `org.kde.desktop` QML module.
+The installer uses these native names on neon.
+
 To install the full Kubuntu dependency set manually from the repository root
 on 26.04 or 26.10, run:
 

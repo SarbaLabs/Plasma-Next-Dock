@@ -26,6 +26,11 @@ packages=()
 case "$family" in
     debian|ubuntu)
         mapfile -t packages < packaging/apt-common.txt
+        # neon ships the Qt 6 SVG plugins and desktop QML style in its own packages.
+        if [[ ${ID:-} == neon ]]; then
+            packages=("${packages[@]/#qt6-svg-plugins/qt6-svg}")
+            packages=("${packages[@]/#qml6-module-org-kde-desktop/kf6-qqc2-desktop-style}")
+        fi
         installed() { [[ "$(dpkg-query -W -f='${db:Status-Status}' "$1" 2>/dev/null)" == installed ]]; }
         candidate() { LC_ALL=C apt-cache policy "$1" | awk '$1 == "Candidate:" && $2 != "(none)" {print $2}'; }
         # Qt moved the client development files into qtbase in 6.10.
