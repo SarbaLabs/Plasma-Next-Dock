@@ -5,6 +5,8 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 # Resolve distribution package names before CMake probes the installed Qt/KDE APIs.
 if [[ -r /etc/os-release ]]; then
     . /etc/os-release
+    elevate=()
+    if (( EUID != 0 )); then elevate=(sudo); fi
     case "${ID:-}-${VERSION_ID:-}" in
         debian-13|ubuntu-26.04) manifest="packaging/$ID-$VERSION_ID-packages.txt" ;;
         *) manifest="" ;;
@@ -19,10 +21,13 @@ if [[ -r /etc/os-release ]]; then
             fi
         done
         if (( ${#missing[@]} )); then
-            elevate=()
-            if (( EUID != 0 )); then elevate=(sudo); fi
             "${elevate[@]}" apt-get update
             "${elevate[@]}" apt-get install -y --no-remove --no-install-recommends "${missing[@]}"
+        fi
+    elif [[ "${ID:-}-${VERSION_ID:-}" == fedora-45 ]]; then
+        mapfile -t packages < packaging/fedora-45-packages.txt
+        if ! rpm -q "${packages[@]}" >/dev/null; then
+            "${elevate[@]}" dnf install -y "${packages[@]}"
         fi
     fi
 fi
