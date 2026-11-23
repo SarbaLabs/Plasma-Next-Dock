@@ -1137,3 +1137,12 @@ this offscreen test. Its dedicated bus configuration now omits service
 activation directories. The audio model and launcher count/progress cases
 still pass. CTest limits this test to 60 seconds. To diagnose a timeout, run
 `ctest --test-dir build -V -R '^native-application-status$'`.
+
+## Capsule geometry consolidation
+
+On CachyOS, all 15 CTest entries passed after extracting the capsule drawing
+code. The QML files parsed with qmlformat and installation into a temporary
+staging directory succeeded. A separate comparison with the pre-refactor
+implementation produced identical fill and outline SVG strings in 120 cases,
+covering both orientations, zero and fractional border widths, empty bounds
+and mixed positive and negative corners. Live desktop acceptance is pending.

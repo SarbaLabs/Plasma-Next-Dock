@@ -101,19 +101,7 @@ void DockController::setSurfaceOrigin(QPoint origin)
 }
 QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const
 {
-    const auto fill = DockGeometry::capsule(QRectF(QPointF(), size), corners, vertical);
-    QString outline;
-    if (border > 0 && !fill.isEmpty()) {
-        // Boolean path operations flatten curves. Work at higher precision
-        // so the exterior ring stays smooth on scaled outputs.
-        const auto scale = QTransform::fromScale(8, 8);
-        const auto large = scale.map(fill);
-        QPainterPathStroker stroke;
-        stroke.setWidth(16 * border);
-        stroke.setJoinStyle(Qt::RoundJoin);
-        outline = DockGeometry::svgPath(scale.inverted().map(stroke.createStroke(large).subtracted(large)));
-    }
-    return {{"fill", DockGeometry::svgPath(fill)}, {"outline", outline}};
+    return DockGeometry::capsuleDrawing(size, corners, vertical, border);
 }
 void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners, QRectF interactionBounds)
 {
@@ -124,8 +112,8 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
     const auto shape = corners.size() == 4 ? DockGeometry::capsule(rect, corners, edge >= DockGeometry::Left) : DockGeometry::capsule(rect, radius);
     const QRect canvas(QPoint(), bounds);
     const QRect hitBounds = interactionBounds.isEmpty() ? canvas : interactionBounds.toAlignedRect().intersected(canvas);
-    const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects,
-        hitBounds, static_cast<DockGeometry::Edge>(edge), shape);
+    const QRegion input = DockGeometry::inputRegion(rect, shape, iconRects,
+        hitBounds, static_cast<DockGeometry::Edge>(edge));
     if (input != m_lastInput) {
         m_lastInput = input;
         // Under Qt Wayland this is the surface input region, not a rendering clip.
