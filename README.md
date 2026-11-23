@@ -214,6 +214,47 @@ On the Leap test desktop, Breeze Dark requested a missing wallpaper and the
 session showed a black background. Installing `breeze6-wallpapers` restored
 the theme. This package is optional for the dock.
 
+### Bazzite KDE: build with Distrobox
+
+On Bazzite KDE, the maintainer built the dock inside a Fedora 45 Distrobox
+and confirmed it ran from the host desktop after leaving the container.
+
+From a terminal on the **Bazzite host**, create and enter the build container:
+
+```bash
+distrobox create --name pnd-build --image registry.fedoraproject.org/fedora:45
+distrobox enter pnd-build
+```
+
+**Inside the container**, clone the project and run the installer:
+
+```bash
+mkdir -p ~/git
+git clone --branch main https://github.com/SarbaLabs/Plasma-Next-Dock.git ~/git/Plasma-Next-Dock
+cd ~/git/Plasma-Next-Dock
+CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh
+```
+
+If dependencies are missing, the installer stops and prints a DNF command.
+**Stay inside `pnd-build`** and run the command it prints. Alternatively, from
+`~/git/Plasma-Next-Dock`, install the full Fedora 45 dependency list:
+
+```bash
+mapfile -t packages < packaging/fedora-45-packages.txt
+sudo dnf install "${packages[@]}"
+```
+
+After DNF finishes, rerun the installer **inside the same container**:
+
+```bash
+CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh
+```
+
+Once the build, tests and installation succeed, run `exit` to return to Bazzite.
+The default Distrobox shares your home
+directory, so the executable and desktop entry installed under `~/.local`
+are available from the host's application launcher.
+
 ### Install or update from source
 
 To install the current main branch:
