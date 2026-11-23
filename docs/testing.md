@@ -1045,6 +1045,11 @@ edge manager v1 and Plasma window management v20. With blur enabled, the dock
 sent and committed a blur region for its surface. KWin still reported blur
 loaded after a guest restart, and the installed desktop entry launched the dock.
 
+## Kubuntu 26.10
+
+The maintainer installed the dock and confirmed that it works on the Kubuntu
+26.10 desktop. The Ubuntu 26.10 container also passed the build and test suite.
+
 ## Fedora KDE 45 Plasma Wayland
 
 Tested on Fedora 45 x86_64 with Plasma and KWin 6.8.1, Qt 6.11.2 and Mesa
@@ -1108,3 +1113,27 @@ of an icon center in logical index space, the median animated fraction of its
 available zoom rose from 0.20–0.24 to 0.71. These are measurements on the
 CachyOS test desktop with the same scripted input, not presentation timestamps
 from the maintainer's recording.
+
+## Installer dependency reporting
+
+A shell fixture simulated missing and installed packages for Debian 13,
+Kubuntu 26.04 and 26.10, Fedora 45, Leap 16.1, Arch and CachyOS. With missing
+packages, the installer listed only those packages and exited before invoking
+CMake or installing packages. On rerun with the packages present, it reached
+configuration, compilation, CTest and installation. The Kubuntu 26.10 package
+names were also checked in the Ubuntu stonking amd64 main and universe indexes.
+
+Family selection was also exercised with simulated os-release files and package
+databases for EndeavourOS, KDE neon, LMDE, Nobara and openSUSE Tumbleweed.
+A mixed missing-package result suggested the confirmed package alone and
+listed the unconfirmed name separately. Supplying all dependencies on a
+second run allowed the build to start. These fixtures test installer logic;
+they do not qualify desktop behavior on those derivatives.
+
+On the neon test desktop, hover-and-render completed in 40.59 s and the next
+test, native-application-status, did not finish before manual interruption.
+On CachyOS the original private bus activated desktop portal services during
+this offscreen test. Its dedicated bus configuration now omits service
+activation directories. The audio model and launcher count/progress cases
+still pass. CTest limits this test to 60 seconds. To diagnose a timeout, run
+`ctest --test-dir build -V -R '^native-application-status$'`.

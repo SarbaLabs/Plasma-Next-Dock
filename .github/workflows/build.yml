@@ -20,6 +20,10 @@ jobs:
             manager: apt
             manifest: ubuntu-26.04
             check: Kubuntu 26.04 build
+          - image: ubuntu:26.10
+            manager: apt
+            manifest: ubuntu-26.04
+            check: Kubuntu 26.10 build
           - image: registry.fedoraproject.org/fedora:45
             manager: dnf
             manifest: fedora-45
@@ -44,6 +48,13 @@ jobs:
         if: matrix.manager == 'zypper'
         run: zypper --non-interactive install --no-recommends git-core findutils tar gzip
       - uses: actions/checkout@v4
+      - name: Check missing dependency report in the clean image
+        run: |
+          if ./install.sh > dependency-report.log 2>&1; then exit 1; fi
+          grep -F 'Missing dependencies for' dependency-report.log
+          grep -Fx 'Then run ./install.sh again.' dependency-report.log
+          grep -E '^  sudo (apt|dnf|zypper) install .*cmake' dependency-report.log
+          test ! -e build
       - name: Install APT dependencies
         if: matrix.manager == 'apt'
         run: |
