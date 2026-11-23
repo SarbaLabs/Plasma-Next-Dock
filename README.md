@@ -235,9 +235,23 @@ cd ~/git/Plasma-Next-Dock
 CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh
 ```
 
-If the installer reports missing packages, run its suggested DNF command
-inside the container and repeat the last line. Once installation succeeds,
-run `exit` to return to Bazzite. The default Distrobox shares your home
+If dependencies are missing, the installer stops and prints a DNF command.
+**Stay inside `pnd-build`** and run the command it prints. Alternatively, from
+`~/git/Plasma-Next-Dock`, install the full Fedora 45 dependency list:
+
+```bash
+mapfile -t packages < packaging/fedora-45-packages.txt
+sudo dnf install "${packages[@]}"
+```
+
+After DNF finishes, rerun the installer **inside the same container**:
+
+```bash
+CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh
+```
+
+Once the build, tests and installation succeed, run `exit` to return to Bazzite.
+The default Distrobox shares your home
 directory, so the executable and desktop entry installed under `~/.local`
 are available from the host's application launcher.
 
