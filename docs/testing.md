@@ -1216,3 +1216,9 @@ signed offset and checks that only Free exposes the two controls.
 A temporary CachyOS KWin profile showed floating task icons over a 6 px top
 bar at +52 px. The appearance page showed both controls alongside the existing
 background controls. This desktop observation used one output.
+
+The gap-crossing regression test moves the pointer from an enlarged icon into
+the space before its neighbour, beyond the capsule, then out of the dock. It
+failed on all four edges in both Centered and Free before the fix and passed
+afterward. On CachyOS Wayland a 4 px top capsule, +68 px offset and 32 px
+spacing verified sustained zoom between Dolphin and Firefox and reset on exit.

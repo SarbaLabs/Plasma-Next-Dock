@@ -244,14 +244,18 @@ Item {
         pointerFraction = fraction;
         pointerIndex = nearest < 0 ? -10 : nearest + fraction;
     }
+    // Keep the hover band continuous between icons. During a crossing, the two
+    // neighbours can both be smaller than the icon the pointer just left.
+    readonly property real hoverDepth: iconEdge + bounceHeight * fitScale
+        + (hovering ? maximum + (dockOptions.hoverLift ?? 0) * fitScale : base)
+    onHoverDepthChanged: queueGeometry()
     function syncGeometry() {
-        let icons = [];
-        for (let i = 0; i < repeater.count; ++i) {
-            const slot = repeater.itemAt(i);
-            if (!slot) continue;
-            icons.push(slot.inputItem.mapToItem(root, Qt.rect(0, 0, slot.inputItem.width, slot.inputItem.height)));
-        }
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, icons, dockOptions.edge, bar.corners, root.interactionBounds);
+        const start = Math.max(0, taskRow.x - viewport.contentX);
+        const end = Math.min(viewport.width, taskRow.x + taskRow.width - viewport.contentX);
+        const y = dockOptions.edge === 1 || dockOptions.edge === 3 ? 0 : viewport.height - hoverDepth;
+        const band = end > start && repeater.count
+            ? [viewport.mapToItem(root, Qt.rect(start, y, end - start, hoverDepth))] : [];
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, band, dockOptions.edge, bar.corners, root.interactionBounds);
     }
     // KDE reads the delegate rectangle in surface-local coordinates on Wayland.
     // Use an unrotated item so vertical docks and clipped ends map correctly.
