@@ -104,6 +104,18 @@ Placement is saved immediately for the selected dock. The unpinned module starts
 on the right (bottom on a vertical dock). Manual dragging applies only to manually sorted pins.
 See [behavior settings and desktop checks](docs/behavior.md).
 
+In **Modules**, move **Folders** to either active column and open its gear.
+Add local folders with the chooser or drag them from Dolphin into the list.
+With Folders enabled, dropping local directories onto the dock also adds shortcuts,
+including over an application. Dropping onto an existing folder shortcut copies
+the selection into that directory instead.
+Manual order supports dragging shortcuts directly within their dock block,
+as well as the drag handles and up/down buttons in the editor. Alphabetical order
+preserves the manual list for later. Click a shortcut to open the folder in
+your file manager, or drop documents on it to copy them there. Its context
+menu also opens the module settings and lets you choose or restore an icon.
+Overrides belong to this dock. Removing a shortcut leaves the folder on disk.
+
 ## Capsule backgrounds
 
 In **Appearance → Mode**, **Centered** keeps icons centered in the padded

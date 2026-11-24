@@ -20,6 +20,7 @@ public:
     static QVariantMap defaults();
     static QVariantMap normalized(const QVariantMap &input);
     Q_INVOKABLE bool apply(const QVariantMap &changes);
+    Q_INVOKABLE bool updateModuleSettings(const QString &id, const QVariantMap &changes);
     Q_INVOKABLE bool saveLaunchers(const QStringList &urls);
     void overrideSession(const QVariantMap &changes);
 Q_SIGNALS:

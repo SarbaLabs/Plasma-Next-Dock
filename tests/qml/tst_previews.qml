@@ -38,8 +38,16 @@ TestCase {
         verify(panel.mediaAvailable);
         verify(panel.implicitWidth >= 260);
         compare(panel.toolTip, first);
+        // Folder entries and demo launchers share this popup without a native
+        // task. Intentionally clearing the old target must not hide its owner.
+        windowPreviews.select(testPreviewModel, 0);
+        windowPreviews.clear();
+        wait(150);
+        verify(panel.displayed);
         last.showToolTip();
         tryCompare(panel, "displayed", true);
+        wait(150);
+        verify(panel.displayed);
         compare(panel.applicationName, "Settings");
         compare(panel.toolTip, last);
         panel.dismiss();

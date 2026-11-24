@@ -8,14 +8,21 @@
 class DockModule : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool acceptsDirectoryDrops MEMBER acceptsDirectoryDrops NOTIFY acceptsDirectoryDropsChanged)
     Q_PROPERTY(QVariantList entries MEMBER entries NOTIFY entriesChanged)
     Q_PROPERTY(QVariantMap configuration MEMBER configuration NOTIFY configurationChanged)
 public:
+    bool acceptsDirectoryDrops = false;
     QVariantList entries;
     QVariantMap configuration;
 Q_SIGNALS:
     void entriesChanged();
     void configurationChanged();
+    void preferencesEdited(const QVariantMap &changes);
+    void acceptsDirectoryDropsChanged();
+    void moveRequested(const QString &entryId, const QString &destinationId);
+    void directoriesDropped(const QList<QUrl> &urls);
+    void documentsDropped(const QString &entryId, const QList<QUrl> &urls);
     void activated(const QString &entryId);
     void actionTriggered(const QString &entryId, const QString &actionId);
 };
@@ -49,11 +56,17 @@ public:
     void setTaskCandidates(const QVariantList &value);
     QVariantMap metadata(const QString &id) const { return m_catalog.value(id).metadata; }
     bool loaded(const QString &id) const { return m_instances.contains(id); }
+    Q_INVOKABLE bool moveEntry(const QString &moduleId, const QString &entryId, const QString &destinationId);
+    Q_INVOKABLE bool acceptsDirectories() const { return directoryReceiver() != nullptr; }
+    Q_INVOKABLE bool dropDirectories(const QList<QUrl> &urls);
+    Q_INVOKABLE bool dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls);
     Q_INVOKABLE bool activate(const QString &moduleId, const QString &entryId);
     Q_INVOKABLE bool trigger(const QString &moduleId, const QString &entryId, const QString &actionId);
 Q_SIGNALS:
     void entriesChanged();
+    void preferencesEdited(const QString &moduleId, const QVariantMap &changes);
 private:
+    DockModule *directoryReceiver() const;
     void refresh();
     ModuleCatalog m_catalog;
     std::unique_ptr<QQmlEngine> m_engine;

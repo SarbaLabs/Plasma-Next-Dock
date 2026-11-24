@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "modulemanager.h"
 #include <QQmlComponent>
+#include <QQmlContext>
+#include <KLocalizedQmlContext>
 #include <QSet>
 
 ModuleManager::ModuleManager(const ModuleCatalog &catalog) : m_catalog(catalog)
@@ -32,7 +34,12 @@ void ModuleManager::configure(QStringList enabled, const QVariantMap &settings)
         }
         // A separate engine keeps dock controllers and other root context properties
         // out of the module API. It is created only for an enabled package.
-        if (!m_engine) m_engine = std::make_unique<QQmlEngine>();
+        if (!m_engine) {
+            m_engine = std::make_unique<QQmlEngine>();
+            auto *strings = new KLocalizedQmlContext(m_engine.get());
+            strings->setTranslationDomain(QStringLiteral("plasma-next-dock"));
+            m_engine->rootContext()->setContextObject(strings);
+        }
         QQmlComponent component(m_engine.get(), package->entryPoint, QQmlComponent::PreferSynchronous);
         std::unique_ptr<QObject> object(component.isReady()
             ? component.createWithInitialProperties({{"configuration", options}}) : nullptr);
@@ -45,6 +52,9 @@ void ModuleManager::configure(QStringList enabled, const QVariantMap &settings)
         object.release()->setParent(m_engine.get());
         m_instances.insert(id, instance);
         if (auto *tasks = qobject_cast<TaskModule *>(instance)) tasks->setCandidates(m_candidates);
+        connect(instance, &DockModule::preferencesEdited, this, [this, id](const QVariantMap &changes) {
+            Q_EMIT preferencesEdited(id, changes);
+        });
         connect(instance, &DockModule::entriesChanged, this, &ModuleManager::refresh);
     }
     m_enabled = enabled;
@@ -118,6 +128,55 @@ bool ModuleManager::trigger(const QString &moduleId, const QString &entryId, con
             Q_EMIT module->actionTriggered(entryId, actionId);
         else return false;
         return true;
+    }
+    return false;
+}
+
+bool ModuleManager::moveEntry(const QString &moduleId, const QString &entryId, const QString &destinationId)
+{
+    auto *module = m_instances.value(moduleId);
+    if (!module || entryId == destinationId) return false;
+    bool source = false, destination = false;
+    for (const auto &value : std::as_const(m_entries)) {
+        const auto entry = value.toMap();
+        if (entry.value("moduleId") != moduleId || !entry.value("reorderable").toBool()) continue;
+        source |= entry.value("id") == entryId;
+        destination |= entry.value("id") == destinationId;
+    }
+    if (!source || !destination) return false;
+    Q_EMIT module->moveRequested(entryId, destinationId);
+    return true;
+}
+
+// Use the first enabled receiver in dock order, including empty providers.
+DockModule *ModuleManager::directoryReceiver() const
+{
+    for (const auto &id : m_enabled) {
+        auto *module = m_instances.value(id);
+        if (module && module->acceptsDirectoryDrops) return module;
+    }
+    return nullptr;
+}
+
+bool ModuleManager::dropDirectories(const QList<QUrl> &urls)
+{
+    auto *module = directoryReceiver();
+    if (!module || urls.isEmpty()) return false;
+    Q_EMIT module->directoriesDropped(urls);
+    return true;
+}
+
+bool ModuleManager::dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls)
+{
+    auto *module = m_instances.value(moduleId);
+    if (!module || urls.isEmpty()) return false;
+    for (const auto &value : std::as_const(m_entries)) {
+        const auto entry = value.toMap();
+        if (entry.value("moduleId") == moduleId && entry.value("id") == entryId
+            && entry.value("enabled", true).toBool() && entry.value("acceptsDocuments").toBool()) {
+            Q_EMIT module->documentsDropped(entryId, urls);
+            return true;
+        }
     }
     return false;
 }

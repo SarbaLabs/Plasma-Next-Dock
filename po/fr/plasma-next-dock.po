@@ -887,3 +887,27 @@ msgstr "Épaisseur de la capsule (px) :"
 
 msgid "Icon offset (px):"
 msgstr "Décalage des icônes (px) :"
+
+msgid "Folders"
+msgstr "Dossiers"
+
+msgid "Folder order:"
+msgstr "Ordre des dossiers :"
+
+msgid "Add a folder…"
+msgstr "Ajouter un dossier…"
+
+msgid "Add a folder or drag folders here."
+msgstr "Ajoutez un dossier ou glissez des dossiers ici."
+
+msgid "Choose an icon…"
+msgstr "Choisir une icône…"
+
+msgid "Restore original icon"
+msgstr "Rétablir l’icône d’origine"
+
+msgid "Remove folder shortcut"
+msgstr "Retirer le raccourci du dossier"
+
+msgid "Open folder"
+msgstr "Ouvrir le dossier"

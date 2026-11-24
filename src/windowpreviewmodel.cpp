@@ -57,9 +57,10 @@ QVariant WindowPreviewModel::data(const QModelIndex &index, int role) const
 void WindowPreviewModel::select(QAbstractItemModel *source, int row)
 {
     if (m_source) disconnect(m_source, nullptr, this, nullptr);
-    m_source = source;
-    m_target = source ? source->index(row, 0) : QModelIndex();
-    if (source) {
+    m_target = source && row >= 0 ? source->index(row, 0) : QModelIndex();
+    m_trackingTarget = m_target.isValid();
+    m_source = m_trackingTarget ? source : nullptr;
+    if (m_trackingTarget) {
         connect(source, &QAbstractItemModel::dataChanged, this, &WindowPreviewModel::schedule);
         connect(source, &QAbstractItemModel::rowsInserted, this, &WindowPreviewModel::schedule);
         connect(source, &QAbstractItemModel::rowsRemoved, this, &WindowPreviewModel::schedule);
@@ -97,7 +98,12 @@ void WindowPreviewModel::refresh()
     } else if (!windows.isEmpty()) {
         Q_EMIT dataChanged(index(0), index(count() - 1));
     }
-    if (!m_target.isValid()) Q_EMIT targetGone();
+    // A title-only popup intentionally has no task. Dismiss only when an
+    // index that we were tracking actually disappears from the native model.
+    if (m_trackingTarget && !m_target.isValid()) {
+        m_trackingTarget = false;
+        Q_EMIT targetGone();
+    }
 }
 void WindowPreviewModel::request(int row, const char *method)
 {

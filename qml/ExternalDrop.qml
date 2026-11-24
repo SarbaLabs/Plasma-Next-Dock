@@ -11,6 +11,8 @@ DropArea {
     required property var insertionAnchor
     required property var resolver
     required property var target
+    property var moduleDrop: null
+    property var directoryReceiver: null
     property Flickable scrollView: null
     // The viewport's local x axis runs along all four screen edges.
     readonly property int scrollDirection: {
@@ -49,11 +51,14 @@ DropArea {
         if (located && !scrollDirection && kind === "documents" && target.valid
             && (target.data("IsWindow") || target.data("IsGroupParent"))) dwell.start();
     }
+    function dropKind(plan) {
+        return plan.directoriesOnly && directoryReceiver?.acceptsDirectories() ? "directories" : plan.kind;
+    }
     function begin(urls, point) {
         clear();
         const plan = resolver.classify(urls);
         if (!plan.kind) return false;
-        kind = plan.kind; launchers = plan.launchers;
+        kind = dropKind(plan); launchers = plan.launchers;
         locate(point);
         return true;
     }
@@ -62,10 +67,16 @@ DropArea {
         if (point.x !== dragPoint.x || point.y !== dragPoint.y) locate(point);
         // Validate the actual payload again at drop time, not just the offer.
         const plan = resolver.classify(urls);
-        if (!plan.kind || plan.kind !== kind) { clear(); return false; }
+        if (!plan.kind || dropKind(plan) !== kind) { clear(); return false; }
         let accepted = false;
         if (kind === "applications") {
             accepted = tasksSource.insertLaunchers(plan.launchers, insertionAnchor(point));
+        } else if (kind === "directories") {
+            // An explicit folder target gets the copy, even on an otherwise empty dock.
+            const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
+            accepted = handled ?? directoryReceiver.dropDirectories(urls);
+        } else if (moduleDrop && moduleDrop(point, urls)) {
+            accepted = true;
         } else if (target.valid) {
             const row = target.index.row;
             const index = target.index;

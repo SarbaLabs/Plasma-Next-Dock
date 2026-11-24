@@ -97,7 +97,10 @@ private Q_SLOTS:
         QSignalSpy gone(&preview, &WindowPreviewModel::targetGone);
         delete source;
         QTRY_COMPARE(preview.count(), 0);
-        QVERIFY(!gone.isEmpty());
+        QCOMPARE(gone.count(), 1);
+        preview.clear();
+        preview.select(nullptr, -1);
+        QCOMPARE(gone.count(), 1);
         preview.activate(0); preview.close(0); // No stale source access.
         preview.clear(); QCOMPARE(preview.count(), 0);
     }

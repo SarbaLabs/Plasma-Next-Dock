@@ -1242,3 +1242,29 @@ The four-edge layout fixture checks the resting length and reserved depth and
 verifies that magnification leaves this footprint stable.
 On CachyOS Wayland KCalc stayed at y=86: a horizontal move from x=42 to
 x=540 and then x=1250 produced visible, hidden and visible dock states.
+
+### Folders module
+
+The provider fixture checks manual and alphabetical order, a context-menu
+reset to the original icon, live changes to `.directory`, and safe shortcut
+removal. The settings fixture opens the installed-format editor, adds and
+deduplicates folders, rejects a regular file and checks moving and icon edits.
+On CachyOS Wayland, the native context menu opened the French editor and its
+KDE icon picker. Changing a shortcut icon updated the dock. Clicking the
+shortcut opened Dolphin, and dragging a test document from Dolphin onto a
+second folder copied it while preserving the source file.
+
+In the Wayland check, dragging a directory from Dolphin onto a pinned application
+added a folder shortcut. Dragging that shortcut across another dock folder in
+manual order changed their positions without creating a directory on disk.
+Dragging the original directory from Dolphin onto the same destination copied
+its contents; the source and copied file matched. Automated cases cover disabled
+and empty providers, mixed file/directory selections, alphabetical order and
+persistence of the new manual order.
+
+Folder title tooltips use the shared popup without a native task selection.
+The preview tests clear a previously selected task and switch popup owners;
+only loss of a previously valid task should send the dismissal signal. On
+CachyOS Wayland the name stayed visible under a stationary pointer. On Debian
+Wayland, moving from System Settings to Pictures to Downloads and back showed
+each title while the same dock process remained alive.

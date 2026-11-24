@@ -52,7 +52,13 @@ QVariantMap LauncherResolver::classify(const QList<QUrl> &urls) const
     const auto services = KApplicationTrader::query([](const KService::Ptr &s) { return s->isApplication(); });
     QStringList applications;
     bool documents = false;
+    bool directoriesOnly = true;
     for (const auto &url : urls) {
+        if (url.isLocalFile() && QFileInfo(url.toLocalFile()).isDir()) {
+            documents = true;
+            continue;
+        }
+        directoriesOnly = false;
         const auto id = resolveLauncher(url, services);
         if (!id.isEmpty()) {
             if (!applications.contains(id)) applications << id;
@@ -65,7 +71,7 @@ QVariantMap LauncherResolver::classify(const QList<QUrl> &urls) const
     }
     // Mixed documents/launchers have no unambiguous action.
     if (documents && !applications.isEmpty()) return {};
-    return {{"kind", documents ? "documents" : "applications"}, {"launchers", applications}};
+    return {{"kind", documents ? "documents" : "applications"}, {"launchers", applications}, {"directoriesOnly", directoriesOnly}};
 }
 QStringList LauncherResolver::insert(const QStringList &existing, const QStringList &added, const QString &before) const
 {

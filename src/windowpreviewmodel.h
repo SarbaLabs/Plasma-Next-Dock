@@ -35,5 +35,6 @@ private:
     QPersistentModelIndex m_target;
     QList<QPersistentModelIndex> m_windows;
     QString m_highlightId;
+    bool m_trackingTarget = false;
     bool m_pending = false;
 };

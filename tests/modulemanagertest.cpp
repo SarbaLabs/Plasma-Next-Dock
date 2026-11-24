@@ -216,6 +216,63 @@ private Q_SLOTS:
         QVERIFY(DockSettings(path, true, nullptr, {}, "second").values()["enabledModules"].toStringList().isEmpty());
     }
 
+    void folderShortcuts()
+    {
+        const QString module = "org.sarbalabs.folders";
+        const QString root = dir.filePath("folder-test");
+        const QString other = dir.filePath("alpha");
+        QVERIFY(QDir().mkpath(root));
+        QVERIFY(QDir().mkpath(other));
+        const QString metadata = root + "/.directory";
+        const QByteArray original("[Desktop Entry]\nIcon=folder-blue\n");
+        write(metadata, original);
+        const QString first = QUrl::fromLocalFile(root).toString();
+        const QString second = QUrl::fromLocalFile(other).toString();
+        DockSettings profile(dir.filePath("folder-profile.ini"));
+        const QVariantList rows{QVariantMap{{"url", first}, {"icon", "folder-red"}}, QVariantMap{{"url", second}}};
+        QVERIFY(profile.updateModuleSettings(module, {{"folders", rows}}));
+        ModuleManager manager({{module, {{}, QUrl::fromLocalFile(QStringLiteral(FOLDERS_PACKAGE) + "/Main.qml")}}});
+        auto refresh = [&] { manager.configure({module}, profile.values()["moduleSettings"].toMap()); };
+        connect(&manager, &ModuleManager::preferencesEdited, &profile, &DockSettings::updateModuleSettings);
+        connect(&profile, &DockSettings::changed, this, refresh);
+        refresh();
+        QVERIFY(manager.loaded(module));
+        QCOMPARE(manager.entries().size(), 2);
+        QCOMPARE(manager.entries().first().toMap()["icon"], "folder-red");
+        QVERIFY(manager.trigger(module, first, "reset"));
+        QCOMPARE(manager.entries().first().toMap()["icon"], "folder-blue");
+        QFile saved(metadata);
+        QVERIFY(saved.open(QIODevice::ReadOnly));
+        QCOMPARE(saved.readAll(), original);
+        saved.close();
+        write(metadata, "[Desktop Entry]\nIcon=folder-green\n");
+        QTRY_COMPARE(manager.entries().first().toMap()["icon"], "folder-green");
+        QVERIFY(profile.updateModuleSettings(module, {{"sort", "name"}}));
+        QCOMPARE(manager.entries().first().toMap()["id"], second);
+        QVERIFY(!manager.moveEntry(module, first, second));
+        QVERIFY(profile.updateModuleSettings(module, {{"sort", "manual"}}));
+        QVERIFY(manager.moveEntry(module, first, second));
+        QCOMPARE(manager.entries().first().toMap()["id"], second);
+        DockSettings restored(dir.filePath("folder-profile.ini"));
+        QCOMPARE(restored.values()["moduleSettings"].toMap()[module].toMap()["folders"].toList().first().toMap()["url"], second);
+        QVERIFY(!manager.moveEntry(module, second, "missing"));
+        QVERIFY(manager.moveEntry(module, first, second));
+        QCOMPARE(manager.entries().first().toMap()["id"], first);
+        QVERIFY(manager.trigger(module, first, "remove"));
+        QCOMPARE(manager.entries().size(), 1);
+        QVERIFY(QFileInfo::exists(metadata));
+        QVERIFY(!manager.dropDocuments(module, first, {QUrl::fromLocalFile(metadata)}));
+        QVERIFY(manager.trigger(module, second, "remove"));
+        QVERIFY(manager.entries().isEmpty());
+        QVERIFY(manager.acceptsDirectories());
+        QVERIFY(manager.dropDirectories({QUrl(first), QUrl(second), QUrl(first)}));
+        QCOMPARE(manager.entries().size(), 2);
+        QCOMPARE(manager.entries().first().toMap()["id"], first);
+        manager.configure({}, {});
+        QVERIFY(!manager.acceptsDirectories());
+        QVERIFY(!manager.dropDirectories({QUrl(first)}));
+    }
+
     void profileRoundTrip()
     {
         const auto path = dir.filePath("profiles.ini");

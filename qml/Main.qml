@@ -81,6 +81,7 @@ Item {
     readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,
         vertical ? startPad : (dockOptions.edge === 0 ? inwardPad : 0), vertical ? canvasDepth : canvasLength, vertical ? canvasLength : canvasDepth)
     property int dragIndex: -1
+    property var draggedModuleEntry: null
     readonly property bool dragging: dragIndex >= 0
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
@@ -175,7 +176,8 @@ Item {
     function finishDrag() {
         if (!dragging) return;
         dragIndex = -1;
-        if (taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
+        if (!draggedModuleEntry && taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
+        draggedModuleEntry = null;
         root.refreshHover();
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
@@ -665,17 +667,18 @@ Item {
                             mainText: slot.entry?.name || slot.model.AppName || slot.model.display || ""
                             textFormat: Text.PlainText
                             mainItem: previewPanel
-                            interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
+                            interactive: !slot.entry && (!!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false)
                             // Deactivating any ToolTipArea schedules dismissal of Plasma's shared popup.
                             // Settle the active areas when selecting the task, before Enter opens it.
                             active: !root.dragging && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
                             onAboutToShow: {
-                                previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
+                                previewPanel.windowsEnabled = !slot.entry && (dockOptions.showWindowPreviews !== false || forceWindows);
                                 forceWindows = false;
-                                previewPanel.status = taskStatus;
+                                previewPanel.status = slot.entry ? null : taskStatus;
                                 previewPanel.applicationName = mainText;
-                                previewPanel.applicationIcon = slot.model.decoration;
-                                windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, root.nativeRow(slot.index));
+                                previewPanel.applicationIcon = slot.entry?.icon || slot.model.decoration;
+                                if (slot.entry) windowPreviews.clear();
+                                else windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, slot.nativeIndex);
                             }
                         }
                         StatusOverlay {
@@ -747,7 +750,7 @@ Item {
     DragHandler {
         id: reorder
         objectName: "reorderHandler"
-        enabled: !dockOptions.demo && (!dockOptions.taskSort || dockOptions.taskSort === 0)
+        enabled: !dockOptions.demo
         target: null
         acceptedButtons: Qt.LeftButton
         cursorShape: active ? Qt.ClosedHandCursor : Qt.ArrowCursor
@@ -755,7 +758,9 @@ Item {
             if (active) {
                 const p = root.mapFromItem(null, centroid.scenePressPosition.x, centroid.scenePressPosition.y);
                 const row = root.taskAt(p, false);
-                root.dragIndex = repeater.itemAt(row)?.pinned ? row : -1;
+                const slot = repeater.itemAt(row);
+                root.draggedModuleEntry = slot?.entry?.reorderable ? slot.entry : null;
+                root.dragIndex = root.draggedModuleEntry || (slot?.pinned && !dockOptions.taskSort) ? row : -1;
                 if (root.dragging) dockController.setHovered(true);
             } else root.finishDrag();
         }
@@ -763,9 +768,17 @@ Item {
             if (!active || !root.dragging) return;
             const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
             const targetIndex = root.taskAt(p, true);
-            if (targetIndex >= 0 && targetIndex !== root.dragIndex && repeater.itemAt(targetIndex)?.pinned
-                && taskSource.item.moveTask(root.nativeRow(root.dragIndex), root.nativeRow(targetIndex)))
+            if (targetIndex < 0 || targetIndex === root.dragIndex) return;
+            const target = repeater.itemAt(targetIndex);
+            const source = root.draggedModuleEntry;
+            if (source) {
+                if (target?.entry?.moduleId === source.moduleId && target.entry.reorderable
+                    && dockModules.moveEntry(source.moduleId, source.id, target.entry.id))
+                    root.dragIndex = targetIndex;
+            } else if (!dockOptions.taskSort && target?.pinned
+                       && taskSource.item.moveTask(root.nativeRow(root.dragIndex), root.nativeRow(targetIndex))) {
                 root.dragIndex = targetIndex;
+            }
         }
     }
     function showContextMenu(row, position) {
@@ -798,6 +811,12 @@ Item {
         resolver: launcherResolver
         target: dropTarget
         hitTest: point => root.nativeRow(root.taskAt(point, false))
+        directoryReceiver: typeof dockModules === "undefined" ? null : dockModules
+        moduleDrop: (point, urls) => {
+            const entry = repeater.itemAt(root.taskAt(point, false))?.entry;
+            if (entry?.acceptsDocuments === undefined) return undefined;
+            return entry.acceptsDocuments && dockModules.dropDocuments(entry.moduleId, entry.id, urls);
+        }
         insertionAnchor: point => {
             const list = dockSettings.values.launchers;
             const canonical = list.map(url => launcherResolver.launcher(url));
