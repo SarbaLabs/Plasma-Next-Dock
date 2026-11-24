@@ -4,7 +4,7 @@
 #include "backgroundeffects.h"
 #include "screenedge.h"
 #include "settings.h"
-#include "modules/modulemanager.h"
+#include "modules/taskrows.h"
 #include "layersurfaceposition.h"
 #include <QQuickView>
 class DockHost : public QObject
@@ -34,6 +34,7 @@ private:
     bool m_demo;
     DockGeometry::Edge m_edge;
     ModuleManager m_modules;
+    TaskRows m_taskRows;
     QQuickView m_view;
     DockController m_controller;
     BackgroundEffects m_backgroundEffects;

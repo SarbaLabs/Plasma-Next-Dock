@@ -74,7 +74,7 @@ ColumnLayout {
     }
     RowLayout {
         Layout.fillWidth: true
-        Controls.Label { text: i18n("Sort order:") }
+        Controls.Label { text: i18n("Pinned application order:") }
         Controls.ComboBox {
             id: sort
             objectName: "taskSortControl"
@@ -94,6 +94,22 @@ ColumnLayout {
         visible: !page.manual
         wrapMode: Text.WordWrap
         text: i18n("Manual reordering is unavailable with this sort order.")
+    }
+    Loader {
+        id: unpinnedSettings
+        Layout.fillWidth: true
+        active: dockSettings.values.enabledModules.includes("org.sarbalabs.unpinned")
+        source: typeof unpinnedSettingsUrl === "undefined" ? "" : unpinnedSettingsUrl
+        visible: status === Loader.Ready
+        onLoaded: item.configuration = Qt.binding(() => dockSettings.values.moduleSettings["org.sarbalabs.unpinned"] || {})
+        Connections {
+            target: unpinnedSettings.item
+            function onEdited(options) {
+                const all = Object.assign({}, dockSettings.values.moduleSettings);
+                all["org.sarbalabs.unpinned"] = options;
+                dockSettings.apply({moduleSettings: all});
+            }
+        }
     }
     ListView {
         id: view

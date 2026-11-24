@@ -6,7 +6,9 @@
 ModuleManager::ModuleManager(const ModuleCatalog &catalog) : m_catalog(catalog)
 {
     static const int type = qmlRegisterType<DockModule>("org.sarbalabs.nextdock.modules", 1, 0, "DockModule");
+    static const int taskType = qmlRegisterType<TaskModule>("org.sarbalabs.nextdock.modules", 1, 0, "TaskModule");
     Q_UNUSED(type);
+    Q_UNUSED(taskType);
 }
 
 void ModuleManager::configure(QStringList enabled, const QVariantMap &settings)
@@ -42,11 +44,20 @@ void ModuleManager::configure(QStringList enabled, const QVariantMap &settings)
         }
         object.release()->setParent(m_engine.get());
         m_instances.insert(id, instance);
+        if (auto *tasks = qobject_cast<TaskModule *>(instance)) tasks->setCandidates(m_candidates);
         connect(instance, &DockModule::entriesChanged, this, &ModuleManager::refresh);
     }
     m_enabled = enabled;
     m_configuring = false;
     refresh();
+}
+
+void ModuleManager::setTaskCandidates(const QVariantList &value)
+{
+    if (m_candidates == value) return;
+    m_candidates = value;
+    for (auto *instance : std::as_const(m_instances))
+        if (auto *tasks = qobject_cast<TaskModule *>(instance)) tasks->setCandidates(value);
 }
 
 void ModuleManager::refresh()
@@ -66,6 +77,7 @@ void ModuleManager::refresh()
                 continue;
             }
             seen.insert(key);
+            if (!qobject_cast<const TaskModule *>(instance)) entry.remove("taskRef");
             entry.insert("moduleId", id);
             next.append(entry);
         }

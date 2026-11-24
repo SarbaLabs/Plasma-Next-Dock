@@ -2,9 +2,9 @@
 
 A package is a directory of editable files. The core discovers packages once at
 process startup and creates an independent provider for each dock that enables
-one. The initial release of the loader exposes entries and actions to the core
-and a developer inspection command. Rendering lateral entries, their native
-menus and the placement editor belong to subsequent roadmap PRs.
+one. The official task provider displays its entries after pinned launchers.
+The inspection command also works for generic modules, such as the counter.
+The three-zone placement editor is a subsequent roadmap step.
 
 ## Try the example
 
@@ -78,8 +78,8 @@ Configure and Quit actions. Providers supply data, never dock geometry.
 
 ## Per-dock configuration
 
-`enabledModules` is an ordered string list in a dock profile. Existing profiles
-default to an empty list. Each provider receives only its own map from the
+`enabledModules` is an ordered string list in a dock profile. Existing profiles gain the official unpinned task module on upgrade. Other
+modules remain opt-in. Each provider receives only its own map from the
 profile's `moduleSettings`, keyed by module ID, as `configuration` before QML
 completion. Use bindings and defaults (the counter accepts a `label` string).
 A host-side settings change updates the running provider. Treat this input as
@@ -88,14 +88,32 @@ read-only; changes made to the provider's copy do not persist. Optionally ship a
 editor; it does not load a settings page at startup.
 
 For a developer test before the editor is available, quit the dock, back up its
-configuration, and run this command for a single module on the first dock:
+configuration, and run this command to replace the enabled list on the first dock with the counter and the official task module:
 
 ```sh
-kwriteconfig6 --file plasma-next-dock.ini --group General --key enabledModules org.example.counter
+kwriteconfig6 --file plasma-next-dock.ini --group General --key enabledModules org.example.counter,org.sarbalabs.unpinned
 ```
 
 Restart the dock to load the enabled provider. Inspection works independently
 of profile configuration.
+
+## Native task entries
+
+The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses
+`TaskModule`, an API 1 specialization of `DockModule`. Its read-only
+`candidates` list contains the current unpinned task identities, application
+name, title, icon, last activation in milliseconds, desktop position and activity
+label. Task IDs are opaque and valid for the lifetime of the native model item.
+Publish a candidate ID as `taskRef` on an entry to reuse its existing native
+task delegate, including group previews, menus, badges and action targeting.
+Pinned membership and window avoidance are owned by the core. A task can occupy
+only one visible slot. An empty or disabled provider contributes no slots.
+
+The package's Settings.qml receives its per-profile `configuration` and emits
+`edited(options)`. Its selector in Applications and sorting saves immediately.
+The four orders are name, recent activation, virtual desktop and activity.
+Old automatic sort preferences initialize the module; old manual order becomes
+alphabetical. The trailing side is fixed until the placement editor ships.
 
 ## Errors and trust
 

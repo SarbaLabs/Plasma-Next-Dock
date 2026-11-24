@@ -17,6 +17,18 @@ DockSettings::DockSettings(const QString &file, bool persistent, QObject *parent
         for (const auto &key : defaults().keys())
             if (m_store.contains(key)) saved[key] = m_store.value(key);
     }
+    // Profiles from API 1 already have an enabledModules list, often empty.
+    // Add the previously built-in task block once, preserving third-party modules.
+    if (!saved.isEmpty() && !saved.value("unpinnedTasksMigrated").toBool()) {
+        auto modules = saved.value("enabledModules").toStringList();
+        if (!modules.contains("org.sarbalabs.unpinned")) modules.append("org.sarbalabs.unpinned");
+        saved["enabledModules"] = modules;
+        auto options = saved.value("moduleSettings").toMap();
+        const QStringList orders{"name", "name", "recent", "desktop", "activity"};
+        if (!options.contains("org.sarbalabs.unpinned"))
+            options.insert("org.sarbalabs.unpinned", QVariantMap{{"sort", orders.value(saved.value("taskSort").toInt(), "name")}});
+        saved["moduleSettings"] = options;
+    }
     m_values = normalized(saved);
 }
 bool DockSettings::startsAtLogin() const
@@ -34,7 +46,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 }
 QVariantMap DockSettings::defaults()
 {
-    return {{"enabledModules", QStringList{}}, {"moduleSettings", QVariantMap{}}, {"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
+    return {{"unpinnedTasksMigrated", true}, {"enabledModules", QStringList{"org.sarbalabs.unpinned"}}, {"moduleSettings", QVariantMap{}}, {"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"dockShadowRole", "custom"}, {"dockShadowColor", "#000000"}, {"dockShadowX", 0}, {"dockShadowY", 2}, {"dockShadowStrength", 0}, {"dockShadowSize", 12},
         {"iconShadowRole", "custom"}, {"iconShadowColor", "#000000"}, {"iconShadowX", 0}, {"iconShadowY", 2}, {"iconShadowStrength", 0}, {"iconShadowSize", 6},
         {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
@@ -46,7 +58,7 @@ QVariantMap DockSettings::defaults()
         {"groupingLauncherUrlBlacklist", QStringList{}}, {"taskSort", 0}, {"groupClick", 0},
         {"minimizeActive", false}, {"middleClick", 0}, {"wheelAction", 0}, {"skipMinimized", true},
         {"filterDesktop", true}, {"filterActivity", true}, {"filterScreen", false}, {"onlyMinimized", false},
-        {"layoutDirection", 0}, {"showSeparator", true}, {"revealAttention", false},
+        {"revealAttention", false},
         {"showWindowPreviews", true}, {"highlightPreviewWindow", true}, {"showAudioIndicator", true}, {"muteOnClick", true},
         {"showMediaControls", true}, {"showBadges", true}, {"showProgress", true},
         {"linkCornerRadii", false}, {"topLeftRadius", 10}, {"topRightRadius", 10}, {"bottomRightRadius", 10}, {"bottomLeftRadius", 10},
@@ -99,10 +111,10 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
             : QVariant(integer ? std::round(std::clamp(value, low, high)) : std::clamp(value, low, high));
     };
     for (const auto &key : {"iconHoverHighlight", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "groupApplications", "minimizeActive", "skipMinimized", "filterDesktop",
-                           "filterActivity", "filterScreen", "onlyMinimized", "showSeparator", "revealAttention"})
+                           "filterActivity", "filterScreen", "onlyMinimized", "revealAttention"})
         result[key] = result[key].toBool();
     for (const auto &[key, maximum] : {std::pair{"taskSort", 4}, {"groupClick", 2},
-                                     {"middleClick", 3}, {"wheelAction", 1}, {"layoutDirection", 2}}) {
+                                     {"middleClick", 3}, {"wheelAction", 1}}) {
         bool ok = false;
         const int value = result[key].toInt(&ok);
         result[key] = ok && value >= 0 && value <= maximum ? value : defaults()[key];

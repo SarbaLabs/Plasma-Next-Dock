@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "modules/modulemanager.h"
 #include "settings.h"
+#include "modules/taskrows.h"
+#include <QStandardItemModel>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
@@ -93,17 +96,78 @@ private Q_SLOTS:
         QVERIFY(second.loaded(id));
     }
 
+    void unpinnedTaskSection()
+    {
+        const QString module = "org.sarbalabs.unpinned";
+        const QDir packageDir(QStringLiteral(UNPINNED_PACKAGE));
+        ModuleCatalog catalog{{module, {{}, QUrl::fromLocalFile(packageDir.filePath("Main.qml"))}}};
+        ModuleManager manager(catalog);
+        QStandardItemModel source;
+        enum { Pinned = Qt::UserRole + 1, Desktop, Activity, Activated };
+        source.setItemRoleNames({{Qt::DisplayRole, "display"}, {Pinned, "HasLauncher"},
+            {Desktop, "VirtualDesktops"}, {Activity, "Activities"}, {Activated, "LastActivated"}});
+        for (const auto &name : {"Zulu", "Pinned", "Alpha"}) source.appendRow(new QStandardItem(name));
+        source.item(1)->setData(true, Pinned);
+        source.item(0)->setData(QDateTime::fromMSecsSinceEpoch(10000), Activated);
+        source.item(0)->setData(QVariantList{"second"}, Desktop);
+        source.item(2)->setData(QVariantList{"first"}, Desktop);
+        source.item(0)->setData(QStringList{"activity-b"}, Activity);
+        source.item(2)->setData(QStringList{"activity-a"}, Activity);
+        TaskRows rows(&manager);
+        rows.setProperty("desktopIds", QVariantList{"second", "first"});
+        rows.setProperty("activityNames", QVariantMap{{"activity-b", "Reading"}, {"activity-a", "Writing"}});
+        rows.setSourceModel(&source);
+        manager.configure({module}, {});
+        QTRY_COMPARE(rows.rowCount(), 3);
+        QCOMPARE(rows.nativeRow(0), 1);
+        QCOMPARE(rows.nativeRow(1), 2);
+        for (const auto &sort : {"recent", "desktop", "activity", "name"}) {
+            manager.configure({module}, {{module, QVariantMap{{"sort", sort}}}});
+            QCOMPARE(rows.nativeRow(1), QByteArray(sort) == "name" ? 2 : 0);
+            QCOMPARE(rows.visualRow(rows.nativeRow(2)), 2);
+        }
+        source.item(0)->setData(true, Pinned);
+        QTRY_COMPARE(manager.entries().size(), 1);
+        QCOMPARE(rows.rowCount(), 3);
+        QCOMPARE(rows.nativeRow(0), 0);
+        manager.configure({}, {});
+        QCOMPARE(rows.rowCount(), 2);
+        source.item(1)->setData(false, Pinned);
+        QTRY_COMPARE(rows.rowCount(), 1);
+        manager.configure({module}, {});
+        QTRY_COMPARE(rows.rowCount(), 3);
+        source.removeRow(0);
+        QTRY_COMPARE(rows.rowCount(), 2);
+        QCOMPARE(rows.nativeRow(0), 1);
+    }
+
+    void migrateExistingModuleProfileOnce()
+    {
+        const auto path = dir.filePath("old-profile.ini");
+        {
+            QSettings old(path, QSettings::IniFormat);
+            old.setValue("enabledModules", QStringList{id});
+            old.setValue("taskSort", 3);
+        }
+        DockSettings upgraded(path);
+        const QString module = "org.sarbalabs.unpinned";
+        QCOMPARE(upgraded.values().value("enabledModules").toStringList(), QStringList({id, module}));
+        QCOMPARE(upgraded.values().value("moduleSettings").toMap().value(module).toMap().value("sort"), "desktop");
+        QVERIFY(upgraded.apply({{"enabledModules", QStringList{id}}}));
+        QCOMPARE(DockSettings(path).values().value("enabledModules").toStringList(), QStringList{id});
+    }
+
     void profileRoundTrip()
     {
         const auto path = dir.filePath("profiles.ini");
         const QVariantMap options{{id, QVariantMap{{"label", "First"}}}};
         DockSettings first(path);
-        QVERIFY(first.values().value("enabledModules").toStringList().isEmpty());
+        QCOMPARE(first.values().value("enabledModules").toStringList(), QStringList{"org.sarbalabs.unpinned"});
         QVERIFY(first.apply({{"enabledModules", QStringList{id}}, {"moduleSettings", options}}));
         DockSettings restored(path), other(path, true, nullptr, {}, "docks/2");
         QCOMPARE(restored.values().value("enabledModules").toStringList(), QStringList{id});
         QCOMPARE(restored.values().value("moduleSettings").toMap(), options);
-        QVERIFY(other.values().value("enabledModules").toStringList().isEmpty());
+        QCOMPARE(other.values().value("enabledModules").toStringList(), QStringList{"org.sarbalabs.unpinned"});
     }
 };
 QTEST_GUILESS_MAIN(ModuleManagerTest)

@@ -62,8 +62,12 @@ int main(int argc, char **argv)
         return 0;
     }
     const bool smoke = parser.isSet("smoke-test"), demo = parser.isSet("demo");
+    auto roots = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
+    // Also honor an installation prefix outside XDG_DATA_DIRS (e.g. staged installs).
+    const QDir desktopEntryDir(QFileInfo(app.applicationDirPath() + "/" + DOCK_AUTOSTART_ENTRY).absolutePath());
+    roots.append(QDir::cleanPath(desktopEntryDir.absoluteFilePath("..")));
     const auto catalog = (smoke || demo) ? ModuleCatalog{}
-        : discoverModules(QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation));
+        : discoverModules(roots);
     if (parser.isSet("list-modules") || parser.isSet("inspect-module")) {
         QVariantList result;
         if (parser.isSet("inspect-module")) {
@@ -117,6 +121,8 @@ int main(int argc, char **argv)
     configEngine.rootContext()->setContextProperty("dockSettings", profiles.current());
     configEngine.rootContext()->setContextProperty("dockProfiles", &profiles);
     configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
+    configEngine.rootContext()->setContextProperty("unpinnedSettingsUrl",
+        catalog.value("org.sarbalabs.unpinned").metadata.value("settingsUrl").toUrl());
     auto outputs = [&] {
         QStringList names;
         QVariantMap descriptions;

@@ -1,18 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 .pragma library
 
-// Indices remain native model rows; reversal changes only their presentation.
-function reversed(direction, vertical, rtl) {
-    return direction === 2 || (direction !== 1 && !vertical && rtl);
-}
-function boundary(pinned) {
-    if (pinned.length < 2 || !pinned[0]) return -1;
-    let index = 0;
-    while (index < pinned.length && pinned[index]) ++index;
-    // Never draw an outside or misleading separator for an interleaved model.
-    for (let i = index; i < pinned.length; ++i) if (pinned[i]) return -1;
-    return index === pinned.length ? -1 : index;
-}
 function cycle(model, row, direction, skipMinimized, roles) {
     const parent = model.makeModelIndex(row);
     if (!parent.valid) return false;

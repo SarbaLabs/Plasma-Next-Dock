@@ -10,10 +10,10 @@ Item {
     function finishMove() { saves++; }
     ListModel {
         id: entries
-        ListElement { display: "One"; decoration: "folder" }
-        ListElement { display: "Two"; decoration: "folder" }
-        ListElement { display: "Three"; decoration: "folder" }
-        ListElement { display: "Four"; decoration: "folder" }
-        ListElement { display: "Five"; decoration: "folder" }
+        ListElement { IsLauncher: true; display: "One"; decoration: "folder" }
+        ListElement { IsLauncher: true; display: "Two"; decoration: "folder" }
+        ListElement { IsLauncher: true; display: "Three"; decoration: "folder" }
+        ListElement { IsLauncher: true; display: "Four"; decoration: "folder" }
+        ListElement { IsLauncher: true; display: "Five"; decoration: "folder" }
     }
 }

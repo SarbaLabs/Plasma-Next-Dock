@@ -28,7 +28,7 @@ TestCase {
                 testEnvironment.behaviorOptions({iconSize: size});
                 const count = root.layoutCount;
                 const expected = count * root.base + (count - 1) * (dockOptions.iconSpacing ?? 10) * root.fitScale
-                    + root.dividerSpan + 2 * root.endPadding;
+                    + 2 * root.endPadding;
                 fuzzyCompare(root.vertical ? capsule.height : capsule.width, Math.min(expected, root.length), 0.01);
             }
         } finally { testEnvironment.behaviorOptions({iconSize: original}); }

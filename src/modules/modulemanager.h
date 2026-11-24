@@ -20,6 +20,24 @@ Q_SIGNALS:
     void actionTriggered(const QString &entryId, const QString &actionId);
 };
 
+// Read-only task snapshots are opt-in. Providers never receive KDE model objects.
+class TaskModule : public DockModule
+{
+    Q_OBJECT
+    Q_PROPERTY(QVariantList candidates READ candidates NOTIFY candidatesChanged)
+public:
+    QVariantList candidates() const { return m_candidates; }
+    void setCandidates(const QVariantList &value) {
+        if (m_candidates == value) return;
+        m_candidates = value;
+        Q_EMIT candidatesChanged();
+    }
+Q_SIGNALS:
+    void candidatesChanged();
+private:
+    QVariantList m_candidates;
+};
+
 class ModuleManager : public QObject
 {
     Q_OBJECT
@@ -28,6 +46,7 @@ public:
     explicit ModuleManager(const ModuleCatalog &catalog);
     void configure(QStringList enabled, const QVariantMap &settings);
     QVariantList entries() const { return m_entries; }
+    void setTaskCandidates(const QVariantList &value);
     bool loaded(const QString &id) const { return m_instances.contains(id); }
     Q_INVOKABLE bool activate(const QString &moduleId, const QString &entryId);
     Q_INVOKABLE bool trigger(const QString &moduleId, const QString &entryId, const QString &actionId);
@@ -39,6 +58,7 @@ private:
     std::unique_ptr<QQmlEngine> m_engine;
     QHash<QString, DockModule *> m_instances;
     QStringList m_enabled;
+    QVariantList m_candidates;
     QVariantList m_entries;
     bool m_configuring = false;
 };

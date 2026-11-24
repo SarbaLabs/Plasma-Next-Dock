@@ -30,7 +30,7 @@ static LayerShellQt::Window::Anchor edgeAnchor(DockGeometry::Edge edge)
 }
 DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland, const ModuleCatalog &catalog)
     : m_settings(settings), m_screen(screen), m_demo(demo),
-      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_modules(catalog), m_controller(&m_view), m_backgroundEffects(&m_view)
+      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_modules(catalog), m_taskRows(&m_modules), m_controller(&m_view), m_backgroundEffects(&m_view)
 {
     connect(&m_controller, &DockController::capsuleChanged, &m_backgroundEffects, &BackgroundEffects::setGeometry);
     m_view.setTitle(QStringLiteral("Plasma Next Dock"));
@@ -69,6 +69,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("outputSize", screen->size());
     m_view.rootContext()->setContextProperty("outputGeometry", screen->geometry());
     m_view.rootContext()->setContextProperty("dockModules", &m_modules);
+    m_view.rootContext()->setContextProperty("dockTaskRows", &m_taskRows);
     update(false);
     connect(&m_view, &QWindow::widthChanged, this, &DockHost::position);
     connect(&m_view, &QWindow::heightChanged, this, &DockHost::position);

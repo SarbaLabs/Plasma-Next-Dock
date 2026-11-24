@@ -25,7 +25,7 @@ find_package(LayerShellQt REQUIRED)
 find_package(PlasmaWaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
-add_library(dockcore STATIC src/modules/modulecatalog.cpp src/modules/modulemanager.cpp src/dockprofiles.cpp src/launcherresolver.cpp src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/capsulegeometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
+add_library(dockcore STATIC src/modules/taskrows.cpp src/modules/modulecatalog.cpp src/modules/modulemanager.cpp src/dockprofiles.cpp src/launcherresolver.cpp src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/capsulegeometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
 qt_add_shaders(dockcore iconcolors PREFIX "/" FILES shaders/iconcolor.frag)
 target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
@@ -50,6 +50,7 @@ set(DOCK_QML_FILES
     qml/SettingsForm.qml qml/Measure.qml qml/DockPalette.qml qml/ColorSetting.qml qml/CapsuleBackground.qml qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
     qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/AppearanceSettings.qml qml/IconSettings.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
 qt_add_resources(plasma-next-dock dockqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
+install(DIRECTORY modules/org.sarbalabs.unpinned DESTINATION ${CMAKE_INSTALL_DATADIR}/plasma-next-dock/modules)
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.
@@ -72,7 +73,7 @@ if(BUILD_TESTING)
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/status-fixture/plasma/applets")
     add_executable(modulemanagertest tests/modulemanagertest.cpp)
     target_link_libraries(modulemanagertest PRIVATE dockcore Qt6::Test)
-    target_compile_definitions(modulemanagertest PRIVATE MODULE_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/examples/modules/org.example.counter")
+    target_compile_definitions(modulemanagertest PRIVATE UNPINNED_PACKAGE="${CMAKE_CURRENT_SOURCE_DIR}/modules/org.sarbalabs.unpinned" MODULE_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/examples/modules/org.example.counter")
     add_test(NAME dock-module-api COMMAND modulemanagertest)
     add_test(NAME dock-module-install COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/module-install.sh
         $<TARGET_FILE:plasma-next-dock> ${CMAKE_CURRENT_SOURCE_DIR}/examples/modules/org.example.counter)
@@ -92,7 +93,7 @@ if(BUILD_TESTING)
     set_tests_properties(native-application-menus PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;LANGUAGE=en;LANG=C.UTF-8")
     add_executable(hoverqmltest tests/hoverqmltest.cpp)
     target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest Qt6::DBus)
-    target_compile_definitions(hoverqmltest PRIVATE DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
+    target_compile_definitions(hoverqmltest PRIVATE UNPINNED_SETTINGS="${CMAKE_CURRENT_SOURCE_DIR}/modules/org.sarbalabs.unpinned/Settings.qml" DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
     add_dependencies(hoverqmltest pofiles)
     # Resource names determine generated paths, not only linker symbols. Never
     # reuse the application's name for another target in this build directory.

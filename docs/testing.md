@@ -1171,3 +1171,17 @@ On CachyOS a normal Wayland launch read an isolated enabled profile and a
 fixture recorded provider completion on disk. On Debian a single-output Wayland
 demo launched from the staged installation. Demo mode does not load user modules.
 There is no lateral-entry rendering or module placement editor in this change.
+
+## Unpinned applications module
+
+All 17 CTest entries passed on CachyOS and Debian 13.7 (Qt 6.8.2). The native
+task fixture runs the installed module format against a shared source model.
+It checks all four sort orders, source/visual row mapping, pin/unpin, removal
+and disabling the module. Settings tests cover legacy profiles, a deliberate
+disable after migration, and changing the module sort without changing pin order.
+Debian staged installation and package discovery also passed.
+
+On the CachyOS Wayland desktop the installed dock displayed an unpinned KCalc
+after the pinned icons. Its native Close menu action closed KCalc and removed
+that slot. A separate test profile showed the module selector under Applications
+and sorting. This run used a single output.

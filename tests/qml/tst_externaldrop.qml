@@ -97,7 +97,7 @@ TestCase {
         compare(drop.containsDrag, false);
         compare(drop.kind, "");
     }
-    function test_insertionAllEdgesAndDirections() {
+    function test_insertionAllEdges() {
         const saved = JSON.parse(JSON.stringify(dockSettings.values));
         const component = Qt.createComponent("qrc:/qml/Main.qml");
         compare(component.status, Component.Ready, component.errorString());
@@ -111,18 +111,14 @@ TestCase {
             source.item.tasks.setProperty(1, "LauncherUrl", "applications:Second.desktop");
             const area = findChild(dock, "externalDrop");
             for (let edge = 0; edge < 4; ++edge) {
-                for (let direction = 1; direction <= 2; ++direction) {
-                    testEnvironment.setEdge(edge);
-                    testEnvironment.behaviorOptions({layoutDirection: direction});
-                    wait(30);
-                    const icon = findChild(dock, "icon0");
-                    const center = icon.mapToItem(dock, icon.width / 2, icon.height / 2);
-                    const sign = dock.reverseLayout ? -1 : 1;
-                    const before = Qt.point(center.x - (edge < 2 ? sign * 2 : 0), center.y - (edge >= 2 ? sign * 2 : 0));
-                    const after = Qt.point(center.x + (edge < 2 ? sign * 2 : 0), center.y + (edge >= 2 ? sign * 2 : 0));
-                    compare(area.insertionAnchor(before), "applications:First.desktop");
-                    compare(area.insertionAnchor(after), "applications:Second.desktop");
-                }
+                testEnvironment.setEdge(edge);
+                wait(30);
+                const icon = findChild(dock, "icon0");
+                const center = icon.mapToItem(dock, icon.width / 2, icon.height / 2);
+                const before = Qt.point(center.x - (edge < 2 ? 2 : 0), center.y - (edge >= 2 ? 2 : 0));
+                const after = Qt.point(center.x + (edge < 2 ? 2 : 0), center.y + (edge >= 2 ? 2 : 0));
+                compare(area.insertionAnchor(before), "applications:First.desktop");
+                compare(area.insertionAnchor(after), "applications:Second.desktop");
             }
         } finally { dockSettings.apply(saved); }
     }

@@ -36,6 +36,14 @@ TestCase {
         window.width = 460;
         wait(0);
         compare(screen.implicitWidth, preferred);
+        const moduleSort = findChild(window, "unpinnedSortControl");
+        verify(moduleSort !== null);
+        compare(moduleSort.count, 4);
+        const pinOrder = dockSettings.values.taskSort;
+        moduleSort.activated(2);
+        compare(dockSettings.values.moduleSettings["org.sarbalabs.unpinned"].sort, "desktop");
+        compare(dockSettings.values.taskSort, pinOrder);
+        moduleSort.activated(0);
         const spacing = findChild(window, "spacingControl");
         const buttons = findChild(window, "settingsButtons");
         verify(spacing !== null && buttons !== null);
@@ -64,7 +72,8 @@ TestCase {
             findChild(window, name + "Control").checked = false;
         const behavior = findChild(window, "behaviorSettings");
         verify(behavior !== null);
-        behavior.change("layoutDirection", 2);
+        verify(!findChild(window, "layoutDirectionControl"));
+        verify(!findChild(window, "showSeparatorControl"));
         behavior.change("minimizeActive", true);
         behavior.change("bounceHeight", 22);
         behavior.change("bounceOnLaunch", false);
@@ -89,7 +98,6 @@ TestCase {
         spacing.value = 40;
         buttons.applied();
         compare(dockSettings.values.spacing, 40);
-        compare(dockSettings.values.layoutDirection, 2);
         compare(dockSettings.values.minimizeActive, true);
         compare(dockSettings.values.bounceHeight, 22);
         compare(dockSettings.values.bounceOnLaunch, false);
