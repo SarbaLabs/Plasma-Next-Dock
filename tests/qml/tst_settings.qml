@@ -47,6 +47,7 @@ TestCase {
         verify(moduleSort !== null);
         compare(moduleSort.count, 4);
         const pinOrder = dockSettings.values.taskSort;
+        loader.item.edited({showLabels: false});
         moduleSort.activated(2);
         compare(dockSettings.values.moduleSettings["org.sarbalabs.unpinned"].sort, "desktop");
         compare(dockSettings.values.taskSort, pinOrder);
@@ -56,6 +57,7 @@ TestCase {
         tryCompare(loader, "status", Loader.Ready);
         const reopenedSort = findChild(loader.item, "unpinnedSortControl");
         compare(reopenedSort.currentIndex, 2);
+        compare(loader.item.configuration.showLabels, false);
         reopenedSort.activated(0);
         loader.item.close();
         const spacing = findChild(window, "spacingControl");

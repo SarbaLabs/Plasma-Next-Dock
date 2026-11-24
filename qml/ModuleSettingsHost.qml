@@ -32,7 +32,7 @@ Loader {
         }
         function onEdited(options) {
             const settings = Object.assign({}, host.profile.values.moduleSettings);
-            settings[host.moduleId] = options;
+            settings[host.moduleId] = Object.assign({}, settings[host.moduleId], options);
             host.profile.apply({moduleSettings: settings});
         }
     }

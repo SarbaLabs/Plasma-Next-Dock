@@ -85,8 +85,10 @@ completion. Use bindings and defaults (the counter accepts a `label` string).
 A host-side settings change updates the running provider. Treat this input as
 read-only; changes made to the provider's copy do not persist. Optionally ship a
 `Settings.qml` beside Main.qml. Declare a Window or ApplicationWindow with a writable
-`configuration` property and an `edited(var options)` signal. The host opens it
-on demand from the context menu of a task contributed by the module.
+`configuration` property and an `edited(var options)` signal. Pass only the preferences that changed.
+The host merges top-level keys into the module’s current configuration for that
+dock. A supplied list or nested object replaces the previous value of that key.
+The host opens the window on demand from the context menu of a task contributed by the module.
 
 For a developer test before the editor is available, quit the dock, back up its
 configuration, and run this command to replace the enabled list on the first dock with the counter and the official task module:

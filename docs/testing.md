@@ -1184,7 +1184,8 @@ Debian staged installation and package discovery also passed.
 On the CachyOS Wayland desktop the installed dock displayed an unpinned KCalc
 after the pinned icons. Its native Close menu action closed KCalc and removed
 that slot. The settings fixture checks opening and reopening the independent module window,
-while the task fixture checks which rows offer module configuration. This run used a single output.
+including retention of an independent preference after a sort change.
+The task fixture checks which rows offer module configuration. This run used a single output.
 
 With an isolated always-visible CachyOS profile, right-clicking KCalc opened the
 module window directly. Selecting Virtual desktop saved the order in that profile.
