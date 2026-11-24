@@ -404,6 +404,7 @@ custom prefix, supply the same `PLASMA_NEXT_DOCK_PREFIX`. No Plasma reset is nee
 ## Development and licensing
 
 - [Architecture](docs/architecture.md)
+- [Dock module API and installable example](docs/modules.md)
 - [Development status and roadmap](docs/roadmap.md)
 - [Tests and desktop acceptance](docs/testing.md)
 - [Licenses, provenance and reuse](docs/licensing.md)

@@ -28,9 +28,9 @@ static LayerShellQt::Window::Anchor edgeAnchor(DockGeometry::Edge edge)
     constexpr Layer::Anchor anchors[] = {Layer::AnchorBottom, Layer::AnchorTop, Layer::AnchorLeft, Layer::AnchorRight};
     return anchors[edge];
 }
-DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland)
+DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland, const ModuleCatalog &catalog)
     : m_settings(settings), m_screen(screen), m_demo(demo),
-      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_controller(&m_view), m_backgroundEffects(&m_view)
+      m_edge(static_cast<DockGeometry::Edge>(settings->values()["edge"].toInt())), m_modules(catalog), m_controller(&m_view), m_backgroundEffects(&m_view)
 {
     connect(&m_controller, &DockController::capsuleChanged, &m_backgroundEffects, &BackgroundEffects::setGeometry);
     m_view.setTitle(QStringLiteral("Plasma Next Dock"));
@@ -68,6 +68,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("dockSettings", settings);
     m_view.rootContext()->setContextProperty("outputSize", screen->size());
     m_view.rootContext()->setContextProperty("outputGeometry", screen->geometry());
+    m_view.rootContext()->setContextProperty("dockModules", &m_modules);
     update(false);
     connect(&m_view, &QWindow::widthChanged, this, &DockHost::position);
     connect(&m_view, &QWindow::heightChanged, this, &DockHost::position);
@@ -102,6 +103,10 @@ void DockHost::update(bool settingsOpen)
     // Opening or closing settings changes visibility policy even when all
     // drawing options are identical. Keep the existing QML bindings intact.
     if (options != m_options) {
+        if (m_options.value("enabledModules") != options.value("enabledModules")
+            || m_options.value("moduleSettings") != options.value("moduleSettings")) {
+            m_modules.configure(options.value("enabledModules").toStringList(), options.value("moduleSettings").toMap());
+        }
         m_options = options;
         m_view.rootContext()->setContextProperty("dockOptions", options);
         m_backgroundEffects.configure(options);

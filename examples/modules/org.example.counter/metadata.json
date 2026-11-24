@@ -1,0 +1,9 @@
+{
+    "id": "org.example.counter",
+    "name": "Example counter",
+    "nameTranslations": { "fr": "Compteur de démonstration" },
+    "description": "A counter with primary and context actions.",
+    "descriptionTranslations": { "fr": "Un compteur avec une action principale et un menu contextuel." },
+    "version": "1.0",
+    "apiVersion": 1
+}

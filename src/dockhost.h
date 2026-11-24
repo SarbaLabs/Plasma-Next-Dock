@@ -4,13 +4,14 @@
 #include "backgroundeffects.h"
 #include "screenedge.h"
 #include "settings.h"
+#include "modules/modulemanager.h"
 #include "layersurfaceposition.h"
 #include <QQuickView>
 class DockHost : public QObject
 {
     Q_OBJECT
 public:
-    DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland);
+    DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland, const ModuleCatalog &catalog);
     ~DockHost() override;
     void update(bool settingsOpen);
     bool beginKeyboard();
@@ -32,6 +33,7 @@ private:
     QVariantMap m_options;
     bool m_demo;
     DockGeometry::Edge m_edge;
+    ModuleManager m_modules;
     QQuickView m_view;
     DockController m_controller;
     BackgroundEffects m_backgroundEffects;
