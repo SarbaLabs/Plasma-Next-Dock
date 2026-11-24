@@ -149,6 +149,8 @@ void DockHost::position()
     const int margin = m_view.rootObject() ? m_view.rootObject()->property("surfaceMargin").toInt() : 0;
     const auto margins = DockGeometry::alignmentMargins(output.size(), m_view.size(), m_edge, alignment, margin);
     const QRect rect = DockGeometry::surface(output.marginsRemoved(margins), m_view.size(), m_edge, alignment);
+    const int thickness = m_view.rootObject() ? m_view.rootObject()->property("reservedThickness").toInt() : 0;
+    m_controller.setDodgeReservation(output, m_edge, m_options.value("freeLayout").toBool() ? thickness : 0);
     m_controller.setSurfaceOrigin(rect.topLeft());
     if (m_surfacePosition) {
         using Layer = LayerShellQt::Window;
@@ -165,13 +167,13 @@ void DockHost::position()
             m_view.update();
         }
         desiredSize(layer, rect.size());
-        updateReservation();
+        updateReservation(thickness);
     }
     if (m_surfacePosition) m_surfacePosition->setOrigin(rect.topLeft());
     else m_view.setPosition(rect.topLeft());
 }
 
-void DockHost::updateReservation()
+void DockHost::updateReservation(int thickness)
 {
     if (m_demo || m_settings->values()["visibilityMode"].toInt() != DockGeometry::AlwaysVisible || !m_view.rootObject()) {
         m_reservation.reset();
@@ -197,7 +199,6 @@ void DockHost::updateReservation()
     const QSize size = m_edge < DockGeometry::Left ? QSize(m_screen->size().width(), 1) : QSize(1, m_screen->size().height());
     m_reservation->resize(size);
     desiredSize(layer, size);
-    const int thickness = m_view.rootObject()->property("reservedThickness").toInt();
     if (layer->exclusionZone() != thickness) {
         layer->setExclusiveZone(thickness);
         m_reservation->update();

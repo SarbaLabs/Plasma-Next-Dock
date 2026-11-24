@@ -234,6 +234,40 @@ private Q_SLOTS:
         dock.setVisibility(DockGeometry::WindowsGoBelow);
         QVERIFY(!dock.hideRequested());
     }
+    void freeLayoutDodgesTheReservedOutputBand() {
+        DockController dock;
+        WindowModel model;
+        dock.setModel(&model);
+        dock.setEdgeAvailable(true);
+        const QRect output(-1200, 100, 800, 600);
+        dock.setSurfaceOrigin(output.topLeft());
+        dock.setGeometry(QRectF(300, 580, 200, 4), 0, {});
+        for (const auto edge : {DockGeometry::Top, DockGeometry::Bottom, DockGeometry::Left, DockGeometry::Right}) {
+            const bool horizontal = edge < DockGeometry::Left;
+            const QPoint inward = edge == DockGeometry::Top ? QPoint(0, 1) : edge == DockGeometry::Bottom ? QPoint(0, -1)
+                                : edge == DockGeometry::Left ? QPoint(1, 0) : QPoint(-1, 0);
+            const QPoint corner = edge == DockGeometry::Bottom ? output.bottomLeft()
+                                : edge == DockGeometry::Right ? output.topRight() : output.topLeft();
+            dock.setDodgeReservation(output, edge, 64);
+            model.rect = QRectF(corner + 63 * inward, QSize(1, 1));
+            model.changed();
+            QTRY_VERIFY(dock.hideRequested());
+            model.rect.translate(inward);
+            model.changed();
+            QTRY_VERIFY(!dock.hideRequested());
+            dock.setDodgeReservation(output, edge, 65);
+            QTRY_VERIFY(dock.hideRequested());
+            model.rect.translate(horizontal ? QPoint(-1, 0) : QPoint(0, -1));
+            model.changed();
+            QTRY_VERIFY(!dock.hideRequested());
+        }
+        model.rect = QRectF(output.topLeft(), QSize(1, 1));
+        model.changed();
+        dock.setDodgeReservation(output, DockGeometry::Top, 20);
+        QTRY_VERIFY(dock.hideRequested());
+        dock.setDodgeReservation(output, DockGeometry::Top, 0);
+        QTRY_VERIFY(!dock.hideRequested());
+    }
     void autoHideWithoutOverlap() {
         DockController dock;
         dock.setVisibility(DockGeometry::AutoHide);

@@ -13,9 +13,9 @@ Three geometries have different responsibilities:
 2. **Input region:** rounded capsule plus a continuous hover band across the visible task strip extending to the physical edge,
    intersected with canvas bounds. Transparent margins do not receive pointer input
    under Qt Wayland's QWindow mask implementation.
-3. **Dodge region:** the rounded visible capsule translated into output coordinates.
-   Empty canvas margins never trigger window avoidance. Icon silhouettes are not
-   part of this initial collision policy; hover keeps the dock visible.
+3. **Dodge region:** Centered layout tests the rounded capsule in output coordinates.
+   Free layout tests the full edge band on the assigned output using the same
+   resting thickness supplied to the exclusive-zone surface. Hover keeps the dock visible.
 
 The canvas is fixed during hover for a given task count; only the task row changes
 size. Long lists scroll within the output-limited canvas. Negative output origins

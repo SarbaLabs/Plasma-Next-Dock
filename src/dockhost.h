@@ -26,7 +26,7 @@ private Q_SLOTS:
     void position();
     void syncKeyboard();
 private:
-    void updateReservation();
+    void updateReservation(int thickness);
     std::unique_ptr<QQuickWindow> m_reservation;
     DockSettings *m_settings;
     QScreen *m_screen;

@@ -89,6 +89,18 @@ void DockController::setModel(QAbstractItemModel *model)
     Q_EMIT modelChanged();
     scheduleEvaluation();
 }
+void DockController::setDodgeReservation(const QRect &output, DockGeometry::Edge edge, int thickness)
+{
+    QRect band;
+    if (thickness > 0) {
+        const QSize size = edge < DockGeometry::Left ? QSize(output.width(), thickness)
+                                                    : QSize(thickness, output.height());
+        band = DockGeometry::surface(output, size, edge);
+    }
+    if (band == m_dodgeReservation) return;
+    m_dodgeReservation = band;
+    scheduleEvaluation();
+}
 void DockController::setSurfaceOrigin(QPoint origin)
 {
     if (origin == m_origin) return;
@@ -120,7 +132,7 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
     m_shape = shape;
     Q_EMIT capsuleChanged(shape);
     // Zoom changes capsule bounds during hover; test the final geometry on leave.
-    if (!m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
+    if (m_dodgeReservation.isEmpty() && !m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
 }
 void DockController::setHovered(bool hovered)
 {
@@ -158,7 +170,7 @@ void DockController::scheduleEvaluation()
     QMetaObject::invokeMethod(this, [this] { m_queued = false; evaluate(); }, Qt::QueuedConnection);
 }
 // The collision model is ungrouped and already filtered to the current activity
-// and desktop. Test the visible capsule in compositor coordinates.
+// and desktop. Both collision geometries use compositor coordinates.
 bool DockController::overlapsVisibleWindow() const
 {
     if (!m_model) return false;
@@ -168,12 +180,14 @@ bool DockController::overlapsVisibleWindow() const
     const int minimizedRole = roles.key("IsMinimized", -1);
     if (geometryRole < 0 || windowRole < 0 || minimizedRole < 0) return false;
 
-    const auto globalCapsule = m_shape.translated(m_origin);
+    const auto globalCapsule = m_dodgeReservation.isEmpty() ? m_shape.translated(m_origin) : QPainterPath{};
     for (int row = 0; row < m_model->rowCount(); ++row) {
         const auto index = m_model->index(row, 0);
         if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
         const QRectF window = index.data(geometryRole).toRectF();
-        if (!window.isEmpty() && globalCapsule.intersects(window)) return true;
+        if (window.isEmpty()) continue;
+        if (m_dodgeReservation.isEmpty() ? globalCapsule.intersects(window)
+                                         : window.intersects(QRectF(m_dodgeReservation))) return true;
     }
     return false;
 }
