@@ -84,8 +84,9 @@ profile's `moduleSettings`, keyed by module ID, as `configuration` before QML
 completion. Use bindings and defaults (the counter accepts a `label` string).
 A host-side settings change updates the running provider. Treat this input as
 read-only; changes made to the provider's copy do not persist. Optionally ship a
-`Settings.qml` beside Main.qml. Discovery exposes its URL for the future settings
-editor; it does not load a settings page at startup.
+`Settings.qml` beside Main.qml. Declare a Window or ApplicationWindow with a writable
+`configuration` property and an `edited(var options)` signal. The host opens it
+on demand from the context menu of a task contributed by the module.
 
 For a developer test before the editor is available, quit the dock, back up its
 configuration, and run this command to replace the enabled list on the first dock with the counter and the official task module:
@@ -110,7 +111,7 @@ Pinned membership and window avoidance are owned by the core. A task can occupy
 only one visible slot. An empty or disabled provider contributes no slots.
 
 The package's Settings.qml receives its per-profile `configuration` and emits
-`edited(options)`. Its selector in Applications and sorting saves immediately.
+`edited(options)`. The context menu on a task contributed by the module opens the package’s own settings window. Its selector saves immediately.
 The four orders are name, recent activation, virtual desktop and activity.
 Old automatic sort preferences initialize the module; old manual order becomes
 alphabetical. The trailing side is fixed until the placement editor ships.

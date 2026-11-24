@@ -115,7 +115,8 @@ dependencies. Record automated results separately from real KWin observations.
 The initial loader, API 1 provider and inspection commands are implemented on
 the module-manager branch. See the [developer guide](modules.md) and
 [installable counter example](../examples/modules/org.example.counter).
-PR 2 supplies the first official provider, unpinned applications.
+PR 2 supplies the first official provider, unpinned applications, with its own
+settings window for per-dock sorting, accessed by right-clicking a task supplied by the module.
 
 Discover packages under `plasma-next-dock/modules/` in the XDG user and system
 data directories. Distribution packages can install a shared copy under

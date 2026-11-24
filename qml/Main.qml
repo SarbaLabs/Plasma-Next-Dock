@@ -732,7 +732,7 @@ Item {
         const anchor = Interaction.menuAnchor(dockOptions.edge,
             Qt.rect(left, top, right - left, bottom - top), position, 6);
         contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, root.nativeRow(row),
-                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
+                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null, root.taskRows?.settingsForRow(row) || {});
     }
     TapHandler {
         acceptedButtons: Qt.RightButton
@@ -785,7 +785,9 @@ Item {
         onDropped: previewPanel.endDrag()
         onOpenedFiles: row => root.rememberLaunch(root.nativeSlot(row))
     }
+    ModuleSettingsHost { id: moduleSettingsWindow; profile: dockSettings }
     ContextMenu {
+        onConfigureModuleRequested: module => moduleSettingsWindow.open(module)
         id: contextMenu
         objectName: "dockMenu"
         onOpenedChanged: root.refreshHover()

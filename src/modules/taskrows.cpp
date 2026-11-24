@@ -122,6 +122,21 @@ bool TaskRows::lessThan(const QModelIndex &left, const QModelIndex &right) const
     return m_order.value(m_ids.value(left)) < m_order.value(m_ids.value(right));
 }
 
+QVariantMap TaskRows::settingsForRow(int row) const
+{
+    const auto source = mapToSource(index(row, 0));
+    if (!source.isValid() || pinned(source)) return {};
+    const auto ref = m_ids.value(source);
+    if (ref.isEmpty()) return {};
+    // The first provider claiming a task supplies its visible slot and menu.
+    for (const auto &value : m_modules->entries()) {
+        const auto entry = value.toMap();
+        if (entry.value("taskRef").toString() == ref)
+            return m_modules->metadata(entry.value("moduleId").toString());
+    }
+    return {};
+}
+
 int TaskRows::visualRow(int nativeRow) const
 {
     return sourceModel() ? mapFromSource(sourceModel()->index(nativeRow, 0)).row() : -1;

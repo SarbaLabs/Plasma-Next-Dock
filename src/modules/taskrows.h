@@ -14,6 +14,7 @@ public:
     explicit TaskRows(ModuleManager *modules);
     void setSourceModel(QAbstractItemModel *model) override;
     Q_INVOKABLE int nativeRow(int row) const { return mapToSource(index(row, 0)).row(); }
+    Q_INVOKABLE QVariantMap settingsForRow(int row) const;
     Q_INVOKABLE int visualRow(int nativeRow) const;
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &index, int role) const override;

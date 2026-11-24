@@ -96,8 +96,8 @@ checklist, not a claim of universal compatibility.
 ## Task behavior
 
 Configure → Behavior controls grouping, filtering and mouse actions.
-Under Applications and sorting, the first selector orders pinned launchers and
-the module selector orders unpinned tasks by name, last activation, virtual
+Under Applications and sorting, the sort selector orders pinned launchers.
+Right-click an unpinned task and choose **Configure module: Unpinned applications…** to open the module’s own window and sort its tasks by name, last activation, virtual
 desktop or activity. Unpinned tasks follow the pins on the right (bottom on a
 vertical dock). Manual dragging applies only to manually sorted pins.
 See [behavior settings and desktop checks](docs/behavior.md).

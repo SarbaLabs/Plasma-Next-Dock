@@ -121,8 +121,6 @@ int main(int argc, char **argv)
     configEngine.rootContext()->setContextProperty("dockSettings", profiles.current());
     configEngine.rootContext()->setContextProperty("dockProfiles", &profiles);
     configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
-    configEngine.rootContext()->setContextProperty("unpinnedSettingsUrl",
-        catalog.value("org.sarbalabs.unpinned").metadata.value("settingsUrl").toUrl());
     auto outputs = [&] {
         QStringList names;
         QVariantMap descriptions;

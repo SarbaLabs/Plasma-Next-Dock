@@ -100,7 +100,7 @@ private Q_SLOTS:
     {
         const QString module = "org.sarbalabs.unpinned";
         const QDir packageDir(QStringLiteral(UNPINNED_PACKAGE));
-        ModuleCatalog catalog{{module, {{}, QUrl::fromLocalFile(packageDir.filePath("Main.qml"))}}};
+        ModuleCatalog catalog{{module, {{{"id", module}}, QUrl::fromLocalFile(packageDir.filePath("Main.qml"))}}};
         ModuleManager manager(catalog);
         QStandardItemModel source;
         enum { Pinned = Qt::UserRole + 1, Desktop, Activity, Activated };
@@ -119,6 +119,9 @@ private Q_SLOTS:
         rows.setSourceModel(&source);
         manager.configure({module}, {});
         QTRY_COMPARE(rows.rowCount(), 3);
+        QVERIFY(rows.settingsForRow(-1).isEmpty());
+        QVERIFY(rows.settingsForRow(0).isEmpty());
+        QCOMPARE(rows.settingsForRow(1).value("id").toString(), module);
         QCOMPARE(rows.nativeRow(0), 1);
         QCOMPARE(rows.nativeRow(1), 2);
         for (const auto &sort : {"recent", "desktop", "activity", "name"}) {
