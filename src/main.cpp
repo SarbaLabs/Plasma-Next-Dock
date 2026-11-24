@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
 #include "dockhost.h"
+#include <QJsonDocument>
+#include <QTextStream>
 #include "dockprofiles.h"
 #include <map>
 #include "icons.h"
@@ -43,6 +45,8 @@ int main(int argc, char **argv)
         {"settings", "Open the configuration window at startup."},
         {"edge", "Screen edge: bottom, top, left or right.", "edge"},
         {"screen", "Output name from --list-screens.", "name"},
+        {"list-modules", "List discovered module metadata as JSON and exit."},
+        {"inspect-module", "Load one module with default settings, print its initial entries as JSON and exit.", "id"},
         {"list-screens", "List outputs and exit."},
         {"icon-size", "Resting icon size (24–96 logical pixels).", "pixels"},
         {"zoom", "Magnification factor (1–2.5).", "factor"},
@@ -58,6 +62,22 @@ int main(int argc, char **argv)
         return 0;
     }
     const bool smoke = parser.isSet("smoke-test"), demo = parser.isSet("demo");
+    const auto catalog = (smoke || demo) ? ModuleCatalog{}
+        : discoverModules(QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation));
+    if (parser.isSet("list-modules") || parser.isSet("inspect-module")) {
+        QVariantList result;
+        if (parser.isSet("inspect-module")) {
+            const auto id = parser.value("inspect-module");
+            ModuleManager manager(catalog);
+            manager.configure({id}, {});
+            if (!manager.loaded(id)) return 1;
+            result = manager.entries();
+        } else {
+            for (const auto &package : catalog) result.append(package.metadata);
+        }
+        QTextStream(stdout) << QJsonDocument::fromVariant(result).toJson();
+        return 0;
+    }
     const bool wayland = app.platformName().startsWith("wayland");
     if (!wayland && !demo && !smoke) { qCritical("A Wayland session is required. Use --demo for a preview."); return 1; }
     QVariantMap overrides;
@@ -139,7 +159,7 @@ int main(int argc, char **argv)
             auto &host = hosts[profile];
             if (!host || screen != host->output() || edge != host->edge()) {
                 host.reset();
-                host = std::make_unique<DockHost>(profile, screen, demo, wayland);
+                host = std::make_unique<DockHost>(profile, screen, demo, wayland, catalog);
             }
             host->update(configWindow->isVisible() && profiles.current() == profile);
             if (host->failed()) { configFailed = true; app.exit(1); }

@@ -47,7 +47,7 @@ On Bazzite KDE the maintainer compiled inside a Fedora 45 Distrobox and
 confirmed the dock worked after returning to the host desktop.
 [Bazzite installation procedure](../README.md#bazzite-kde-build-with-distrobox)
 
-**Automated validation.** The regression suite has 15 CTest entries. GitHub
+**Automated validation.** The regression suite has 17 CTest entries. GitHub
 Actions checks dependency reporting, compilation, tests and staged installation
 in Debian 13, Ubuntu 26.04 and 26.10, Fedora 45 and Leap 16.1 containers.
 Monitor hotplug, mixed scaling, pointer feel and compositor effects are covered
@@ -112,6 +112,11 @@ dependencies. Record automated results separately from real KWin observations.
 
 ### Module contract and installation (PR 1)
 
+The initial loader, API 1 provider and inspection commands are implemented on
+the module-manager branch. See the [developer guide](modules.md) and
+[installable counter example](../examples/modules/org.example.counter).
+The next functional step is migration of existing unpinned tasks (PR 2).
+
 Discover packages under `plasma-next-dock/modules/` in the XDG user and system
 data directories. Distribution packages can install a shared copy under
 `/usr/share`; users can install their own under `$XDG_DATA_HOME` (normally
@@ -119,8 +124,7 @@ data directories. Distribution packages can install a shared copy under
 user override/removal. At startup, validate manifests and instantiate enabled,
 compatible implementations. Replacing a compatible module and restarting the
 dock must suffice for an update. Simple Qt 6/QML modules should require no C++
-build. A JSON manifest, QML entry point and optional settings component are a
-candidate format. Finalize the format and API version policy in PR 1.
+build. API 1 uses metadata.json, Main.qml and an optional Settings.qml.
 
 Require a stable module ID, localized name and description, module version and
 supported API version. Expose availability, zero or more entries with stable IDs,

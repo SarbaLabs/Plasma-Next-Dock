@@ -34,7 +34,7 @@ bool DockSettings::setStartAtLogin(bool enabled)
 }
 QVariantMap DockSettings::defaults()
 {
-    return {{"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
+    return {{"enabledModules", QStringList{}}, {"moduleSettings", QVariantMap{}}, {"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"dockShadowRole", "custom"}, {"dockShadowColor", "#000000"}, {"dockShadowX", 0}, {"dockShadowY", 2}, {"dockShadowStrength", 0}, {"dockShadowSize", 12},
         {"iconShadowRole", "custom"}, {"iconShadowColor", "#000000"}, {"iconShadowX", 0}, {"iconShadowY", 2}, {"iconShadowStrength", 0}, {"iconShadowSize", 6},
         {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
@@ -191,7 +191,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     number("alignmentMargin", 0, 512, true);
     result["dodge"] = result["visibilityMode"].toInt() == 2;
 
-    for (const auto *key : {"groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})
+    for (const auto *key : {"enabledModules", "groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})
         result[key] = result[key].toStringList();
     QStringList launchers;
     for (const auto &entry : result["launchers"].toStringList()) {

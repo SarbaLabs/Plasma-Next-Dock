@@ -1158,3 +1158,16 @@ On CachyOS the project rebuilt, QML parsing and a staged installation passed.
 The isolated Wayland demo rendered five icons inside the capsule and opened the
 settings window. This visual check used one output and temporary settings.
 All 15 CTest entries passed on this revision.
+
+## Module loader and API 1
+
+All 17 CTest entries passed on CachyOS and Debian 13.7 (Qt 6.8.2), including
+package precedence, invalid manifests, wrong API/root type, missing files,
+QML errors, independent instances, action dispatch, profile persistence and
+the package install/update/removal test through the executable. QML parsing
+passed on CachyOS. Installation into temporary prefixes passed on both systems.
+
+On CachyOS a normal Wayland launch read an isolated enabled profile and a
+fixture recorded provider completion on disk. On Debian a single-output Wayland
+demo launched from the staged installation. Demo mode does not load user modules.
+There is no lateral-entry rendering or module placement editor in this change.
