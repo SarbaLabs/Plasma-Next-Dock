@@ -89,18 +89,6 @@ void DockController::setModel(QAbstractItemModel *model)
     Q_EMIT modelChanged();
     scheduleEvaluation();
 }
-void DockController::setDodgeReservation(const QRect &output, DockGeometry::Edge edge, int thickness)
-{
-    QRect band;
-    if (thickness > 0) {
-        const QSize size = edge < DockGeometry::Left ? QSize(output.width(), thickness)
-                                                    : QSize(thickness, output.height());
-        band = DockGeometry::surface(output, size, edge);
-    }
-    if (band == m_dodgeReservation) return;
-    m_dodgeReservation = band;
-    scheduleEvaluation();
-}
 void DockController::setSurfaceOrigin(QPoint origin)
 {
     if (origin == m_origin) return;
@@ -111,7 +99,7 @@ QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corn
 {
     return DockGeometry::capsuleDrawing(size, corners, vertical, border);
 }
-void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners, QRectF interactionBounds)
+void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners, QRectF interactionBounds, QRectF dodgeBounds)
 {
     QList<QRectF> iconRects;
     for (const auto &icon : icons) iconRects << icon.toRectF();
@@ -128,11 +116,15 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
         if (m_window) m_window->setMask(input);
         updatePointerHover();
     }
-    if (shape == m_shape) return;
-    m_shape = shape;
-    Q_EMIT capsuleChanged(shape);
+    const bool capsuleChangedShape = shape != m_shape;
+    if (capsuleChangedShape) {
+        m_shape = shape;
+        Q_EMIT capsuleChanged(shape);
+    }
+    if (dodgeBounds == m_dodgeBounds && (!dodgeBounds.isEmpty() || !capsuleChangedShape)) return;
+    m_dodgeBounds = dodgeBounds;
     // Zoom changes capsule bounds during hover; test the final geometry on leave.
-    if (m_dodgeReservation.isEmpty() && !m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
+    if (!m_hovered && !m_leaveTimer.isActive()) scheduleEvaluation();
 }
 void DockController::setHovered(bool hovered)
 {
@@ -170,7 +162,7 @@ void DockController::scheduleEvaluation()
     QMetaObject::invokeMethod(this, [this] { m_queued = false; evaluate(); }, Qt::QueuedConnection);
 }
 // The collision model is ungrouped and already filtered to the current activity
-// and desktop. Both collision geometries use compositor coordinates.
+// and desktop. Test the dock footprint in compositor coordinates.
 bool DockController::overlapsVisibleWindow() const
 {
     if (!m_model) return false;
@@ -180,14 +172,13 @@ bool DockController::overlapsVisibleWindow() const
     const int minimizedRole = roles.key("IsMinimized", -1);
     if (geometryRole < 0 || windowRole < 0 || minimizedRole < 0) return false;
 
-    const auto globalCapsule = m_dodgeReservation.isEmpty() ? m_shape.translated(m_origin) : QPainterPath{};
+    const auto bounds = m_dodgeBounds.translated(m_origin);
+    const auto capsule = bounds.isEmpty() ? m_shape.translated(m_origin) : QPainterPath{};
     for (int row = 0; row < m_model->rowCount(); ++row) {
         const auto index = m_model->index(row, 0);
         if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
         const QRectF window = index.data(geometryRole).toRectF();
-        if (window.isEmpty()) continue;
-        if (m_dodgeReservation.isEmpty() ? globalCapsule.intersects(window)
-                                         : window.intersects(QRectF(m_dodgeReservation))) return true;
+        if (!window.isEmpty() && (bounds.isEmpty() ? capsule.intersects(window) : bounds.intersects(window))) return true;
     }
     return false;
 }

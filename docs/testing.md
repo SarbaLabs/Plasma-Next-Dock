@@ -1236,9 +1236,9 @@ offsets on all four edges, and checks negative offsets up to the screen edge.
 On CachyOS Wayland, increasing a top capsule from 4 to 84 px at a fixed
 +50 px offset left the resting icons at the same screen position.
 
-Free-layout dodge tests exercise the innermost pixel of the reserved band on
-all four edges of an offset output, a window just outside the band, a window
-on a neighbouring output and a switch back to capsule-based dodge. On CachyOS
-Wayland a top dock with a 4 px capsule and +60 px icon offset hid when KCalc
-moved from y=150 to y=86, clear of the capsule and to its left. Moving KCalc
-back to y=150 revealed the dock.
+Free-layout dodge checks the last pixel inside each end of the resting dock
+and the first one outside, horizontally and vertically on an offset output.
+The four-edge layout fixture checks the resting length and reserved depth and
+verifies that magnification leaves this footprint stable.
+On CachyOS Wayland KCalc stayed at y=86: a horizontal move from x=42 to
+x=540 and then x=1250 produced visible, hidden and visible dock states.

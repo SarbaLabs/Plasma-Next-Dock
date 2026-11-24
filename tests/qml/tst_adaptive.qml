@@ -132,10 +132,15 @@ TestCase {
                     const hit = icon.mapToItem(lane, icon.width / 2, icon.height / 2);
                     verify(lane.contains(hit));
                     const reservation = root.reservedThickness;
+                    const footprint = root.dodgeBounds;
+                    fuzzyCompare(root.vertical ? footprint.y : footprint.x, root.barStart, 0.01);
+                    fuzzyCompare(root.vertical ? footprint.height : footprint.width, root.barLength, 0.01);
+                    compare(root.vertical ? footprint.width : footprint.height, reservation);
                     root.pointerIndex = 0;
                     root.hovering = true;
                     wait(120);
                     compare(root.reservedThickness, reservation);
+                    compare(root.dodgeBounds, footprint);
                     root.hovering = false;
                     wait(120);
                 }

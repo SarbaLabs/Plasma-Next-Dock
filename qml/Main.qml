@@ -228,6 +228,16 @@ Item {
     readonly property real occupiedLength: layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
     readonly property real barLength: Math.min(length, Math.max(1, occupiedLength))
 
+    // Match the exclusive depth, but only along the aligned dock at rest.
+    readonly property rect dodgeBounds: {
+        if (!dockOptions.freeLayout) return Qt.rect(0, 0, 0, 0);
+        const span = Math.min(length, Math.max(1, layoutMetrics.restingLength));
+        const start = startPad + endClearance + (length - span) * alignmentFactor;
+        return vertical
+            ? Qt.rect(dockOptions.edge === 2 ? 0 : width - reservedThickness, start, reservedThickness, span)
+            : Qt.rect(start, dockOptions.edge === 1 ? 0 : height - reservedThickness, span, reservedThickness);
+    }
+    onDodgeBoundsChanged: queueGeometry()
     function updatePointer(position) {
         const coordinate = vertical ? position.y : position.x;
         let nearest = -1;
@@ -260,7 +270,7 @@ Item {
         const y = dockOptions.edge === 1 || dockOptions.edge === 3 ? 0 : viewport.height - hoverDepth;
         const band = end > start && repeater.count
             ? [viewport.mapToItem(root, Qt.rect(start, y, end - start, hoverDepth))] : [];
-        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, band, dockOptions.edge, bar.corners, root.interactionBounds);
+        dockController.setGeometry(Qt.rect(bar.x, bar.y, bar.width, bar.height), 0, band, dockOptions.edge, bar.corners, root.interactionBounds, root.dodgeBounds);
     }
     // KDE reads the delegate rectangle in surface-local coordinates on Wayland.
     // Use an unrotated item so vertical docks and clipped ends map correctly.

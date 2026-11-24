@@ -115,8 +115,8 @@ move them toward the screen edge, stopping before the icons would be clipped.
 Free mode keeps the along-dock padding. Running indicators follow the
 screen-facing capsule edge; Custom indicators use their own edge distance.
 The across-dock padding and position override are retained for Centered mode.
-In Free mode, Dodge windows uses the same full output-edge band that Always
-visible reserves, including the resting extent of floating icons.
+In Free mode, Dodge windows uses the depth reserved by Always visible over the
+length of this dock at rest. Windows beside either end keep the dock visible.
 For example, try a 6 px capsule and a +52 px offset for floating icons.
 
 Open Configure → Appearance. Choose a fixed

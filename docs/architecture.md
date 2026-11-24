@@ -14,8 +14,8 @@ Three geometries have different responsibilities:
    intersected with canvas bounds. Transparent margins do not receive pointer input
    under Qt Wayland's QWindow mask implementation.
 3. **Dodge region:** Centered layout tests the rounded capsule in output coordinates.
-   Free layout tests the full edge band on the assigned output using the same
-   resting thickness supplied to the exclusive-zone surface. Hover keeps the dock visible.
+   Free layout tests the aligned resting span of the dock, using the same
+   depth supplied to the exclusive-zone surface. Hover keeps the dock visible.
 
 The canvas is fixed during hover for a given task count; only the task row changes
 size. Long lists scroll within the output-limited canvas. Negative output origins

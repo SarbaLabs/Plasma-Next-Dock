@@ -28,9 +28,8 @@ public:
     bool edgeAvailable() const { return m_edgeAvailable; }
     void setEdgeAvailable(bool available);
     void setVisibility(DockGeometry::Visibility mode);
-    void setDodgeReservation(const QRect &output, DockGeometry::Edge edge, int thickness);
     void setSurfaceOrigin(QPoint origin);
-    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {}, QRectF interactionBounds = {});
+    Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {}, QRectF interactionBounds = {}, QRectF dodgeBounds = {});
     Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void setAttention(bool attention);
@@ -59,7 +58,7 @@ private:
     QTimer m_leaveTimer;
     QPoint m_origin;
     QPainterPath m_shape;
-    QRect m_dodgeReservation; // Global logical coordinates; empty selects capsule-based dodge.
+    QRectF m_dodgeBounds; // Empty selects the centered capsule path.
     DockGeometry::Visibility m_visibility = DockGeometry::DodgeWindows;
     bool m_edgeAvailable = false;
     bool m_hovered = false;
