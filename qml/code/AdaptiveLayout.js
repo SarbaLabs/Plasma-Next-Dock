@@ -22,18 +22,21 @@ function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpa
     const resting = separatorSpace + count * preferred + Math.max(0, count - 1) * iconSpacing + 2 * endPadding;
     const zoomReserve = Math.min(count, zoomBudget(blastRadius)) * preferred * (zoom - 1);
     const natural = Math.max(200, resting + zoomReserve);
-    const thickness = freeThickness || preferred + 2 * crossPadding;
-    // Offset is measured between resting centers, positive toward the desktop.
-    const inset = freeThickness ? (thickness - preferred) / 2 + iconOffset : crossPadding;
+    // In Free mode both screen-facing edges share an origin. Reserve the
+    // offset before fitting icons so their baseline never depends on the bar.
+    const freeEdge = Math.max(0, Math.min(crossAvailable - 1, gap + iconOffset));
     const animationDepth = preferred * zoom + hoverLift + bounceHeight;
-    const crossDepth = Math.max(thickness, Math.max(0, inset) + animationDepth + crossPadding + 4);
-    const crossScale = Math.min(1, (crossAvailable - gap) / crossDepth);
+    const crossDepth = animationDepth + (freeThickness ? 0 : 2 * crossPadding) + 4;
+    const origin = freeThickness ? freeEdge : gap;
+    const crossScale = Math.min(1, (crossAvailable - origin) / crossDepth);
     const minimumScale = Math.min(1, 24 / preferred, crossScale);
     const scale = Math.min(crossScale, Math.max(minimumScale, Math.min(1, available / natural)));
+    const thickness = freeThickness ? Math.min(crossAvailable - gap, freeThickness * scale)
+                                    : (preferred + 2 * crossPadding) * scale;
     return { scale: scale, base: preferred * scale, restingLength: resting * scale,
         length: Math.min(available, natural * scale),
-        depth: crossDepth * scale + gap,
-        thickness: thickness * scale, iconEdge: Math.max(0, gap + inset * scale),
+        depth: Math.max(gap + thickness, origin + crossDepth * scale),
+        thickness: thickness, iconEdge: freeThickness ? freeEdge : gap + crossPadding * scale,
         gap: gap };
 }
 function scrollPosition(position, delta, content, viewport) {

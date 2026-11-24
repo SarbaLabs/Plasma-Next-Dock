@@ -121,14 +121,14 @@ TestCase {
             root.hovering = false;
             for (let edge = 0; edge < 4; ++edge) {
                 testEnvironment.setEdge(edge);
-                for (const [thickness, offset] of [[4, 46], [72, 22], [90, -12]]) {
+                for (const [thickness, offset] of [[4, 46], [90, 46], [72, 0], [4, 0], [90, -3], [4, -256]]) {
                     testEnvironment.behaviorOptions({freeLayout: true, capsuleThickness: thickness, iconOffset: offset});
                     wait(60);
                     const t = thickness * root.fitScale;
                     fuzzyCompare(root.vertical ? capsule.width : capsule.height, t, 0.01);
-                    const center = icon.mapToItem(capsule, icon.width / 2, icon.height / 2);
-                    const inward = [t / 2 - center.y, center.y - t / 2, center.x - t / 2, t / 2 - center.x][edge];
-                    fuzzyCompare(inward, offset * root.fitScale, 0.1);
+                    const bounds = icon.mapToItem(capsule, Qt.rect(0, 0, icon.width, icon.height));
+                    const inward = [t - bounds.y - bounds.height, bounds.y, bounds.x, t - bounds.x - bounds.width][edge];
+                    fuzzyCompare(inward, Math.max(-root.edgeSpacing, offset), 0.1);
                     const hit = icon.mapToItem(lane, icon.width / 2, icon.height / 2);
                     verify(lane.contains(hit));
                     const reservation = root.reservedThickness;

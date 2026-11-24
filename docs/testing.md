@@ -1209,7 +1209,7 @@ in a mapped Qt Quick window on Plasma Wayland, using QtTest input.
 
 The adaptive layout fixture exercises a thin bar with floating icons, a thick
 bar with overlapping icons, and a negative offset on each edge. It checks the
-painted thickness, signed center displacement, input hit and constant exclusive
+painted thickness, signed edge-to-edge displacement, input hit and constant exclusive
 zone during magnification. The settings fixture switches modes, applies a
 signed offset and checks that only Free exposes the two controls.
 
@@ -1229,3 +1229,9 @@ It varies icon offset, saved centered padding and custom edge distance.
 The settings fixture checks padding visibility. A temporary CachyOS Wayland
 profile showed the indicators at a 13 px inset with a 5 px capsule and +64 px
 icon offset; only the along-dock padding was visible in Appearance.
+
+The Free layout fixture changes capsule thickness at fixed positive and zero
+offsets on all four edges, and checks negative offsets up to the screen edge.
+
+On CachyOS Wayland, increasing a top capsule from 4 to 84 px at a fixed
++50 px offset left the resting icons at the same screen position.
