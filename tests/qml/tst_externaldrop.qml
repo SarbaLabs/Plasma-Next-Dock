@@ -81,6 +81,37 @@ TestCase {
         compare(drop.scrollDirection, 0);
         drop.clear();
     }
+    function test_directoryRouting() {
+        const drop = createTemporaryObject(dropComponent, test);
+        let added = 0, copied = 0;
+        let enabled = true;
+        drop.directoryReceiver = {acceptsDirectories: () => enabled,
+                                  dropDirectories: urls => { ++added; return true; }};
+        drop.moduleDrop = (point, urls) => {
+            if (point.x < 200) return undefined;
+            ++copied;
+            return true;
+        };
+        function send(urls, x) {
+            const point = Qt.point(x, 40);
+            verify(testEnvironment.externalDrag(drop, point, urls, 0));
+            verify(testEnvironment.externalDrag(drop, point, urls, 2));
+        }
+        send(["file:///tmp"], 40);
+        compare(added, 1);
+        compare(fakeTasks.opens, 0);
+        send(["file:///tmp"], 220);
+        compare(copied, 1);
+        compare(added, 1);
+        send(["file:///tmp/test.txt"], 40);
+        compare(fakeTasks.opens, 1);
+        send(["file:///tmp", "file:///tmp/test.txt"], 40);
+        compare(fakeTasks.opens, 2);
+        enabled = false;
+        send(["file:///tmp"], 40);
+        compare(fakeTasks.opens, 3);
+        compare(added, 1);
+    }
     function test_nativeDragEventDelivery() {
         const drop = createTemporaryObject(dropComponent, test);
         const urls = ["file:///tmp/document.txt"];

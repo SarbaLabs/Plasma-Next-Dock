@@ -9,7 +9,7 @@ DockModule {
         onEdited: options => provider.preferencesEdited(options)
     }
     entries: folders.rows.map(row => ({
-        id: row.url, name: row.name, icon: row.icon, acceptsDocuments: row.available,
+        id: row.url, name: row.name, icon: row.icon, acceptsDocuments: row.available, reorderable: folders.manual,
         actions: [
             {id: "open", text: i18n("Open folder"), enabled: row.available},
             {id: "icon", text: i18n("Choose an icon…")},
@@ -17,6 +17,9 @@ DockModule {
             {id: "remove", text: i18n("Remove folder shortcut")}
         ]
     }))
+    acceptsDirectoryDrops: true
+    onMoveRequested: (entryId, destinationId) => folders.move(entryId, folders.shortcuts.findIndex(item => item.url === destinationId))
+    onDirectoriesDropped: urls => folders.add(urls)
     onActivated: entryId => folders.open(entryId)
     onDocumentsDropped: (entryId, urls) => folders.copy(urls, entryId)
     onActionTriggered: (entryId, actionId) => {

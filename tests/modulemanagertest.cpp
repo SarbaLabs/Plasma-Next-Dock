@@ -249,12 +249,28 @@ private Q_SLOTS:
         QTRY_COMPARE(manager.entries().first().toMap()["icon"], "folder-green");
         QVERIFY(profile.updateModuleSettings(module, {{"sort", "name"}}));
         QCOMPARE(manager.entries().first().toMap()["id"], second);
+        QVERIFY(!manager.moveEntry(module, first, second));
         QVERIFY(profile.updateModuleSettings(module, {{"sort", "manual"}}));
+        QVERIFY(manager.moveEntry(module, first, second));
+        QCOMPARE(manager.entries().first().toMap()["id"], second);
+        DockSettings restored(dir.filePath("folder-profile.ini"));
+        QCOMPARE(restored.values()["moduleSettings"].toMap()[module].toMap()["folders"].toList().first().toMap()["url"], second);
+        QVERIFY(!manager.moveEntry(module, second, "missing"));
+        QVERIFY(manager.moveEntry(module, first, second));
         QCOMPARE(manager.entries().first().toMap()["id"], first);
         QVERIFY(manager.trigger(module, first, "remove"));
         QCOMPARE(manager.entries().size(), 1);
         QVERIFY(QFileInfo::exists(metadata));
         QVERIFY(!manager.dropDocuments(module, first, {QUrl::fromLocalFile(metadata)}));
+        QVERIFY(manager.trigger(module, second, "remove"));
+        QVERIFY(manager.entries().isEmpty());
+        QVERIFY(manager.acceptsDirectories());
+        QVERIFY(manager.dropDirectories({QUrl(first), QUrl(second), QUrl(first)}));
+        QCOMPARE(manager.entries().size(), 2);
+        QCOMPARE(manager.entries().first().toMap()["id"], first);
+        manager.configure({}, {});
+        QVERIFY(!manager.acceptsDirectories());
+        QVERIFY(!manager.dropDirectories({QUrl(first)}));
     }
 
     void profileRoundTrip()

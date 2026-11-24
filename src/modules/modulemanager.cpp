@@ -132,6 +132,40 @@ bool ModuleManager::trigger(const QString &moduleId, const QString &entryId, con
     return false;
 }
 
+bool ModuleManager::moveEntry(const QString &moduleId, const QString &entryId, const QString &destinationId)
+{
+    auto *module = m_instances.value(moduleId);
+    if (!module || entryId == destinationId) return false;
+    bool source = false, destination = false;
+    for (const auto &value : std::as_const(m_entries)) {
+        const auto entry = value.toMap();
+        if (entry.value("moduleId") != moduleId || !entry.value("reorderable").toBool()) continue;
+        source |= entry.value("id") == entryId;
+        destination |= entry.value("id") == destinationId;
+    }
+    if (!source || !destination) return false;
+    Q_EMIT module->moveRequested(entryId, destinationId);
+    return true;
+}
+
+// Use the first enabled receiver in dock order, including empty providers.
+DockModule *ModuleManager::directoryReceiver() const
+{
+    for (const auto &id : m_enabled) {
+        auto *module = m_instances.value(id);
+        if (module && module->acceptsDirectoryDrops) return module;
+    }
+    return nullptr;
+}
+
+bool ModuleManager::dropDirectories(const QList<QUrl> &urls)
+{
+    auto *module = directoryReceiver();
+    if (!module || urls.isEmpty()) return false;
+    Q_EMIT module->directoriesDropped(urls);
+    return true;
+}
+
 bool ModuleManager::dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls)
 {
     auto *module = m_instances.value(moduleId);

@@ -1253,3 +1253,11 @@ On CachyOS Wayland, the native context menu opened the French editor and its
 KDE icon picker. Changing a shortcut icon updated the dock. Clicking the
 shortcut opened Dolphin, and dragging a test document from Dolphin onto a
 second folder copied it while preserving the source file.
+
+In the Wayland check, dragging a directory from Dolphin onto a pinned application
+added a folder shortcut. Dragging that shortcut across another dock folder in
+manual order changed their positions without creating a directory on disk.
+Dragging the original directory from Dolphin onto the same destination copied
+its contents; the source and copied file matched. Automated cases cover disabled
+and empty providers, mixed file/directory selections, alphabetical order and
+persistence of the new manual order.
