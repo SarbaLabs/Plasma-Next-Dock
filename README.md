@@ -11,7 +11,7 @@ Plasma panel causing premature window avoidance.
 The foundation, settings, launcher reordering, adaptive sizing and scrolling were
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
-Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings, the separator and immediate wheel cycling have been accepted. Icon bounce, hover highlighting and the active indicator palette have been accepted. It does not modify Plasma or KWin, install a
+Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings and immediate wheel cycling have been accepted. Icon bounce, hover highlighting and the active indicator palette have been accepted. It does not modify Plasma or KWin, install a
 KWin effect, replace a panel, or touch the existing plasmoid configuration.
 
 ## What this prototype implements
@@ -26,7 +26,7 @@ KWin effect, replace a panel, or touch the existing plasmoid configuration.
   are grouped and filtered to the current desktop and activity. Clicking a group
   opens its window selector by default. Collision tracking remains independently ungrouped.
 - A Behavior page for native grouping/sorting, mouse actions, screen/desktop/activity
-  filters, task direction, attention reveal and the pinned/unpinned separator.
+  filters and attention reveal. The unpinned task module has independent sorting.
   Overflow scrolling takes priority over optional group-window cycling.
 - Native Plasma tooltips anchored toward the desktop interior, with window titles,
   activate/close controls and on-demand KDE PipeWire thumbnails.
@@ -95,10 +95,11 @@ checklist, not a claim of universal compatibility.
 
 ## Task behavior
 
-Open Configure → Behavior. Existing grouping, desktop/activity filters and manual
-sorting remain the defaults. New click and wheel behaviors are opt-in. Reversing
-the task direction also places unpinned tasks at the opposite end; the separator
-stays between sections. Automatic sorting disables manual icon dragging.
+Configure → Behavior controls grouping, filtering and mouse actions.
+Under Applications and sorting, the sort selector orders pinned launchers.
+Right-click an unpinned task and choose **Configure module: Unpinned applications…** to open the module’s own window and sort its tasks by name, last activation, virtual
+desktop or activity. Unpinned tasks follow the pins on the right (bottom on a
+vertical dock). Manual dragging applies only to manually sorted pins.
 See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds

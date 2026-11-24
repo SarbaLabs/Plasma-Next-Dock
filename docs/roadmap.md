@@ -102,7 +102,7 @@ dependencies. Record automated results separately from real KWin observations.
 | --- | --- | --- |
 | 1 | Module discovery, validation, loader, common API and developer guide | Install, update and remove an example without rebuilding the core. Reject incompatible packages and keep valid ones working. |
 | 2 | Migrate existing unpinned applications into an official module | Pin/unpin or close a running group without duplicate or missing tasks. Disabling the module preserves window avoidance. |
-| 3 | Three dock zones and drag-and-drop settings editor | Move and reorder blocks across two independent profiles, restart and verify order, empty zones and separators. |
+| 3 | Three dock zones and drag-and-drop settings editor | Move and reorder blocks across two independent profiles, restart and verify order, separators on populated sides only and empty zones without gaps. |
 | 4 | Custom bar geometry | Verify both modes on all four edges, including hit regions, effects and stable space reservation during animation. |
 | 5 | Folders module | Add, open, reorder and remove shortcuts. Removing a shortcut preserves the directory. |
 | 6 | Trash module | Open, drop, empty and verify automatic theme icon updates, cancellation and error handling. |
@@ -115,7 +115,8 @@ dependencies. Record automated results separately from real KWin observations.
 The initial loader, API 1 provider and inspection commands are implemented on
 the module-manager branch. See the [developer guide](modules.md) and
 [installable counter example](../examples/modules/org.example.counter).
-The next functional step is migration of existing unpinned tasks (PR 2).
+PR 2 supplies the first official provider, unpinned applications, with its own
+settings window for per-dock sorting, accessed by right-clicking a task supplied by the module.
 
 Discover packages under `plasma-next-dock/modules/` in the XDG user and system
 data directories. Distribution packages can install a shared copy under
@@ -157,16 +158,18 @@ task services. Preserve launching, activation, grouping, window actions, menus,
 thumbnails, indicators, badges, audio, MPRIS, drops, keyboard navigation, sorting,
 scrolling, desktop/activity filters, zoom, bounce and dodge. Test transitions
 between pinned and unpinned while windows are open. Migrate saved profiles to an
-equivalent order and side and keep additional modules opt-in.
+matching supported automatic sort. Use the right/bottom side until the editor ships.
 
 The settings editor has **Left / Top**, **Disabled** and **Right / Bottom** columns.
 Pinned applications stay in the center outside the editor. Drag whole modules
 within or between columns. The top of either active list is the outermost block.
 Render the trailing side in reverse block order, preserving the module's internal
 entry order. For example, leading blocks Menu then USB and trailing blocks Trash
-then Folders render as **Menu · USB | Pins | Folders · Trash**. A side gets one
-separator only when both it and the pinned center contain visible entries. Empty
-or disabled modules add neither gaps nor separators. Persist each dock's layout
+then Folders render as **Menu · USB · Pins · Folders · Trash**. In PR 3, draw one automatic separator between the pinned block and each side
+that has visible module entries. On a vertical dock the same rule applies above
+and below the pins. Closing the last unpinned application removes its separator
+and spacing if no other module is visible on that side. With no pins, omit the
+pin boundaries. Empty or disabled modules occupy no space. Persist each dock's layout
 independently and support the same module on multiple docks where appropriate.
 
 ### Bar geometry (PR 4)
@@ -200,7 +203,7 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
 
 Run build, CTest, QML checks, isolated install and migration tests per PR. Cover
 discovery, invalid or missing modules, disabled/empty entries, version changes,
-activation, layout persistence, block reordering, separators and task regressions.
+activation, layout persistence, block reordering, empty sides and task regressions.
 On Plasma Wayland verify four edges, concurrent docks, mixed scaling and output
 hotplug, menu and preview targeting, grouped windows, drops, graphics effects,
 hide/recall, zoom and bounce. Exercise independent module replacement and removal

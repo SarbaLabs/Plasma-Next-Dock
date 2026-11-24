@@ -74,7 +74,7 @@ ColumnLayout {
     }
     RowLayout {
         Layout.fillWidth: true
-        Controls.Label { text: i18n("Sort order:") }
+        Controls.Label { text: i18n("Pinned application order:") }
         Controls.ComboBox {
             id: sort
             objectName: "taskSortControl"

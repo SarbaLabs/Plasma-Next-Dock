@@ -11,7 +11,7 @@ TestCase {
     SignalSpy { id: heightSpy; target: dock.item; signalName: "heightChanged" }
     function init() { dock.active = false; dock.active = true; tryCompare(dock, "status", Loader.Ready); }
     function test_hoverAcrossIconAndTooltip() {
-        testEnvironment.behaviorOptions({layoutDirection: 1, iconHoverHighlight: true, indicatorMode: 1});
+        testEnvironment.behaviorOptions({iconHoverHighlight: true, indicatorMode: 1});
         for (let edge = 0; edge < 4; ++edge) {
             testEnvironment.setEdge(edge);
             mouseMove(this, 990, 790);
@@ -34,7 +34,7 @@ TestCase {
     }
     function test_hoverHighlightToggle() {
         testEnvironment.setEdge(0);
-        testEnvironment.behaviorOptions({layoutDirection: 1, iconHoverHighlight: true});
+        testEnvironment.behaviorOptions({iconHoverHighlight: true});
         mouseMove(this, 990, 790);
         wait(150);
         const lane = findChild(dock.item, "taskInput0");
@@ -58,66 +58,64 @@ TestCase {
         tryCompare(source, "status", Loader.Ready);
         try {
             for (let edge = 0; edge < 4; ++edge) {
-                for (let direction = 1; direction <= 2; ++direction) {
-                    testEnvironment.setEdge(edge);
-                    testEnvironment.behaviorOptions({layoutDirection: direction, bounceHeight: 48, hoverLift: 32, bounceCount: 1});
-                    mouseMove(this, 990, 790);
-                    wait(150);
-                    let slot = findChild(dock.item, "task0");
-                    let lane = findChild(dock.item, "taskInput0");
-                    // Local axis is rotated with the strip; select the physical edge.
-                    let p = lane.mapToItem(dock.item, lane.width / 2, (edge === 1 || edge === 3) ? 1 : lane.height - 1);
-                    mouseMove(dock.item, p.x, p.y);
-                    wait(150);
-                    lane = findChild(dock.item, "taskInput0");
-                    p = lane.mapToItem(dock.item, lane.width / 2, (edge === 1 || edge === 3) ? 1 : lane.height - 1);
-                    mouseMove(dock.item, p.x, p.y);
-                    wait(120);
-                    const count = source.item.activations;
-                    compare(dock.item.taskAt(p, false), 0);
-                    mouseClick(dock.item, p.x, p.y, Qt.LeftButton);
-                    compare(source.item.activations, count + 1);
-                    let bounce = findChild(dock.item, "taskBounce0");
-                    tryVerify(() => bounce.offset > 5);
-                    wait(120); // Click synthesis updates the logical hover position once.
-                    for (let frame = 0; frame < 6; ++frame) {
-                        wait(20);
-                        verify(dock.item.hovering);
-                        verify(slot.size > dock.item.base + 10, "Bounce must not reset magnification");
-                        compare(dock.item.taskAt(p, false), 0);
-                    }
-                    const middle = findChild(lane, "middleClick0");
-                    middle.enabled = true; // Inert fixture, no real applications.
-                    const middleCount = source.item.middleClicks;
-                    mouseClick(dock.item, p.x, p.y, Qt.MiddleButton);
-                    compare(source.item.middleClicks, middleCount + 1);
-                    bounce.stop();
-                    // Replace the clicked delegate synchronously as a native
-                    // launcher/startup/window transition can do during activation.
-                    source.item.replaceOnLaunch = true;
-                    const previousSize = slot.size;
-                    widthSpy.clear(); heightSpy.clear();
-                    mouseClick(dock.item, p.x, p.y, Qt.LeftButton);
-                    slot = findChild(dock.item, "task0");
-                    fuzzyCompare(slot.size, previousSize, 0.05, "Replacement preserves visible zoom immediately");
-                    fuzzyCompare(slot.animatedFactor, slot.factor, 0.001,
-                        "Replacement initializes at the current zoom, not at zero");
-                    wait(30);
-                    compare(widthSpy.count, 0, "Replacement must not resize the surface");
-                    compare(heightSpy.count, 0, "Replacement must not resize the surface");
-                    slot = findChild(dock.item, "task0");
-                    bounce = findChild(dock.item, "taskBounce0");
+                testEnvironment.setEdge(edge);
+                testEnvironment.behaviorOptions({bounceHeight: 48, hoverLift: 32, bounceCount: 1});
+                mouseMove(this, 990, 790);
+                wait(150);
+                let slot = findChild(dock.item, "task0");
+                let lane = findChild(dock.item, "taskInput0");
+                // Local axis is rotated with the strip; select the physical edge.
+                let p = lane.mapToItem(dock.item, lane.width / 2, (edge === 1 || edge === 3) ? 1 : lane.height - 1);
+                mouseMove(dock.item, p.x, p.y);
+                wait(150);
+                lane = findChild(dock.item, "taskInput0");
+                p = lane.mapToItem(dock.item, lane.width / 2, (edge === 1 || edge === 3) ? 1 : lane.height - 1);
+                mouseMove(dock.item, p.x, p.y);
+                wait(120);
+                const count = source.item.activations;
+                compare(dock.item.taskAt(p, false), 0);
+                mouseClick(dock.item, p.x, p.y, Qt.LeftButton);
+                compare(source.item.activations, count + 1);
+                let bounce = findChild(dock.item, "taskBounce0");
+                tryVerify(() => bounce.offset > 5);
+                wait(120); // Click synthesis updates the logical hover position once.
+                for (let frame = 0; frame < 6; ++frame) {
+                    wait(20);
                     verify(dock.item.hovering);
-                    verify(slot.size > dock.item.base);
-                    tryVerify(() => bounce.offset > 5);
-                    compare(findChild(dock.item, "taskBounce1").running, false);
-                    bounce.stop();
-                    source.item.replaceOnLaunch = false;
+                    verify(slot.size > dock.item.base + 10, "Bounce must not reset magnification");
+                    compare(dock.item.taskAt(p, false), 0);
                 }
+                const middle = findChild(lane, "middleClick0");
+                middle.enabled = true; // Inert fixture, no real applications.
+                const middleCount = source.item.middleClicks;
+                mouseClick(dock.item, p.x, p.y, Qt.MiddleButton);
+                compare(source.item.middleClicks, middleCount + 1);
+                bounce.stop();
+                // Replace the clicked delegate synchronously as a native
+                // launcher/startup/window transition can do during activation.
+                source.item.replaceOnLaunch = true;
+                const previousSize = slot.size;
+                widthSpy.clear(); heightSpy.clear();
+                mouseClick(dock.item, p.x, p.y, Qt.LeftButton);
+                slot = findChild(dock.item, "task0");
+                fuzzyCompare(slot.size, previousSize, 0.05, "Replacement preserves visible zoom immediately");
+                fuzzyCompare(slot.animatedFactor, slot.factor, 0.001,
+                    "Replacement initializes at the current zoom, not at zero");
+                wait(30);
+                compare(widthSpy.count, 0, "Replacement must not resize the surface");
+                compare(heightSpy.count, 0, "Replacement must not resize the surface");
+                slot = findChild(dock.item, "task0");
+                bounce = findChild(dock.item, "taskBounce0");
+                verify(dock.item.hovering);
+                verify(slot.size > dock.item.base);
+                tryVerify(() => bounce.offset > 5);
+                compare(findChild(dock.item, "taskBounce1").running, false);
+                bounce.stop();
+                source.item.replaceOnLaunch = false;
             }
         } finally {
             source.source = "qrc:/qml/DemoTasks.qml";
-            testEnvironment.behaviorOptions({layoutDirection: 0, bounceHeight: 0, hoverLift: 0, bounceCount: 3});
+            testEnvironment.behaviorOptions({bounceHeight: 0, hoverLift: 0, bounceCount: 3});
             testEnvironment.setEdge(0);
             mouseMove(this, 990, 790);
         }
@@ -283,7 +281,7 @@ TestCase {
                 }
                 bounce.stop();
             }
-            const tiny = Adaptive.metrics(80,96,2.5,600,100,8,10,12,10,8,64,12,64);
+            const tiny = Adaptive.metrics(80,96,2.5,600,100,8,10,12,10,8,64,64);
             verify(tiny.depth<=100 && tiny.length<=600);
         } finally {
             dock.item.hovering=false;

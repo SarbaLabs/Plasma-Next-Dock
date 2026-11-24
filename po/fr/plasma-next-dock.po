@@ -384,8 +384,8 @@ msgstr "Parcourir les fenêtres"
 msgid "Activate the group"
 msgstr "Activer le groupe"
 
-msgid "Sort order:"
-msgstr "Ordre de tri :"
+msgid "Pinned application order:"
+msgstr "Tri des applications épinglées :"
 
 msgid "Manually"
 msgstr "Manuellement"
@@ -854,3 +854,15 @@ msgstr "Lent"
 
 msgid "Very fast"
 msgstr "Très rapide"
+
+msgid "Unpinned application order:"
+msgstr "Tri des applications non épinglées :"
+
+msgid "Attention"
+msgstr "Attention"
+
+msgid "Configure module: %1…"
+msgstr "Configurer le module « %1 »…"
+
+msgid "Unpinned applications"
+msgstr "Applications non épinglées"

@@ -1,0 +1,9 @@
+{
+    "id": "org.sarbalabs.unpinned",
+    "apiVersion": 1,
+    "version": "1.0",
+    "name": "Unpinned applications",
+    "nameTranslations": {"fr": "Applications non épinglées"},
+    "description": "Running tasks without a pinned launcher.",
+    "descriptionTranslations": {"fr": "Tâches ouvertes sans lanceur épinglé."}
+}

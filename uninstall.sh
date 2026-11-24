@@ -8,6 +8,9 @@ if [[ -L "$entry" && "$(readlink -m -- "$entry")" == "$(realpath -m -- "$templat
     rm -- "$entry"
 fi
 rm -f -- "$template" "$prefix/bin/plasma-next-dock" "$prefix/share/applications/org.sarbalabs.PlasmaNextDock.desktop"
+module="$prefix/share/plasma-next-dock/modules/org.sarbalabs.unpinned"
+rm -f -- "$module/metadata.json" "$module/Main.qml" "$module/Settings.qml"
+rmdir -- "$module" 2>/dev/null || true
 for catalog in "$prefix"/share/locale/*/LC_MESSAGES/plasma-next-dock.mo; do
     rm -f -- "$catalog"
 done

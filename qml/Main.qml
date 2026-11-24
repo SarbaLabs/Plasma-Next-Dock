@@ -19,20 +19,9 @@ Item {
         active: !dockOptions.demo && (dockOptions.showAudioIndicator !== false || dockOptions.showMediaControls !== false || !!contextMenu.audioTarget)
         source: active ? "AudioService.qml" : ""
     }
-    readonly property bool reverseLayout: Behavior.reversed(dockOptions.layoutDirection || 0, vertical, Qt.application.layoutDirection === Qt.RightToLeft)
-    property int dividerIndex: -1
-    function refreshDivider() {
-        const flags = [];
-        for (let i = 0; i < repeater.count; ++i) {
-            const slot = repeater.itemAt(i);
-            if (!slot) { dividerIndex = -1; return; }
-            flags.push(slot.pinned);
-        }
-        dividerIndex = Behavior.boundary(flags);
-    }
-    function queueDivider() { Qt.callLater(refreshDivider); }
-    readonly property bool hasDivider: dockOptions.showSeparator !== false && dividerIndex >= 0
-    readonly property real dividerSpan: hasDivider ? 12 * fitScale : 0
+    readonly property var taskRows: !dockOptions.demo && typeof dockTaskRows !== "undefined" ? dockTaskRows : null
+    function nativeRow(visual) { return taskRows ? taskRows.nativeRow(visual) : visual; }
+    function nativeSlot(sourceRow) { return repeater.itemAt(taskRows ? taskRows.visualRow(sourceRow) : sourceRow); }
     readonly property real bounceHeight: dockOptions.bounceEnabled === false ? 0
         : (dockOptions.bounceHeight > 0 ? dockOptions.bounceHeight : Math.min(10, Math.max(6, Math.round(dockOptions.iconSize * 0.18))))
     readonly property bool vertical: dockOptions.edge >= 2
@@ -50,7 +39,7 @@ Item {
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
         dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
-        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, hasDivider ? 12 : 0, bounceHeight)
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, bounceHeight)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -100,7 +89,7 @@ Item {
     function beginKeyboard() {
         if (!repeater.count || contextMenu.visibleMenu || dragging || externalDrop.containsDrag) return;
         previewPanel.dismiss();
-        selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0);
+        selectKeyboardRow(0);
         forceActiveFocus(Qt.ShortcutFocusReason);
     }
     Keys.onPressed: event => {
@@ -126,21 +115,20 @@ Item {
             return;
         }
         if (event.modifiers !== Qt.NoModifier) return;
-        const forward = reverseLayout ? -1 : 1;
         switch (event.key) {
         case Qt.Key_Escape: keyboardItem = null; break;
-        case Qt.Key_Home: selectKeyboardRow(reverseLayout ? repeater.count - 1 : 0); break;
-        case Qt.Key_End: selectKeyboardRow(reverseLayout ? 0 : repeater.count - 1); break;
+        case Qt.Key_Home: selectKeyboardRow(0); break;
+        case Qt.Key_End: selectKeyboardRow(repeater.count - 1); break;
         case Qt.Key_Return: case Qt.Key_Enter: case Qt.Key_Space:
             if (event.isAutoRepeat) break;
             if (selected.model.IsGroupParent) previewPanel.showForKeyboard(selected.previewOwner);
-            else { keyboardItem = null; taskSource.item.activate(index); }
+            else { keyboardItem = null; taskSource.item.activate(root.nativeRow(index)); }
             break;
         default: {
             const next = vertical ? Qt.Key_Down : Qt.Key_Right;
             const previous = vertical ? Qt.Key_Up : Qt.Key_Left;
             if (event.key !== next && event.key !== previous) return;
-            const delta = event.key === next ? forward : -forward;
+            const delta = event.key === next ? 1 : -1;
             selectKeyboardRow((index + delta + repeater.count) % repeater.count);
         }
         }
@@ -234,12 +222,12 @@ Item {
         for (let i = 0; i < repeater.count; ++i) {
             const slot = repeater.itemAt(i);
             if (!slot) continue;
-            const center = slot.mapToItem(root, slot.iconOffset + slot.size / 2, slot.height / 2);
+            const center = slot.mapToItem(root, slot.size / 2, slot.height / 2);
             const delta = coordinate - (vertical ? center.y : center.x);
             if (Math.abs(delta) < distance) {
                 distance = Math.abs(delta);
                 nearest = i;
-                fraction = (reverseLayout ? -delta : delta) / (slot.size + taskRow.spacing);
+                fraction = delta / (slot.size + taskRow.spacing);
             }
         }
         pointerTask = nearest < 0 ? null : repeater.itemAt(nearest);
@@ -278,7 +266,7 @@ Item {
                 if (slot.lastMinimizeTarget === target && slot.publishedIds === slot.windowIds) continue;
                 minimizeAnchor.x = x; minimizeAnchor.y = y;
                 minimizeAnchor.width = width; minimizeAnchor.height = height;
-                taskSource.item.publishMinimizeTarget(row, target, minimizeAnchor);
+                taskSource.item.publishMinimizeTarget(root.nativeRow(row), target, minimizeAnchor);
                 slot.lastMinimizeTarget = target;
                 slot.publishedIds = slot.windowIds;
             }
@@ -298,7 +286,6 @@ Item {
         // Size the first layer-shell configure from the populated model.
         // Later row replacements still coalesce through onCountChanged.
         syncTaskCount();
-        refreshDivider();
         dockController.setPointerTarget(root);
         queueGeometry();
     }
@@ -335,7 +322,7 @@ Item {
     Connections {
         target: taskSource.item
         ignoreUnknownSignals: true
-        function onLaunchRequested(row) { root.rememberLaunch(repeater.itemAt(row)); }
+        function onLaunchRequested(row) { root.rememberLaunch(root.nativeSlot(row)); }
     }
     DockPalette { id: dockPalette }
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
@@ -416,7 +403,7 @@ Item {
         onContentXChanged: root.queueGeometry()
         Row {
             id: taskRow
-            layoutDirection: root.reverseLayout ? Qt.RightToLeft : Qt.LeftToRight
+            layoutDirection: Qt.LeftToRight
             LayoutMirroring.enabled: false
             x: root.endPadding + Math.max(0, viewport.width - 2 * root.endPadding - width) * root.alignmentFactor
             height: viewport.height
@@ -425,15 +412,16 @@ Item {
             onWidthChanged: root.queueGeometry()
             Repeater {
                 id: repeater
-                model: taskSource.item ? taskSource.item.tasks : null
-                onCountChanged: { Qt.callLater(root.syncAnimatedWeight); Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); root.queueDivider(); }
+                model: taskSource.item ? (root.taskRows ? (root.taskRows.sourceModel ? root.taskRows : null) : taskSource.item.tasks) : null
+                onCountChanged: { Qt.callLater(root.syncAnimatedWeight); Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); }
                 delegate: Item {
                     id: slot
                     objectName: "task" + index
                     required property int index
                     required property var model
+                    readonly property int nativeIndex: root.taskRows ? model.nativeTaskRow : index
                     readonly property bool taskHovered: !root.dragging && ((root.hovering && root.pointerTask === slot)
-                        || (externalDrop.containsDrag && externalDrop.kind === "documents" && dropTarget.valid && dropTarget.index.row === index))
+                        || (externalDrop.containsDrag && externalDrop.kind === "documents" && dropTarget.valid && dropTarget.index.row === nativeIndex))
                     onTaskHoveredChanged: if (taskHovered) root.applicationColor = colorLoader.item ? colorLoader.item.dominant : Kirigami.Theme.highlightColor
                     readonly property real factor: root.hovering && !root.dragging ? Adaptive.hoverWeight(root.pointerIndex - index, root.blastRadius) : 0
                     function restoreZoom() {
@@ -477,9 +465,8 @@ Item {
                     property alias iconItem: icon
                     property alias inputItem: inputLane
                     readonly property bool pinned: !!model.IsLauncher || !!model.HasLauncher
-                    onPinnedChanged: root.queueDivider()
                     onIndexChanged: {
-                        root.queueDivider();
+
                         if (root.pointerTask === slot && index >= 0 && root.hovering && !root.dragging)
                             root.pointerIndex = index + root.pointerFraction;
                         Qt.callLater(root.remapPointer);
@@ -494,17 +481,14 @@ Item {
                         bounce.launch();
                     }
                     onLaunchKeyChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
-                    Component.onCompleted: { animatedFactor = factor; componentReady = true; root.queueDivider(); Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
-                    readonly property real extra: root.hasDivider && index === root.dividerIndex ? root.dividerSpan : 0
-                    readonly property real iconOffset: root.reverseLayout ? 0 : extra
-                    width: size + extra
+                    Component.onCompleted: { animatedFactor = factor; componentReady = true; Qt.callLater(root.remapPointer); Qt.callLater(root.resumeLaunchFeedback); }
+                    width: size
                     height: viewport.height
                     onXChanged: root.queueGeometry()
                     onSizeChanged: root.queueGeometry()
                     // Follow the slot along the dock, but keep the capsule's
                     // resting cross-axis geometry throughout icon magnification.
                     Item {
-                        x: slot.iconOffset
                         width: slot.size
                         height: root.base
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
@@ -520,7 +504,7 @@ Item {
                             rotation: root.vertical ? -90 : 0
                             configuration: dockOptions
                             task: slot.model
-                            taskIndex: slot.index
+                            taskIndex: slot.nativeIndex
                             tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                             edge: dockOptions.edge
                             padding: root.taskPadding
@@ -547,7 +531,7 @@ Item {
                     TaskStatus {
                         id: taskStatus
                         task: slot.model
-                        taskIndex: slot.index
+                        taskIndex: slot.nativeIndex
                         tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                         audio: audioService.item
                         players: statusPlayers
@@ -560,7 +544,6 @@ Item {
                     Item {
                         id: inputLane
                         objectName: "taskInput" + slot.index
-                        x: slot.iconOffset
                         width: slot.size
                         height: root.edgeSpacing + root.taskPadding + slot.size + icon.lift + bounce.amplitude
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? 0 : slot.height - height
@@ -572,16 +555,16 @@ Item {
                                 if (reorder.active) return;
                                 if (slot.model.IsGroupParent && !dockOptions.groupClick) taskTip.showGroupWindows();
                                 else if (slot.model.IsGroupParent && dockOptions.groupClick === 1) {
-                                    previewPanel.dismiss(); taskSource.item.cycle(slot.index, 1);
+                                    previewPanel.dismiss(); taskSource.item.cycle(root.nativeRow(slot.index), 1);
                                 }
-                                else { previewPanel.dismiss(); taskSource.item.activate(slot.index); }
+                                else { previewPanel.dismiss(); taskSource.item.activate(root.nativeRow(slot.index)); }
                             }
                         }
                         TapHandler {
                             objectName: "middleClick" + slot.index
                             acceptedButtons: Qt.MiddleButton
                             enabled: !dockOptions.demo && !overlays.audioHovered && dockOptions.middleClick > 0
-                            onTapped: { previewPanel.dismiss(); taskSource.item.middle(slot.index); }
+                            onTapped: { previewPanel.dismiss(); taskSource.item.middle(root.nativeRow(slot.index)); }
                         }
                     }
                     Rectangle {
@@ -597,7 +580,6 @@ Item {
                         id: icon
                         objectName: "icon" + slot.index
                         width: slot.size; height: width
-                        x: slot.iconOffset
                         // After a clockwise rotation, local bottom is the screen's left.
                         readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
@@ -645,7 +627,7 @@ Item {
                                 previewPanel.status = taskStatus;
                                 previewPanel.applicationName = mainText;
                                 previewPanel.applicationIcon = slot.model.decoration;
-                                windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, slot.index);
+                                windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, root.nativeRow(slot.index));
                             }
                         }
                         StatusOverlay {
@@ -655,19 +637,6 @@ Item {
                             status: taskStatus
                             configuration: dockOptions
                         }
-                    }
-                    Rectangle {
-                        objectName: "taskSeparator" + slot.index
-                        visible: slot.extra > 0
-                        width: Math.max(1, root.fitScale)
-                        height: root.base * 0.6
-                        radius: width / 2
-                        x: (root.reverseLayout ? slot.size + (slot.extra + taskRow.spacing) / 2 : (slot.extra - taskRow.spacing) / 2) - width / 2
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding + (root.base - height) / 2
-                            : slot.height - root.edgeSpacing - root.taskPadding - (root.base + height) / 2
-                        color: Kirigami.Theme.textColor
-                        opacity: 0.3
                     }
                     Loader {
                         id: colorLoader
@@ -682,7 +651,7 @@ Item {
                     Rectangle {
                         visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
                         width: 4 * root.fitScale; height: width; radius: width / 2
-                        x: slot.iconOffset + (slot.size - width) / 2
+                        x: (slot.size - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
@@ -706,7 +675,7 @@ Item {
             if (row < 0 || dockOptions.demo || dockOptions.wheelAction !== 1) { event.accepted = false; return; }
             const direction = Behavior.wheelCycle(axis === Qt.Vertical ? angle.y : angle.x,
                 axis === Qt.Vertical ? pixel.y : pixel.x);
-            if (direction) taskSource.item.cycle(row, direction);
+            if (direction) taskSource.item.cycle(root.nativeRow(row), direction);
             event.accepted = true;
             return;
         }
@@ -735,7 +704,8 @@ Item {
         onActiveChanged: {
             if (active) {
                 const p = root.mapFromItem(null, centroid.scenePressPosition.x, centroid.scenePressPosition.y);
-                root.dragIndex = root.taskAt(p, false);
+                const row = root.taskAt(p, false);
+                root.dragIndex = repeater.itemAt(row)?.pinned ? row : -1;
                 if (root.dragging) dockController.setHovered(true);
             } else root.finishDrag();
         }
@@ -743,7 +713,8 @@ Item {
             if (!active || !root.dragging) return;
             const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
             const targetIndex = root.taskAt(p, true);
-            if (targetIndex >= 0 && targetIndex !== root.dragIndex && taskSource.item.moveTask(root.dragIndex, targetIndex))
+            if (targetIndex >= 0 && targetIndex !== root.dragIndex && repeater.itemAt(targetIndex)?.pinned
+                && taskSource.item.moveTask(root.nativeRow(root.dragIndex), root.nativeRow(targetIndex)))
                 root.dragIndex = targetIndex;
         }
     }
@@ -760,8 +731,8 @@ Item {
         }
         const anchor = Interaction.menuAnchor(dockOptions.edge,
             Qt.rect(left, top, right - left, bottom - top), position, 6);
-        contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, row,
-                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null);
+        contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, root.nativeRow(row),
+                           row >= 0 ? repeater.itemAt(row)?.menuStatus : null, root.taskRows?.settingsForRow(row) || {});
     }
     TapHandler {
         acceptedButtons: Qt.RightButton
@@ -775,7 +746,7 @@ Item {
         tasksSource: taskSource.item
         resolver: launcherResolver
         target: dropTarget
-        hitTest: point => root.taskAt(point, false)
+        hitTest: point => root.nativeRow(root.taskAt(point, false))
         insertionAnchor: point => {
             const list = dockSettings.values.launchers;
             const canonical = list.map(url => launcherResolver.launcher(url));
@@ -795,15 +766,15 @@ Item {
                 }
             }
             if (nearest < 0) return "";
-            const before = (coordinate < centerCoordinate) !== root.reverseLayout;
+            const before = coordinate < centerCoordinate;
             return before ? list[nearest] : (list[nearest + 1] || "");
         }
         onGroupHovered: row => {
-            const slot = repeater.itemAt(row);
+            const slot = root.nativeSlot(row);
             if (slot) previewPanel.showForDrag(slot.previewOwner);
         }
         onTargetChangedDuringDrag: row => {
-            if (row >= 0 && previewPanel.dragOwner !== repeater.itemAt(row)?.previewOwner)
+            if (row >= 0 && previewPanel.dragOwner !== root.nativeSlot(row)?.previewOwner)
                 previewPanel.endDrag();
         }
         onContainsDragChanged: {
@@ -812,15 +783,17 @@ Item {
             root.refreshHover();
         }
         onDropped: previewPanel.endDrag()
-        onOpenedFiles: row => root.rememberLaunch(repeater.itemAt(row))
+        onOpenedFiles: row => root.rememberLaunch(root.nativeSlot(row))
     }
+    ModuleSettingsHost { id: moduleSettingsWindow; profile: dockSettings }
     ContextMenu {
+        onConfigureModuleRequested: module => moduleSettingsWindow.open(module)
         id: contextMenu
         objectName: "dockMenu"
         onOpenedChanged: root.refreshHover()
         onTestBounceRequested: row => {
             previewPanel.dismiss();
-            const slot = repeater.itemAt(row);
+            const slot = root.nativeSlot(row);
             if (slot) slot.triggerTestBounce();
         }
     }

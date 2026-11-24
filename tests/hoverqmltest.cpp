@@ -229,6 +229,7 @@ public Q_SLOTS:
         if (QProcess::execute(QStringLiteral(DOCK_KBUILDSYCOCA), {QStringLiteral("--noincremental")}) != 0)
             qFatal("Could not build isolated test service cache");
         engine->rootContext()->setContextProperty("testLauncherUrls", urls);
+        engine->rootContext()->setContextProperty("unpinnedSettingsUrl", QUrl::fromLocalFile(QStringLiteral(UNPINNED_SETTINGS)));
         engine->rootContext()->setContextProperty("dockSettings", new DockSettings("/unused", false, engine));
         engine->rootContext()->setContextProperty("outputDescriptions", QVariantMap{
             {"DP-1", "AOC 2590G4"}, {"DP-2", QString("Samsung Electronics ").repeated(8)}});

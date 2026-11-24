@@ -8,7 +8,7 @@ SettingsForm {
     id: page
     objectName: "behaviorSettings"
     property var values: ({})
-    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "layoutDirection", "showSeparator", "revealAttention", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "bounceHeight", "bounceSpeed", "bounceCount"]) copy[key] = configuration[key]; values = copy; }
+    function load(configuration) { const copy = {}; for (const key of ["groupApplications", "groupClick", "minimizeActive", "middleClick", "wheelAction", "skipMinimized", "filterDesktop", "filterActivity", "filterScreen", "onlyMinimized", "revealAttention", "bounceEnabled", "bounceOnLaunch", "bounceOnAttention", "bounceHeight", "bounceSpeed", "bounceCount"]) copy[key] = configuration[key]; values = copy; }
     function change(key, value) { const copy = Object.assign({}, values); copy[key] = value; values = copy; }
     Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Window grouping") }
     Controls.CheckBox {
@@ -81,21 +81,7 @@ SettingsForm {
         checked: page.values.onlyMinimized === true
         onToggled: page.change("onlyMinimized", checked)
     }
-    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Layout and attention") }
-    Controls.ComboBox {
-        objectName: "layoutDirectionControl"
-        implicitWidth: Kirigami.Units.gridUnit * 18
-        Kirigami.FormData.label: i18n("Task direction:")
-        model: [i18n("Follow system language"), i18n("Left to right / top to bottom"), i18n("Right to left / bottom to top")]
-        currentIndex: page.values.layoutDirection || 0
-        onActivated: page.change("layoutDirection", currentIndex)
-    }
-    Controls.CheckBox {
-        objectName: "showSeparatorControl"
-        text: i18n("Separate pinned and unpinned applications")
-        checked: page.values.showSeparator === true
-        onToggled: page.change("showSeparator", checked)
-    }
+    Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Attention") }
     Controls.CheckBox {
         objectName: "revealAttentionControl"
         text: i18n("Reveal the dock when a task requests attention")
@@ -103,5 +89,4 @@ SettingsForm {
         onToggled: page.change("revealAttention", checked)
     }
     Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Overflow scrolling takes priority over window cycling. Manual dragging is available only with manual sorting.") }
-    Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Reversing the direction also moves unpinned applications to the opposite side. Display filters do not change window avoidance.") }
 }

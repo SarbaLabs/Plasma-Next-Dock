@@ -18,6 +18,8 @@ Item {
     readonly property bool hasTaskAudio: !!audioTarget && menuTarget.valid
         && audioTarget.taskIndex === menuTarget.index.row && audioTarget.streams.length > 0
     property var source: null
+    property var moduleInfo: ({})
+    signal configureModuleRequested(var moduleInfo)
     property string launcherUrl: ""
     property bool allPlaces: false
     readonly property bool visibleMenu: activeMenu !== null && activeMenu.status === PlasmaExtras.Menu.Open
@@ -110,7 +112,8 @@ Item {
         return true;
     }
     function close() { if (activeMenu) activeMenu.close(); }
-    function showAt(point, taskSource, row, status = null) {
+    function showAt(point, taskSource, row, status = null, module = {}) {
+        moduleInfo = module;
         close();
         source = taskSource;
         audioTarget = status;
@@ -168,6 +171,11 @@ Item {
             }, dockOptions.bounceEnabled !== false);
         }
         separator(menu);
+        if (menuTarget.valid && moduleInfo.settingsUrl) {
+            const owner = moduleInfo;
+            add(menu, i18n("Configure module: %1…", owner.name), "configure",
+                () => controller.configureModuleRequested(owner));
+        }
         add(menu, i18n("Configure Plasma Next Dock…"), "configure", () => dockSettings.configure());
         add(menu, i18n("Quit Plasma Next Dock"), "application-exit", () => Qt.quit());
         dockMenuAnchor.prepare(controller, Qt.point(anchorItem.x, anchorItem.y), dockOptions.edge);

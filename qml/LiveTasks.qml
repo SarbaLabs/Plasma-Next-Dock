@@ -90,6 +90,25 @@ Item {
         screenGeometry: typeof outputGeometry !== "undefined" ? outputGeometry : Qt.rect(0, 0, 0, 0)
         filterNotMinimized: source.options.onlyMinimized === true
     }
+    // Publish only task data to the module engine; KDE actions stay on this model.
+    Binding { target: typeof dockTaskRows === "undefined" ? null : dockTaskRows; property: "sourceModel"; value: tasks }
+    Binding { target: typeof dockTaskRows === "undefined" ? null : dockTaskRows; property: "desktopIds"; value: desktops.desktopIds }
+    Binding {
+        target: typeof dockTaskRows === "undefined" ? null : dockTaskRows
+        property: "activityNames"
+        value: source.activityNames
+    }
+    property var activityNames: ({})
+    function updateActivityNames() {
+        const names = {};
+        for (const id of activities.runningActivities()) names[id] = activities.activityName(id);
+        activityNames = names;
+    }
+    Connections {
+        target: activities
+        function onNamesOfRunningActivitiesChanged() { source.updateActivityNames(); }
+        function onNumberOfRunningActivitiesChanged() { source.updateActivityNames(); }
+    }
     // Collision must keep every individual window geometry, including siblings
     // hidden behind a group in the presentation model.
     TaskManager.TasksModel {
@@ -101,6 +120,6 @@ Item {
         filterByActivity: true
         filterByScreen: false
     }
-    Component.onCompleted: { applySavedLaunchers(); dockController.model = collisionTasks; dockController.setAttention(attention); }
+    Component.onCompleted: { updateActivityNames(); applySavedLaunchers(); dockController.model = collisionTasks; dockController.setAttention(attention); }
     Component.onDestruction: { dockController.model = null; dockController.setAttention(false); }
 }
