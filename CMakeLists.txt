@@ -25,7 +25,7 @@ find_package(LayerShellQt REQUIRED)
 find_package(PlasmaWaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
-add_library(dockcore STATIC src/dockprofiles.cpp src/launcherresolver.cpp src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
+add_library(dockcore STATIC src/dockprofiles.cpp src/launcherresolver.cpp src/statussupport.h src/backgroundeffects.cpp src/geometry.cpp src/capsulegeometry.cpp src/controller.cpp src/settings.cpp src/popupanchor.cpp src/applicationmenubackend.cpp src/menutarget.cpp src/windowpreviewmodel.cpp src/layersurfaceposition.cpp)
 qt_add_shaders(dockcore iconcolors PREFIX "/" FILES shaders/iconcolor.frag)
 target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
@@ -44,11 +44,11 @@ qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
     qml/ApplicationsSettings.qml qml/ApplicationChooser.qml qml/ExternalDrop.qml
-    qml/TaskBounce.qml
+    qml/TaskIconArtwork.qml qml/TaskBounce.qml
     qml/BehaviorSettings.qml qml/code/TaskBehavior.js
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml
     qml/SettingsForm.qml qml/Measure.qml qml/DockPalette.qml qml/ColorSetting.qml qml/CapsuleBackground.qml qml/DockIndicators.qml qml/IndicatorsSettings.qml qml/CustomIndicators.qml qml/NativeTaskIndicator.qml qml/GroupExpanderOverlay.qml qml/IndicatorTaskState.qml qml/code/IndicatorLogic.js
-    qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
+    qml/TaskPreview.qml qml/WindowThumbnail.qml qml/ContextMenu.qml qml/AppearanceSettings.qml qml/IconSettings.qml qml/Settings.qml qml/Main.qml qml/LiveTasks.qml qml/DemoTasks.qml qml/CapsuleGlow.qml qml/code/CapsuleGeometry.js qml/code/InteractionGeometry.js qml/code/AdaptiveLayout.js)
 qt_add_resources(plasma-next-dock dockqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's

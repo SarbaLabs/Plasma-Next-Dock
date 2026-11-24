@@ -159,12 +159,12 @@ private Q_SLOTS:
     }
     void roundedContactAndInputAreIndependentOfCanvas() {
         const QRectF bar(100, 100, 300, 50);
-        QVERIFY(!DockGeometry::overlaps(QRectF(110, 20, 100, 60), bar, 10)); // Drawing margin only.
-        QVERIFY(DockGeometry::overlaps(QRectF(110, 20, 100, 90), bar, 10));
-        QVERIFY(!DockGeometry::overlaps(QRectF(100,100,1,1), bar, 20));
-        QVERIFY(DockGeometry::overlaps(QRectF(100,100,1,1), bar, 0));
+        QVERIFY(!DockGeometry::capsule(bar, 10).intersects(QRectF(110, 20, 100, 60))); // Drawing margin only.
+        QVERIFY(DockGeometry::capsule(bar, 10).intersects(QRectF(110, 20, 100, 90)));
+        QVERIFY(!DockGeometry::capsule(bar, 20).intersects(QRectF(100,100,1,1)));
+        QVERIFY(DockGeometry::capsule(bar, 0).intersects(QRectF(100,100,1,1)));
         QCOMPARE(DockGeometry::capsule(bar, 900).boundingRect(), bar);
-        const auto region = DockGeometry::inputRegion(bar, 10, {QRectF(120,70,60,60)}, QRect(0,0,600,200));
+        const auto region = DockGeometry::inputRegion(bar, DockGeometry::capsule(bar, 10), {QRectF(120,70,60,60)}, QRect(0,0,600,200));
         QVERIFY(region.contains(QPoint(140,80))); // Enlarged icon remains clickable.
         QVERIFY(region.contains(QPoint(250,120)));
         QVERIFY(!region.contains(QPoint(20,20))); // Transparent margins pass through.
@@ -187,12 +187,12 @@ private Q_SLOTS:
                 case DockGeometry::Right:
                     bar = QRectF(340 - gap, 100, 60, 200); outer = QPoint(399, 200); corner = QPoint(399, 100); break;
                 }
-                const auto input = DockGeometry::inputRegion(bar, 20, {}, bounds, edge);
+                const auto input = DockGeometry::inputRegion(bar, DockGeometry::capsule(bar, 20), {}, bounds, edge);
                 QVERIFY(input.contains(outer));
                 QVERIFY(input.contains(corner));
                 QVERIFY(!input.contains(QPoint(200, 200)));
                 if (gap > 0) {
-                    QVERIFY(!DockGeometry::overlaps(QRectF(outer, QSizeF(1, 1)), bar, 20));
+                    QVERIFY(!DockGeometry::capsule(bar, 20).intersects(QRectF(outer, QSizeF(1, 1))));
                 }
                 const QPoint end = e < 2 ? QPoint(0, outer.y()) : QPoint(outer.x(), 0);
                 QVERIFY(input.contains(end)); // Recall span must work even at zero gap.

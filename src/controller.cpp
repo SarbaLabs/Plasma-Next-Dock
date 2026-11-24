@@ -36,35 +36,31 @@ bool DockController::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched != m_pointerWindow || !m_pointerTarget) return false;
     QPointF position;
-    bool positional = false;
     switch (event->type()) {
     case QEvent::Enter:
         position = static_cast<QEnterEvent *>(event)->position();
-        positional = true;
         break;
     case QEvent::MouseMove:
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
         position = static_cast<QMouseEvent *>(event)->position();
-        positional = true;
         break;
     case QEvent::Leave:
     case QEvent::Hide:
         m_pointerPresent = false;
         updatePointerHover();
-        break;
-    default: break;
+        return false;
+    default:
+        return false;
     }
-    if (positional) {
-        m_pointerPresent = true;
-        const auto local = m_pointerTarget->mapFromScene(position);
-        // Geometry-only hover re-delivery must not feed animated slot positions
-        // back into the magnification falloff. Only a changed position does so.
-        const bool moved = local != m_pointerPosition;
-        m_pointerPosition = local;
-        updatePointerHover();
-        if (moved || event->type() == QEvent::Enter) Q_EMIT pointerPositionChanged();
-    }
+
+    // Ignore duplicate coordinates generated as animated items pass under the pointer.
+    const auto local = m_pointerTarget->mapFromScene(position);
+    const bool moved = local != m_pointerPosition;
+    m_pointerPresent = true;
+    m_pointerPosition = local;
+    updatePointerHover();
+    if (moved || event->type() == QEvent::Enter) Q_EMIT pointerPositionChanged();
     return false;
 }
 void DockController::updatePointerHover()
@@ -101,19 +97,7 @@ void DockController::setSurfaceOrigin(QPoint origin)
 }
 QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const
 {
-    const auto fill = DockGeometry::capsule(QRectF(QPointF(), size), corners, vertical);
-    QString outline;
-    if (border > 0 && !fill.isEmpty()) {
-        // Boolean path operations flatten curves. Work at higher precision
-        // so the exterior ring stays smooth on scaled outputs.
-        const auto scale = QTransform::fromScale(8, 8);
-        const auto large = scale.map(fill);
-        QPainterPathStroker stroke;
-        stroke.setWidth(16 * border);
-        stroke.setJoinStyle(Qt::RoundJoin);
-        outline = DockGeometry::svgPath(scale.inverted().map(stroke.createStroke(large).subtracted(large)));
-    }
-    return {{"fill", DockGeometry::svgPath(fill)}, {"outline", outline}};
+    return DockGeometry::capsuleDrawing(size, corners, vertical, border);
 }
 void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, int edge, const QList<qreal> &corners, QRectF interactionBounds)
 {
@@ -124,8 +108,8 @@ void DockController::setGeometry(QRectF rect, qreal radius, QVariantList icons, 
     const auto shape = corners.size() == 4 ? DockGeometry::capsule(rect, corners, edge >= DockGeometry::Left) : DockGeometry::capsule(rect, radius);
     const QRect canvas(QPoint(), bounds);
     const QRect hitBounds = interactionBounds.isEmpty() ? canvas : interactionBounds.toAlignedRect().intersected(canvas);
-    const QRegion input = DockGeometry::inputRegion(rect, radius, iconRects,
-        hitBounds, static_cast<DockGeometry::Edge>(edge), shape);
+    const QRegion input = DockGeometry::inputRegion(rect, shape, iconRects,
+        hitBounds, static_cast<DockGeometry::Edge>(edge));
     if (input != m_lastInput) {
         m_lastInput = input;
         // Under Qt Wayland this is the surface input region, not a rendering clip.
@@ -173,28 +157,30 @@ void DockController::scheduleEvaluation()
     m_queued = true;
     QMetaObject::invokeMethod(this, [this] { m_queued = false; evaluate(); }, Qt::QueuedConnection);
 }
+// The collision model is ungrouped and already filtered to the current activity
+// and desktop. Test the visible capsule in compositor coordinates.
+bool DockController::overlapsVisibleWindow() const
+{
+    if (!m_model) return false;
+    const auto roles = m_model->roleNames();
+    const int geometryRole = roles.key("Geometry", -1);
+    const int windowRole = roles.key("IsWindow", -1);
+    const int minimizedRole = roles.key("IsMinimized", -1);
+    if (geometryRole < 0 || windowRole < 0 || minimizedRole < 0) return false;
+
+    const auto globalCapsule = m_shape.translated(m_origin);
+    for (int row = 0; row < m_model->rowCount(); ++row) {
+        const auto index = m_model->index(row, 0);
+        if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
+        const QRectF window = index.data(geometryRole).toRectF();
+        if (!window.isEmpty() && globalCapsule.intersects(window)) return true;
+    }
+    return false;
+}
+
 void DockController::evaluate()
 {
-    bool overlap = false;
-    if (m_model) {
-        const auto roles = m_model->roleNames();
-        const int geometryRole = roles.key("Geometry", -1);
-        const int windowRole = roles.key("IsWindow", -1);
-        const int minimizedRole = roles.key("IsMinimized", -1);
-        const auto globalCapsule = m_shape.translated(m_origin);
-        // An ungrouped TasksModel, already filtered by desktop/activity, is required.
-        if (geometryRole >= 0 && windowRole >= 0 && minimizedRole >= 0) {
-            for (int row = 0; row < m_model->rowCount(); ++row) {
-                const auto index = m_model->index(row, 0);
-                if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
-                const QRectF window = index.data(geometryRole).toRectF();
-                if (!window.isEmpty() && globalCapsule.intersects(window)) {
-                    overlap = true;
-                    break;
-                }
-            }
-        }
-    }
+    const bool overlap = overlapsVisibleWindow();
     const bool hide = (m_visibility == DockGeometry::AutoHide || (m_visibility == DockGeometry::DodgeWindows && overlap))
         && m_edgeAvailable && !m_attention && !m_hovered && !m_leaveTimer.isActive();
     if (overlap == m_overlapping && hide == m_hideRequested) return;

@@ -47,49 +47,21 @@ Controls.ApplicationWindow {
         edge.currentIndex = v.edge;
         window.draftScreen = v.screen;
         window.profileError = "";
-        iconSize.value = v.iconSize; zoom.value = Math.round(v.zoom * 100);
-        hoverSpeed.value = 140 - (v.hoverDuration ?? 90);
-        blastRadius.value = v.blastRadius; hoverLift.value = v.hoverLift;
-        iconColors.currentIndex = v.grayscaleIcons ? 1 : 0;
-        tintIcons.checked = v.tintIcons;
-        iconTint.role = v.iconTintRole; iconTint.fixedColor = v.iconTintColor;
-        tintSaturation.value = v.iconTintSaturation;
         spacing.value = v.spacing;
-        dockShadowX.value = v.dockShadowX; dockShadowY.value = v.dockShadowY;
-        dockShadowColor.role = v.dockShadowRole; dockShadowColor.fixedColor = v.dockShadowColor;
-        dockShadowStrength.value = v.dockShadowStrength; dockShadowSize.value = v.dockShadowSize;
-        iconShadowX.value = v.iconShadowX; iconShadowY.value = v.iconShadowY;
-        iconShadowColor.role = v.iconShadowRole; iconShadowColor.fixedColor = v.iconShadowColor;
-        iconShadowStrength.value = v.iconShadowStrength; iconShadowSize.value = v.iconShadowSize;
-        glow.checked = v.glow;
-        glowRadius.value = v.glowRadius; glowIntensity.value = v.glowIntensity; glowOpacity.value = v.glowOpacity;
-        alignment.currentIndex = v.dockAlignment; alignmentMargin.value = v.alignmentMargin; visibilityMode.currentIndex = v.visibilityMode;
-        backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
-        systemBlur.checked = v.systemBlur;
-        midpoint.value = v.gradientMidpoint;
-        glassOpacity.value = Math.round(v.glassOpacity * 100);
-        backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
-        borderWidth.value = v.borderWidth;
-        borderOpacity.value = Math.round(v.borderOpacity * 100);
-        topOpacity.value = Math.round(v.gradientTopOpacity * 100);
-        bottomOpacity.value = Math.round(v.gradientBottomOpacity * 100);
-        fill.role = v.backgroundRole; fill.fixedColor = v.backgroundColor;
-        upper.role = v.gradientTopRole; upper.fixedColor = v.gradientTopColor;
-        lower.role = v.gradientBottomRole; lower.fixedColor = v.gradientBottomColor;
-        outline.role = v.borderRole; outline.fixedColor = v.borderColor;
-        linkCorners.checked = v.linkCornerRadii;
-        topLeft.value = v.topLeftRadius;
-        topRight.value = v.topRightRadius;
-        bottomLeft.value = v.bottomLeftRadius;
-        bottomRight.value = v.bottomRightRadius;
-        iconSpacing.value = v.iconSpacing; horizontalPadding.value = v.horizontalPadding; verticalPadding.value = v.verticalPadding;
+        alignment.currentIndex = v.dockAlignment;
+        alignmentMargin.value = v.alignmentMargin;
+        visibilityMode.currentIndex = v.visibilityMode;
         highlightPreview.checked = v.highlightPreviewWindow;
-        windowPreviews.checked = v.showWindowPreviews; audioIndicator.checked = v.showAudioIndicator;
-        muteOnClick.checked = v.muteOnClick; mediaControls.checked = v.showMediaControls;
-        badges.checked = v.showBadges; progress.checked = v.showProgress;
-        iconHover.checked = v.iconHoverHighlight;
+        windowPreviews.checked = v.showWindowPreviews;
+        audioIndicator.checked = v.showAudioIndicator;
+        muteOnClick.checked = v.muteOnClick;
+        mediaControls.checked = v.showMediaControls;
+        badges.checked = v.showBadges;
+        progress.checked = v.showProgress;
+        appearanceSettings.load(v);
+        iconSettings.load(v);
         indicators.load(v);
-        behavior.load(v);
+        behaviorPage.load(v);
         visible = true;
     }
     footer: Controls.DialogButtonBox {
@@ -101,30 +73,21 @@ Controls.ApplicationWindow {
                 return;
             }
             window.profileError = "";
-            if (!dockSettings.apply(Object.assign({}, behavior.values, indicators.previewConfiguration, {edge: edge.currentIndex, screen: window.draftScreen,
-            iconHoverHighlight: iconHover.checked,
-            grayscaleIcons: iconColors.currentIndex === 1, tintIcons: tintIcons.checked,
-            iconTintRole: iconTint.role, iconTintColor: iconTint.fixedColor.toString(), iconTintSaturation: tintSaturation.value,
-            iconSize: iconSize.value, zoom: zoom.value / 100, spacing: spacing.value,
-            backgroundType: backgroundType.mode, systemBlur: systemBlur.checked, gradientMidpoint: midpoint.value, glassOpacity: glassOpacity.value / 100, backgroundOpacity: backgroundOpacity.value / 100,
-            borderWidth: borderWidth.value, borderRole: outline.role, borderColor: outline.fixedColor.toString(), borderOpacity: borderOpacity.value / 100,
-            dockShadowX: dockShadowX.value, dockShadowY: dockShadowY.value,
-            dockShadowRole: dockShadowColor.role, dockShadowColor: dockShadowColor.fixedColor.toString(),
-            dockShadowStrength: dockShadowStrength.value, dockShadowSize: dockShadowSize.value,
-            iconShadowX: iconShadowX.value, iconShadowY: iconShadowY.value,
-            iconShadowRole: iconShadowColor.role, iconShadowColor: iconShadowColor.fixedColor.toString(),
-            iconShadowStrength: iconShadowStrength.value, iconShadowSize: iconShadowSize.value,
-            backgroundRole: fill.role, backgroundColor: fill.fixedColor.toString(),
-            gradientTopRole: upper.role, gradientTopColor: upper.fixedColor.toString(), gradientTopOpacity: topOpacity.value / 100,
-            gradientBottomRole: lower.role, gradientBottomColor: lower.fixedColor.toString(), gradientBottomOpacity: bottomOpacity.value / 100,
-            iconSpacing: iconSpacing.value, horizontalPadding: horizontalPadding.value, verticalPadding: verticalPadding.value,
-            highlightPreviewWindow: highlightPreview.checked, showWindowPreviews: windowPreviews.checked, showAudioIndicator: audioIndicator.checked, muteOnClick: muteOnClick.checked,
-            showMediaControls: mediaControls.checked, showBadges: badges.checked, showProgress: progress.checked,
-            hoverDuration: 140 - hoverSpeed.value,
-            blastRadius: blastRadius.value, hoverLift: hoverLift.value,
-            linkCornerRadii: linkCorners.checked, topLeftRadius: topLeft.value, topRightRadius: topRight.value, bottomLeftRadius: bottomLeft.value, bottomRightRadius: bottomRight.value, glow: glow.checked,
-            glowRadius: glowRadius.value, glowIntensity: glowIntensity.value, glowOpacity: glowOpacity.value,
-            dockAlignment: alignment.currentIndex, alignmentMargin: alignmentMargin.value, visibilityMode: visibilityMode.currentIndex}))) return;
+            if (!dockSettings.apply(Object.assign({}, behaviorPage.values, indicators.previewConfiguration, appearanceSettings.draft(), iconSettings.draft(), {
+                edge: edge.currentIndex,
+                screen: window.draftScreen,
+                spacing: spacing.value,
+                highlightPreviewWindow: highlightPreview.checked,
+                showWindowPreviews: windowPreviews.checked,
+                showAudioIndicator: audioIndicator.checked,
+                muteOnClick: muteOnClick.checked,
+                showMediaControls: mediaControls.checked,
+                showBadges: badges.checked,
+                showProgress: progress.checked,
+                dockAlignment: alignment.currentIndex,
+                alignmentMargin: alignmentMargin.value,
+                visibilityMode: visibilityMode.currentIndex
+            }))) return;
             if (login.checked !== login.saved) {
                 loginError.visible = !dockSettings.setStartAtLogin(login.checked);
                 login.checked = login.saved = dockSettings.startsAtLogin();
@@ -313,266 +276,14 @@ Controls.ApplicationWindow {
                         }
                     }
                 }
-                Controls.ScrollView {
-                    contentWidth: availableWidth
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: Kirigami.Units.largeSpacing
-                        SettingsForm {
-                            Layout.fillWidth: true
-                            Controls.ComboBox {
-                                id: backgroundType; objectName: "backgroundTypeControl"
-                                implicitWidth: Kirigami.Units.gridUnit * 16
-                                Kirigami.FormData.label: i18n("Background:")
-                                readonly property var modeIds: [0, 4, 5]
-                                readonly property int mode: modeIds[currentIndex] ?? 0
-                                model: [i18n("Solid"), i18n("Liquid Glass"), i18n("Gradient")]
-                            }
-                            ColorSetting {
-                                id: fill; objectName: "fillColorControl"; paletteSource: dockPalette
-                                Kirigami.FormData.label: i18n("Background color:")
-                                visible: backgroundType.mode !== 5
-                                defaultColor: backgroundType.mode !== 4 ? Kirigami.Theme.backgroundColor : Kirigami.Theme.backgroundColor.hslLightness < 0.5 ? "#1f1f26" : "#f5f7ff"
-                            }
-                            Controls.SpinBox {
-                                id: backgroundOpacity; objectName: "backgroundOpacityControl"
-                                visible: backgroundType.mode === 0
-                                Kirigami.FormData.label: i18n("Background tint opacity (%):")
-                                from: 0; to: 100; editable: true
-                            }
-                            Controls.SpinBox {
-                                id: glassOpacity; objectName: "glassOpacityControl"
-                                visible: backgroundType.mode === 4
-                                Kirigami.FormData.label: i18n("Background tint opacity (%):")
-                                from: 0; to: 100; editable: true
-                            }
-                            ColorSetting {
-                                id: upper; objectName: "upperColorControl"; paletteSource: dockPalette
-                                Kirigami.FormData.label: i18n("Desktop-side color:")
-                                visible: backgroundType.mode === 5
-                                defaultColor: Kirigami.Theme.backgroundColor
-                            }
-                            Controls.SpinBox {
-                                id: topOpacity; objectName: "topOpacityControl"; Kirigami.FormData.label: i18n("Desktop-side opacity (%):")
-                                from: 0; to: 100; editable: true
-                                visible: backgroundType.mode === 5
-                            }
-                            ColorSetting {
-                                id: lower; objectName: "lowerColorControl"; paletteSource: dockPalette
-                                Kirigami.FormData.label: i18n("Screen-edge color:")
-                                visible: backgroundType.mode === 5
-                                defaultColor: Kirigami.Theme.highlightColor
-                            }
-                            Controls.SpinBox {
-                                id: bottomOpacity; objectName: "bottomOpacityControl"; Kirigami.FormData.label: i18n("Screen-edge opacity (%):")
-                                from: 0; to: 100; editable: true
-                                visible: backgroundType.mode === 5
-                            }
-                            Controls.SpinBox {
-                                id: midpoint; objectName: "gradientMidpointControl"
-                                visible: backgroundType.mode === 5
-                                Kirigami.FormData.label: i18n("Gradient midpoint (% toward screen edge):")
-                                from: 1; to: 99; editable: true
-                            }
-                            Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
-                            RowLayout {
-                                id: corners
-                                Kirigami.FormData.label: i18n("Corner radii (px):")
-                                function sync(value) {
-                                    if (linkCorners.checked)
-                                        for (const corner of [topLeft, topRight, bottomLeft, bottomRight])
-                                            corner.value = value;
-                                }
-                                GridLayout {
-                                    columns: 2
-                                    Measure {
-                                        id: topLeft; objectName: "topLeftControl"
-                                        caption: i18n("Top left")
-                                        from: -96; to: 96
-                                        onEdited: value => corners.sync(value)
-                                    }
-                                    Measure {
-                                        id: topRight; objectName: "topRightControl"
-                                        caption: i18n("Top right")
-                                        from: -96; to: 96
-                                        onEdited: value => corners.sync(value)
-                                    }
-                                    Measure {
-                                        id: bottomLeft; objectName: "bottomLeftControl"
-                                        caption: i18n("Bottom left")
-                                        from: -96; to: 96
-                                        onEdited: value => corners.sync(value)
-                                    }
-                                    Measure {
-                                        id: bottomRight; objectName: "bottomRightControl"
-                                        caption: i18n("Bottom right")
-                                        from: -96; to: 96
-                                        onEdited: value => corners.sync(value)
-                                    }
-                                }
-                                Controls.CheckBox {
-                                    id: linkCorners; objectName: "linkCornersControl"
-                                    Layout.alignment: Qt.AlignVCenter
-                                    text: i18n("Link corners")
-                                    onToggled: corners.sync(topLeft.value)
-                                }
-                            }
-                            Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Negative corner radii curve outward along the dock.") }
-                            Controls.SpinBox {
-                                id: borderWidth; objectName: "borderWidthControl"; Kirigami.FormData.label: i18n("Border thickness (px):")
-                                from: 0; to: 12; editable: true
-                            }
-                            ColorSetting {
-                                id: outline; objectName: "outlineColorControl"; paletteSource: dockPalette
-                                Kirigami.FormData.label: i18n("Border color:")
-                                enabled: borderWidth.value > 0
-                                defaultColor: Kirigami.Theme.disabledTextColor
-                            }
-                            Controls.SpinBox {
-                                id: borderOpacity; objectName: "borderOpacityControl"; Kirigami.FormData.label: i18n("Border opacity (%):")
-                                from: 0; to: 100; editable: true
-                                enabled: borderWidth.value > 0
-                            }
-                            GridLayout {
-                                columns: 2
-                                Kirigami.FormData.label: i18n("Inner padding (px):")
-                                Measure {
-                                    id: horizontalPadding; objectName: "horizontalPaddingControl"
-                                    caption: i18n("Along the dock")
-                                    from: 0; to: 128
-                                }
-                                Measure {
-                                    id: verticalPadding; objectName: "verticalPaddingControl"
-                                    caption: i18n("Across the dock")
-                                    from: 0; to: 64
-                                }
-                            }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Drop shadow") }
-                            ColorSetting {
-                                id: dockShadowColor; objectName: "dockShadowColorControl"; paletteSource: dockPalette; defaultColor: dockPalette.shadowColor
-                                Kirigami.FormData.label: i18n("Color:")
-                            }
-                            Controls.SpinBox {
-                                id: dockShadowStrength; objectName: "dockShadowStrengthControl"; from: 0; to: 100; editable: true
-                                Kirigami.FormData.label: i18n("Strength (%):")
-                            }
-                            Controls.SpinBox {
-                                id: dockShadowSize; objectName: "dockShadowSizeControl"; from: 0; to: 32; editable: true
-                                Kirigami.FormData.label: i18n("Size (px):")
-                            }
-                            RowLayout {
-                                Kirigami.FormData.label: i18n("Offset (px):")
-                                Measure { id: dockShadowX; objectName: "dockShadowXControl"; caption: "X"; from: -32; to: 32 }
-                                Measure { id: dockShadowY; objectName: "dockShadowYControl"; caption: "Y"; from: -32; to: 32 }
-                            }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Hover glow") }
-                            Controls.CheckBox { id: glow; objectName: "glowControl"; text: i18n("Enable hover glow") }
-                            Controls.SpinBox {
-                                id: glowRadius; objectName: "glowRadiusControl"; visible: glow.checked
-                                Kirigami.FormData.label: i18n("Glow radius (px, 0 = automatic):")
-                                from: 0; to: 256; editable: true
-                            }
-                            Controls.SpinBox {
-                                id: glowIntensity; objectName: "glowIntensityControl"; visible: glow.checked
-                                Kirigami.FormData.label: i18n("Glow intensity (%):")
-                                from: 0; to: 200; editable: true
-                            }
-                            Controls.SpinBox {
-                                id: glowOpacity; objectName: "glowOpacityControl"; visible: glow.checked
-                                Kirigami.FormData.label: i18n("Glow opacity (%):")
-                                from: 0; to: 100; editable: true
-                            }
-                        }
-                    }
+                AppearanceSettings {
+                    id: appearanceSettings
+                    paletteSource: dockPalette
                 }
-                Controls.ScrollView {
-                    contentWidth: availableWidth
-                    ColumnLayout {
-                        width: parent.width
-                        spacing: Kirigami.Units.largeSpacing
-                        SettingsForm {
-                            Layout.fillWidth: true
-                            Controls.SpinBox { id: iconSize; objectName: "iconSizeControl"; Kirigami.FormData.label: i18n("Icon size (px):"); from: 24; to: 96; editable: true }
-                            Controls.SpinBox { id: iconSpacing; objectName: "iconSpacingControl"; Kirigami.FormData.label: i18n("Space between icons (px):"); from: 0; to: 64; editable: true }
-                            RowLayout {
-                                Measure {
-                                    id: zoom; objectName: "zoomControl"
-                                    caption: i18n("Magnification (%):")
-                                    from: 100; to: 250; stepSize: 5
-                                }
-                                Measure {
-                                    id: hoverLift; objectName: "hoverLiftControl"
-                                    caption: i18n("Hover lift (px):")
-                                    from: 0; to: 64
-                                }
-                            }
-                            Controls.SpinBox { id: blastRadius; objectName: "blastRadiusControl"; Kirigami.FormData.label: i18n("Blast radius (neighbor icons):"); from: 0; to: 8; editable: true }
-                            Controls.ComboBox {
-                                id: iconColors; objectName: "iconColorsControl"
-                                Kirigami.FormData.label: i18n("Icon colors:")
-                                model: [i18n("Original colors"), i18n("Grayscale")]
-                            }
-                            Controls.CheckBox {
-                                id: tintIcons; objectName: "tintIconsControl"
-                                visible: iconColors.currentIndex === 1
-                                text: i18n("Tint grayscale icons")
-                            }
-                            ColorSetting {
-                                id: iconTint; objectName: "iconTintControl"; paletteSource: dockPalette
-                                visible: tintIcons.visible && tintIcons.checked
-                                defaultColor: Kirigami.Theme.highlightColor
-                                Kirigami.FormData.label: i18n("Icon tint:")
-                            }
-                            Controls.SpinBox {
-                                id: tintSaturation; objectName: "iconTintSaturationControl"
-                                visible: iconTint.visible
-                                Kirigami.FormData.label: i18n("Tint saturation (%):")
-                                from: 0; to: 100; editable: true
-                            }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Drop shadow") }
-                            ColorSetting {
-                                id: iconShadowColor; objectName: "iconShadowColorControl"; paletteSource: dockPalette; defaultColor: dockPalette.shadowColor
-                                Kirigami.FormData.label: i18n("Color:")
-                            }
-                            Controls.SpinBox {
-                                id: iconShadowStrength; objectName: "iconShadowStrengthControl"; from: 0; to: 100; editable: true
-                                Kirigami.FormData.label: i18n("Strength (%):")
-                            }
-                            Controls.SpinBox {
-                                id: iconShadowSize; objectName: "iconShadowSizeControl"; from: 0; to: 32; editable: true
-                                Kirigami.FormData.label: i18n("Size (px):")
-                            }
-                            RowLayout {
-                                Kirigami.FormData.label: i18n("Offset (px):")
-                                Measure { id: iconShadowX; objectName: "iconShadowXControl"; caption: "X"; from: -32; to: 32 }
-                                Measure { id: iconShadowY; objectName: "iconShadowYControl"; caption: "Y"; from: -32; to: 32 }
-                            }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Pointer effects") }
-                            Controls.CheckBox { id: iconHover; text: i18n("Highlight icons on hover") }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Icon bounce") }
-                            Controls.CheckBox { objectName: "bounceEnabledControl"; text: i18n("Enable icon bounce"); checked: behavior.values.bounceEnabled === true; onToggled: behavior.change("bounceEnabled", checked) }
-                            Controls.CheckBox { objectName: "bounceOnLaunchControl"; text: i18n("Bounce when launching an application"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnLaunch === true; onToggled: behavior.change("bounceOnLaunch", checked) }
-                            Controls.CheckBox { objectName: "bounceOnAttentionControl"; text: i18n("Bounce when an application requests attention"); enabled: behavior.values.bounceEnabled === true; checked: behavior.values.bounceOnAttention === true; onToggled: behavior.change("bounceOnAttention", checked) }
-                            Controls.SpinBox { objectName: "bounceHeightControl"; Kirigami.FormData.label: i18n("Bounce height (px, 0 = automatic):"); enabled: behavior.values.bounceEnabled === true; from: 0; to: 64; value: behavior.values.bounceHeight || 0; editable: true; onValueModified: behavior.change("bounceHeight", value) }
-                            Controls.SpinBox { objectName: "bounceSpeedControl"; Kirigami.FormData.label: i18n("Bounce speed (%):"); enabled: behavior.values.bounceEnabled === true; from: 50; to: 200; stepSize: 10; value: behavior.values.bounceSpeed || 100; editable: true; onValueModified: behavior.change("bounceSpeed", value) }
-                            Controls.SpinBox { objectName: "bounceCountControl"; Kirigami.FormData.label: i18n("Launch and test repetitions:"); enabled: behavior.values.bounceEnabled === true; from: 1; to: 5; value: behavior.values.bounceCount || 3; editable: true; onValueModified: behavior.change("bounceCount", value) }
-                            Controls.Label { Layout.fillWidth: true; Layout.preferredWidth: Kirigami.Units.gridUnit * 22; wrapMode: Text.WordWrap; text: i18n("Attention repeats until cleared. Bounce pauses while the dock is hidden, during dragging or while previews are open. Use the application's context menu to test it.") }
-                            Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Magnification animation") }
-                            RowLayout {
-                                Kirigami.FormData.label: i18n("Hover animation speed:")
-                                Controls.Label { text: i18n("Slow") }
-                                Controls.Slider {
-                                    id: hoverSpeed
-                                    objectName: "hoverSpeedControl"
-                                    Accessible.name: i18n("Hover animation speed:")
-                                    from: 0; to: 130; stepSize: 5
-                                    snapMode: Controls.Slider.SnapAlways
-                                }
-                                Controls.Label { text: i18n("Very fast") }
-                            }
-                        }
-                    }
+                IconSettings {
+                    id: iconSettings
+                    paletteSource: dockPalette
+                    behavior: behaviorPage
                 }
                 IndicatorsSettings { id: indicators }
                 Controls.ScrollView {
@@ -580,7 +291,7 @@ Controls.ApplicationWindow {
                     ColumnLayout {
                         width: parent.width
                         spacing: Kirigami.Units.largeSpacing
-                        BehaviorSettings { id: behavior; Layout.fillWidth: true }
+                        BehaviorSettings { id: behaviorPage; Layout.fillWidth: true }
                         SettingsForm {
                             Layout.fillWidth: true
                             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Previews and media") }

@@ -32,7 +32,6 @@ public:
     Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {}, QRectF interactionBounds = {});
     Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
     Q_INVOKABLE void setHovered(bool hovered);
-    Q_INVOKABLE void evaluate();
     Q_INVOKABLE void setAttention(bool attention);
 Q_SIGNALS:
     void pointerHoveredChanged();
@@ -44,7 +43,9 @@ private:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void attachPointerWindow(QQuickWindow *window);
     void updatePointerHover();
+    bool overlapsVisibleWindow() const;
     void scheduleEvaluation();
+    void evaluate();
     QPointer<QQuickItem> m_pointerTarget;
     QPointer<QQuickWindow> m_pointerWindow;
     QList<QMetaObject::Connection> m_pointerConnections;
