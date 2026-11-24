@@ -22,6 +22,7 @@ kf6-kglobalaccel-devel
 kf6-kwindowsystem-devel
 kf6-ki18n-devel
 kf6-kio-devel
+kf6-kiconthemes-devel
 kf6-kservice-devel
 kf6-knotifications-devel
 plasma-activities-stats-devel

@@ -798,6 +798,10 @@ Item {
         resolver: launcherResolver
         target: dropTarget
         hitTest: point => root.nativeRow(root.taskAt(point, false))
+        moduleDrop: (point, urls) => {
+            const entry = repeater.itemAt(root.taskAt(point, false))?.entry;
+            return !!entry?.acceptsDocuments && dockModules.dropDocuments(entry.moduleId, entry.id, urls);
+        }
         insertionAnchor: point => {
             const list = dockSettings.values.launchers;
             const canonical = list.map(url => launcherResolver.launcher(url));

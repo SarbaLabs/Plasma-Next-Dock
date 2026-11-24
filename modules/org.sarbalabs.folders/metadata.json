@@ -1,0 +1,9 @@
+{
+    "id": "org.sarbalabs.folders",
+    "apiVersion": 1,
+    "version": "1.0",
+    "name": "Folders",
+    "nameTranslations": {"fr": "Dossiers"},
+    "description": "Shortcuts to your folders.",
+    "descriptionTranslations": {"fr": "Raccourcis vers vos dossiers."}
+}

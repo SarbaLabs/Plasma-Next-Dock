@@ -33,6 +33,7 @@ libkf6globalaccel-dev
 libkf6windowsystem-dev
 libkf6i18n-dev
 libkf6kio-dev
+libkf6iconthemes-dev
 libkf6service-dev
 libkf6notifications-dev
 libplasmaactivitiesstats-dev

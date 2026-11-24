@@ -16,6 +16,8 @@ public:
 Q_SIGNALS:
     void entriesChanged();
     void configurationChanged();
+    void preferencesEdited(const QVariantMap &changes);
+    void documentsDropped(const QString &entryId, const QList<QUrl> &urls);
     void activated(const QString &entryId);
     void actionTriggered(const QString &entryId, const QString &actionId);
 };
@@ -49,10 +51,12 @@ public:
     void setTaskCandidates(const QVariantList &value);
     QVariantMap metadata(const QString &id) const { return m_catalog.value(id).metadata; }
     bool loaded(const QString &id) const { return m_instances.contains(id); }
+    Q_INVOKABLE bool dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls);
     Q_INVOKABLE bool activate(const QString &moduleId, const QString &entryId);
     Q_INVOKABLE bool trigger(const QString &moduleId, const QString &entryId, const QString &actionId);
 Q_SIGNALS:
     void entriesChanged();
+    void preferencesEdited(const QString &moduleId, const QVariantMap &changes);
 private:
     void refresh();
     ModuleCatalog m_catalog;

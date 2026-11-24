@@ -186,10 +186,10 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
 
 ### Official modules (PRs 5–8)
 
-- **Folders** supports several ordered shortcuts, addition through settings or
-  drop, themed or custom icons, native context actions and opening with the
-  associated application. Add file drops if KIO can handle them cleanly. Advanced
-  stack views are optional.
+- **Folders** provides per-dock local shortcuts, manual and alphabetical order,
+  drag-in addition and icon overrides in its module settings. A primary click
+  opens the folder and dropping documents copies them with KIO. See
+  [module details](modules.md#folder-shortcuts-and-provider-actions).
 - **Trash** opens `trash:/` and uses KIO for asynchronous drops and emptying,
   respecting confirmations and errors. Track content and theme changes for
   `user-trash` and `user-trash-full`.

@@ -4,6 +4,29 @@ import QtTest
 TestCase {
     name: "SettingsInterface"
     when: windowShown
+    function test_folderEditor() {
+        const host = Qt.createComponent("qrc:/qml/ModuleSettingsHost.qml");
+        const loader = host.createObject(this, {profile: dockSettings});
+        loader.open({id: "org.sarbalabs.folders", settingsUrl: foldersSettingsUrl});
+        tryCompare(loader, "status", Loader.Ready);
+        const editor = findChild(loader.item, "folderEditor");
+        const sort = findChild(loader.item, "folderSortControl");
+        verify(editor.add(["file:///usr", "file:///tmp", "file:///usr/", "file:///etc/hosts"]));
+        compare(editor.rows.length, 2);
+        editor.move("file:///tmp", 0);
+        compare(editor.rows[0].name, "tmp");
+        editor.setIcon("file:///usr", "folder-red");
+        compare(editor.rows[1].icon, "folder-red");
+        sort.activated(1);
+        verify(!editor.manual);
+        editor.move("file:///usr", 0);
+        sort.activated(0);
+        compare(editor.rows[0].name, "tmp");
+        editor.remove("file:///tmp");
+        editor.remove("file:///usr");
+        compare(editor.rows.length, 0);
+        loader.destroy();
+    }
     function test_applyAndDiscard() {
         const component = Qt.createComponent("qrc:/qml/Settings.qml");
         compare(component.status, Component.Ready, component.errorString());

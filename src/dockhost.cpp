@@ -70,6 +70,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("outputGeometry", screen->geometry());
     m_view.rootContext()->setContextProperty("dockModules", &m_modules);
     m_view.rootContext()->setContextProperty("dockTaskRows", &m_taskRows);
+    connect(&m_modules, &ModuleManager::preferencesEdited, settings, &DockSettings::updateModuleSettings);
     update(false);
     connect(&m_view, &QWindow::widthChanged, this, &DockHost::position);
     connect(&m_view, &QWindow::heightChanged, this, &DockHost::position);

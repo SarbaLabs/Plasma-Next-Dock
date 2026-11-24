@@ -1242,3 +1242,14 @@ The four-edge layout fixture checks the resting length and reserved depth and
 verifies that magnification leaves this footprint stable.
 On CachyOS Wayland KCalc stayed at y=86: a horizontal move from x=42 to
 x=540 and then x=1250 produced visible, hidden and visible dock states.
+
+### Folders module
+
+The provider fixture checks manual and alphabetical order, a context-menu
+reset to the original icon, live changes to `.directory`, and safe shortcut
+removal. The settings fixture opens the installed-format editor, adds and
+deduplicates folders, rejects a regular file and checks moving and icon edits.
+On CachyOS Wayland, the native context menu opened the French editor and its
+KDE icon picker. Changing a shortcut icon updated the dock. Clicking the
+shortcut opened Dolphin, and dragging a test document from Dolphin onto a
+second folder copied it while preserving the source file.

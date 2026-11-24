@@ -11,6 +11,9 @@ rm -f -- "$template" "$prefix/bin/plasma-next-dock" "$prefix/share/applications/
 module="$prefix/share/plasma-next-dock/modules/org.sarbalabs.unpinned"
 rm -f -- "$module/metadata.json" "$module/Main.qml" "$module/Settings.qml"
 rmdir -- "$module" 2>/dev/null || true
+folder="$prefix/share/plasma-next-dock/modules/org.sarbalabs.folders"
+rm -f -- "$folder/metadata.json" "$folder/Main.qml" "$folder/Settings.qml" "$folder/Folders.qml" "$folder/native/qmldir" "$folder/native/libfoldertools.so"
+rmdir -- "$folder/native" "$folder" 2>/dev/null || true
 for catalog in "$prefix"/share/locale/*/LC_MESSAGES/plasma-next-dock.mo; do
     rm -f -- "$catalog"
 done

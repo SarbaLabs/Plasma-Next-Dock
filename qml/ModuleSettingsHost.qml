@@ -32,9 +32,7 @@ Loader {
             if (host.item && !host.item.visible) host.active = false;
         }
         function onEdited(options) {
-            const settings = Object.assign({}, host.profile.values.moduleSettings);
-            settings[host.moduleId] = Object.assign({}, settings[host.moduleId], options);
-            host.profile.apply({moduleSettings: settings});
+            host.profile.updateModuleSettings(host.moduleId, options);
         }
     }
 }

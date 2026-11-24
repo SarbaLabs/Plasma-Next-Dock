@@ -277,3 +277,12 @@ void DockSettings::overrideSession(const QVariantMap &changes)
     m_values = mergeChanges(m_values, changes);
     Q_EMIT changed();
 }
+
+bool DockSettings::updateModuleSettings(const QString &id, const QVariantMap &changes)
+{
+    auto modules = m_values.value("moduleSettings").toMap();
+    auto preferences = modules.value(id).toMap();
+    preferences.insert(changes);
+    modules.insert(id, preferences);
+    return apply({{"moduleSettings", modules}});
+}

@@ -11,6 +11,7 @@ DropArea {
     required property var insertionAnchor
     required property var resolver
     required property var target
+    property var moduleDrop: null
     property Flickable scrollView: null
     // The viewport's local x axis runs along all four screen edges.
     readonly property int scrollDirection: {
@@ -66,6 +67,8 @@ DropArea {
         let accepted = false;
         if (kind === "applications") {
             accepted = tasksSource.insertLaunchers(plan.launchers, insertionAnchor(point));
+        } else if (moduleDrop && moduleDrop(point, urls)) {
+            accepted = true;
         } else if (target.valid) {
             const row = target.index.row;
             const index = target.index;

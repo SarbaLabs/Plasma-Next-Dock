@@ -102,6 +102,22 @@ side. New packages appear in Disabled. A missing package retains its placement
 until reinstalled. Separators appear only at a boundary between visible pins
 and a populated side. Placement and module preferences are separate per profile.
 
+## Folder shortcuts and provider actions
+
+The [Folders package](../modules/org.sarbalabs.folders) is opt-in and starts empty.
+Its QML files manage ordering and per-shortcut overrides. A small native plugin
+ships alongside them for desktop file metadata, filesystem notifications, the
+KDE icon chooser and KIO jobs. Theme names and local icon files are supported.
+The package only reads a folder’s `.directory`. Restoring an icon clears the
+override and reads the current folder icon again.
+
+Providers can emit `preferencesEdited(changes)` to persist their own per-dock
+preferences from context actions. This uses the same top-level merge as the
+settings window. To handle document drops, set `acceptsDocuments: true` on
+each eligible entry and implement `onDocumentsDropped: (entryId, urls) => …`.
+The host dispatches the validated URLs to the current entry at drop time.
+Folders uses a KIO copy job with normal conflict handling.
+
 ## Native task entries
 
 The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses
