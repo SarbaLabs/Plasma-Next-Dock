@@ -10,7 +10,7 @@ roadmap has been approved and merged.
 | --- | --- | --- |
 | 1. Original desktop features | Accepted | Preserve the desktop behavior recorded below |
 | 2. Source compatibility | Validated | Keep a common source tree through the Debian baseline |
-| 3. Code consolidation | Submitted for review | [Cleanup PR #39](https://github.com/SarbaLabs/Plasma-Next-Dock/pull/39) |
+| 3. Code consolidation | Accepted and merged | [Cleanup PR #39](https://github.com/SarbaLabs/Plasma-Next-Dock/pull/39) |
 | 4. Modular v1.0 | Planned | Deliver the reviewed sequence below |
 | 5. Packaging | Planned | Validate artifacts and independently updatable modules |
 | 6. First release | Planned | Publish documentation, compatibility and verified artifacts |
@@ -61,11 +61,12 @@ Work on a dedicated branch, preserving features, user settings and the
 by responsibility, clarify module dependencies and add concise comments where
 a technical choice is otherwise hard to recover.
 
-Validate the changes with CTest, CI and a staged installation. Before starting
-packaging, recheck the affected interactions on CachyOS and the reference
-desktops, including the Debian baseline. Give particular attention to saved
-profile migration, live resizing, pointer tracking, previews and blur after
-hide/reveal. [Regression scenarios](testing.md)
+Acceptance of PR #39 covered all 15 CTest entries and a staged installation
+on both CachyOS and Debian 13.7. On Debian, a single-output Wayland demo rendered
+the dock and settings. On CachyOS, the maintainer tested two differently scaled
+displays, all four edges and per-dock appearance and icon changes. Disconnecting
+an output hid its dock and preserved the profile with the output marked
+disconnected. All five CI builds passed.
 
 Retain the indicator parity checklist during consolidation:
 
