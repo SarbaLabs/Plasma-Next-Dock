@@ -18,6 +18,7 @@ Item {
     readonly property bool hasTaskAudio: !!audioTarget && menuTarget.valid
         && audioTarget.taskIndex === menuTarget.index.row && audioTarget.streams.length > 0
     property var source: null
+    property var moduleEntry: null
     property var moduleInfo: ({})
     signal configureModuleRequested(var moduleInfo)
     property string launcherUrl: ""
@@ -90,8 +91,8 @@ Item {
         const item = itemFactory.createObject(menu, {text: text, section: true});
         menu.addMenuItem(item);
     }
-    function submenu(menu, text, icon) {
-        const item = add(menu, text, icon);
+    function submenu(menu, text, icon, enabled = true) {
+        const item = add(menu, text, icon, null, enabled);
         return menuFactory.createObject(menu, {visualParent: item.action});
     }
     function actionItem(menu, action) {
@@ -112,7 +113,8 @@ Item {
         return true;
     }
     function close() { if (activeMenu) activeMenu.close(); }
-    function showAt(point, taskSource, row, status = null, module = {}) {
+    function showAt(point, taskSource, row, status = null, module = {}, entry = null) {
+        moduleEntry = entry;
         moduleInfo = module;
         close();
         source = taskSource;
@@ -123,6 +125,15 @@ Item {
         anchorItem.x = point.x;
         anchorItem.y = point.y;
         buildAndOpen();
+    }
+    function addModuleActions(menu, actions, owner) {
+        for (const action of actions) {
+            if (action.children?.length) {
+                const child = submenu(menu, action.text, action.icon, owner.enabled !== false && action.enabled !== false);
+                addModuleActions(child, action.children, owner);
+            } else add(menu, action.text, action.icon,
+                () => dockModules.trigger(owner.moduleId, owner.id, action.id), owner.enabled !== false && action.enabled !== false);
+        }
     }
     function buildAndOpen() {
         if (activeMenu) { activeMenu.close(); activeMenu.destroy(); activeMenu = null; }
@@ -170,8 +181,9 @@ Item {
                 if (menuTarget.valid) controller.testBounceRequested(menuTarget.index.row);
             }, dockOptions.bounceEnabled !== false);
         }
+        if (moduleEntry?.actions?.length) addModuleActions(menu, moduleEntry.actions, moduleEntry);
         separator(menu);
-        if (menuTarget.valid && moduleInfo.settingsUrl) {
+        if ((menuTarget.valid || moduleEntry) && moduleInfo.settingsUrl) {
             const owner = moduleInfo;
             add(menu, i18n("Configure module: %1…", owner.name), "configure",
                 () => controller.configureModuleRequested(owner));

@@ -2,9 +2,8 @@
 
 A package is a directory of editable files. The core discovers packages once at
 process startup and creates an independent provider for each dock that enables
-one. The official task provider displays its entries after pinned launchers.
+one. Configure → Modules positions each provider as a block around the pinned launchers.
 The inspection command also works for generic modules, such as the counter.
-The three-zone placement editor is a subsequent roadmap step.
 
 ## Try the example
 
@@ -90,15 +89,18 @@ The host merges top-level keys into the module’s current configuration for tha
 dock. A supplied list or nested object replaces the previous value of that key.
 The host opens the window on demand from the context menu of a task contributed by the module.
 
-For a developer test before the editor is available, quit the dock, back up its
-configuration, and run this command to replace the enabled list on the first dock with the counter and the official task module:
+To try the counter, restart after installing the example and drag it from
+**Disabled** to either side in **Modules**. The gear opens a package’s settings
+even if it is disabled or has no visible entries.
 
-```sh
-kwriteconfig6 --file plasma-next-dock.ini --group General --key enabledModules org.example.counter,org.sarbalabs.unpinned
-```
-
-Restart the dock to load the enabled provider. Inspection works independently
-of profile configuration.
+Each profile persists three ordered ID lists in `moduleZones` (left, disabled,
+right). Both active columns are ordered from the outer edge toward the pins.
+The host reverses the sequence of trailing blocks for display and keeps the
+order of entries within each block. It derives `enabledModules` in physical
+display order. Older profiles keep their previous display order on the trailing
+side. New packages appear in Disabled. A missing package retains its placement
+until reinstalled. Separators appear only at a boundary between visible pins
+and a populated side. Placement and module preferences are separate per profile.
 
 ## Native task entries
 
@@ -116,7 +118,7 @@ The package's Settings.qml receives its per-profile `configuration` and emits
 `edited(options)`. The context menu on a task contributed by the module opens the package’s own settings window. Its selector saves immediately.
 The four orders are name, recent activation, virtual desktop and activity.
 Old automatic sort preferences initialize the module; old manual order becomes
-alphabetical. The trailing side is fixed until the placement editor ships.
+alphabetical. Moving the block preserves its sort preference.
 
 ## Errors and trust
 

@@ -6,23 +6,46 @@
 
 static constexpr int nativeRowRole = Qt::UserRole + 65536;
 
+static constexpr int moduleEntryRole = nativeRowRole + 1;
+static constexpr int boundaryRole = nativeRowRole + 2;
+
+static QString entryKey(const QVariantMap &entry)
+{
+    const auto ref = entry.value("taskRef").toString();
+    return ref.isEmpty() ? entry.value("moduleId").toString() + '/' + entry.value("id").toString() : ref;
+}
+
 TaskRows::TaskRows(ModuleManager *modules) : m_modules(modules)
 {
     connect(modules, &ModuleManager::entriesChanged, this, &TaskRows::applyEntries);
     connect(this, &TaskRows::desktopsChanged, this, &TaskRows::queueRefresh);
     connect(this, &TaskRows::activitiesChanged, this, &TaskRows::queueRefresh);
+    m_generic.setColumnCount(1);
+    m_join.addSourceModel(&m_generic);
+    connect(this, &QAbstractItemModel::rowsInserted, this, &TaskRows::queueBoundaries);
+    connect(this, &QAbstractItemModel::rowsRemoved, this, &TaskRows::queueBoundaries);
+    connect(this, &QAbstractItemModel::layoutChanged, this, &TaskRows::queueBoundaries);
     sort(0);
 }
 
-void TaskRows::setSourceModel(QAbstractItemModel *model)
+TaskRows::~TaskRows()
 {
-    if (model == sourceModel()) return;
+    QSortFilterProxyModel::setSourceModel(nullptr);
+}
+
+void TaskRows::setTaskModel(QAbstractItemModel *model)
+{
+    if (model == m_tasks) return;
+    QSortFilterProxyModel::setSourceModel(nullptr);
+    if (m_tasks) m_join.removeSourceModel(m_tasks);
+    m_tasks = model;
     for (const auto &connection : std::as_const(m_connections)) disconnect(connection);
     m_connections.clear();
     m_ids.clear();
     m_roles.clear();
     m_candidateRoles = {Qt::DisplayRole, Qt::DecorationRole};
     if (model) {
+        m_join.addSourceModel(model);
         const auto roles = model->roleNames();
         for (auto it = roles.begin(); it != roles.end(); ++it) m_roles.insert(it.value(), it.key());
         for (const auto key : {"IsLauncher", "HasLauncher", "AppName", "AppId", "Activities",
@@ -41,7 +64,8 @@ void TaskRows::setSourceModel(QAbstractItemModel *model)
                         [this](int role) { return m_candidateRoles.contains(role); }))) queueRefresh();
                 });
     }
-    QSortFilterProxyModel::setSourceModel(model);
+    QSortFilterProxyModel::setSourceModel(model ? &m_join : nullptr);
+    Q_EMIT taskModelChanged();
     queueRefresh();
 }
 
@@ -62,8 +86,8 @@ void TaskRows::refresh()
     m_pending = false;
     QHash<QPersistentModelIndex, QString> ids;
     QVariantList candidates;
-    for (int row = 0; sourceModel() && row < sourceModel()->rowCount(); ++row) {
-        const auto index = sourceModel()->index(row, 0);
+    for (int row = 0; m_tasks && row < m_tasks->rowCount(); ++row) {
+        const auto index = m_tasks->index(row, 0);
         if (pinned(index)) continue;
         auto id = m_ids.value(index);
         if (id.isEmpty()) id = QString::number(++m_serial);
@@ -98,59 +122,120 @@ void TaskRows::refresh()
 void TaskRows::applyEntries()
 {
     QHash<QString, int> order;
+    QHash<QString, QString> owners;
+    QList<QVariantMap> generic;
     for (const auto &value : m_modules->entries()) {
-        const QString ref = value.toMap().value("taskRef").toString();
-        if (!ref.isEmpty() && !order.contains(ref)) order.insert(ref, order.size());
+        const auto entry = value.toMap();
+        const auto key = entryKey(entry);
+        if (order.contains(key)) continue;
+        order.insert(key, order.size());
+        owners.insert(key, entry.value("moduleId").toString());
+        if (entry.value("taskRef").toString().isEmpty()) generic.append(entry);
     }
-    if (order == m_order) return;
+    const bool reordered = order != m_order || owners != m_owners;
     m_order.swap(order);
+    m_owners.swap(owners);
+    // Generic entries have no TasksModel index. Keep regular task delegates
+    // alive when a provider only changes its label, icon or action state.
+    while (m_generic.rowCount() > generic.size()) m_generic.removeRow(m_generic.rowCount()-1);
+    for (int i = 0; i < generic.size(); ++i) {
+        if (i == m_generic.rowCount()) {
+            auto *item = new QStandardItem;
+            item->setData(generic[i], moduleEntryRole);
+            m_generic.appendRow(item);
+        } else m_generic.setData(m_generic.index(i, 0), generic[i], moduleEntryRole);
+    }
+    if (reordered) { invalidate(); queueBoundaries(); }
+}
+
+void TaskRows::setLeadingModules(const QStringList &modules)
+{
+    if (m_leading == modules) return;
+    m_leading = modules;
     invalidate();
+    queueBoundaries();
+}
+
+QString TaskRows::keyFor(const QModelIndex &source) const
+{
+    return source.model() == &m_generic ? entryKey(source.data(moduleEntryRole).toMap()) : m_ids.value(source);
+}
+
+int TaskRows::zone(const QModelIndex &source) const
+{
+    if (source.model() != &m_generic && pinned(source)) return 0;
+    return m_leading.contains(m_owners.value(keyFor(source))) ? -1 : 1;
 }
 
 bool TaskRows::filterAcceptsRow(int row, const QModelIndex &parent) const
 {
     if (parent.isValid()) return false;
-    const auto index = sourceModel()->index(row, 0);
-    return pinned(index) || m_order.contains(m_ids.value(index));
+    const auto source = m_join.mapToSource(m_join.index(row, 0));
+    return source.model() == &m_generic || pinned(source) || m_order.contains(keyFor(source));
 }
 
 bool TaskRows::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-    const bool leftPinned = pinned(left), rightPinned = pinned(right);
-    if (leftPinned != rightPinned) return leftPinned;
-    if (leftPinned) return left.row() < right.row();
-    return m_order.value(m_ids.value(left)) < m_order.value(m_ids.value(right));
+    const auto a = m_join.mapToSource(left), b = m_join.mapToSource(right);
+    const int az = zone(a), bz = zone(b);
+    if (az != bz) return az < bz;
+    if (az == 0) return a.row() < b.row();
+    return m_order.value(keyFor(a)) < m_order.value(keyFor(b));
+}
+
+int TaskRows::nativeRow(int row) const
+{
+    const auto source = m_join.mapToSource(mapToSource(index(row, 0)));
+    return source.model() == m_tasks ? source.row() : -1;
 }
 
 QVariantMap TaskRows::settingsForRow(int row) const
 {
-    const auto source = mapToSource(index(row, 0));
-    if (!source.isValid() || pinned(source)) return {};
-    const auto ref = m_ids.value(source);
-    if (ref.isEmpty()) return {};
-    // The first provider claiming a task supplies its visible slot and menu.
-    for (const auto &value : m_modules->entries()) {
-        const auto entry = value.toMap();
-        if (entry.value("taskRef").toString() == ref)
-            return m_modules->metadata(entry.value("moduleId").toString());
-    }
-    return {};
+    const auto source = m_join.mapToSource(mapToSource(index(row, 0)));
+    if (!source.isValid() || zone(source) == 0) return {};
+    return m_modules->metadata(m_owners.value(keyFor(source)));
 }
 
 int TaskRows::visualRow(int nativeRow) const
 {
-    return sourceModel() ? mapFromSource(sourceModel()->index(nativeRow, 0)).row() : -1;
+    return m_tasks ? mapFromSource(m_join.mapFromSource(m_tasks->index(nativeRow, 0))).row() : -1;
 }
 
 QHash<int, QByteArray> TaskRows::roleNames() const
 {
-    auto roles = QSortFilterProxyModel::roleNames();
+    auto roles = m_tasks ? m_tasks->roleNames() : QAbstractItemModel::roleNames();
     roles.insert(nativeRowRole, "nativeTaskRow");
+    roles.insert(moduleEntryRole, "moduleEntry");
+    roles.insert(boundaryRole, "separatorAfter");
     return roles;
 }
 
-QVariant TaskRows::data(const QModelIndex &index, int role) const
+void TaskRows::queueBoundaries()
 {
-    if (role == nativeRowRole) return mapToSource(index).row();
-    return QSortFilterProxyModel::data(index, role);
+    if (m_boundariesPending) return;
+    m_boundariesPending = true;
+    QMetaObject::invokeMethod(this, [this] {
+        m_boundariesPending = false;
+        if (rowCount()) Q_EMIT dataChanged(index(0, 0), index(rowCount()-1, 0), {boundaryRole, nativeRowRole});
+    }, Qt::QueuedConnection);
+}
+
+QVariant TaskRows::data(const QModelIndex &idx, int role) const
+{
+    if (!idx.isValid()) return {};
+    const auto source = m_join.mapToSource(mapToSource(idx));
+    if (role == nativeRowRole) return source.model() == m_tasks ? source.row() : -1;
+    if (role == boundaryRole) {
+        if (idx.row()+1 >= rowCount()) return false;
+        const auto next = m_join.mapToSource(mapToSource(index(idx.row()+1, 0)));
+        return (zone(source) == 0) != (zone(next) == 0);
+    }
+    if (source.model() == &m_generic) {
+        const auto entry = source.data(moduleEntryRole).toMap();
+        if (role == moduleEntryRole) return entry;
+        if (role == Qt::DisplayRole) return entry.value("name");
+        if (role == Qt::DecorationRole) return entry.value("icon");
+        return {};
+    }
+    return role == moduleEntryRole ? QVariant{} : source.data(role);
 }

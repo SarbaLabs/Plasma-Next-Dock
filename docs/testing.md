@@ -1189,3 +1189,18 @@ The task fixture checks which rows offer module configuration. This run used a s
 
 With an isolated always-visible CachyOS profile, right-clicking KCalc opened the
 module window directly. Selecting Virtual desktop saved the order in that profile.
+
+## Three-column module editor
+
+The QML editor fixture drags blocks into an empty column, inserts before a
+block, reorders within a column and moves a block back to Disabled. Native
+fixtures cover two independently restored profiles, activation after moving a
+generic entry, internal order in a multi-entry block, native row mapping and
+the separator rules with populated sides, no pins and no providers.
+
+On the CachyOS KWin desktop, an isolated dock profile had Dolphin pinned and
+the example counter initially disabled. Dragging the counter to Left / Top
+displayed the counter, Dolphin and the running tasks, with two separators.
+The gear on the unpinned block opened its independent settings window. This
+desktop check used one output. On Debian 13.7 the mouse-drag fixture also ran
+in a mapped Qt Quick window on Plasma Wayland, using QtTest input.

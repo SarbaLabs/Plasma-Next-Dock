@@ -146,7 +146,8 @@ Controls.ApplicationWindow {
         {title: i18n("Icons and animations"), icon: "preferences-desktop-icons"},
         {title: i18n("Indicators"), icon: "view-statistics"},
         {title: i18n("Behavior"), icon: "input-mouse"},
-        {title: i18n("Applications and sorting"), icon: "view-list-details"}
+        {title: i18n("Applications and sorting"), icon: "view-list-details"},
+        {title: i18n("Modules"), icon: "preferences-plugin"}
     ]
     RowLayout {
         anchors.fill: parent
@@ -312,6 +313,10 @@ Controls.ApplicationWindow {
                 ApplicationsSettings {
                     tasks: window.selectedTasks
                     onAddRequested: applicationChooser.open()
+                }
+                ModulesSettings {
+                    profile: dockSettings
+                    catalog: typeof moduleCatalog === "undefined" ? ({}) : moduleCatalog
                 }
             }
         }

@@ -96,6 +96,46 @@ private Q_SLOTS:
         QVERIFY(second.loaded(id));
     }
 
+    void moduleBoundariesAndBlockOrder()
+    {
+        install("zones", id);
+        const QString other = "org.example.second";
+        install("zones", other);
+        write(package("zones", other) + "/Main.qml", R"(import org.sarbalabs.nextdock.modules 1.0
+            DockModule { entries: [{id:"one",name:"One",icon:"folder"}, {id:"two",name:"Two",icon:"folder"}] })");
+        ModuleManager manager(discoverModules({dir.filePath("zones")}));
+        QStandardItemModel native;
+        native.setItemRoleNames({{Qt::DisplayRole, "display"}, {Qt::UserRole+1, "IsLauncher"}});
+        auto *pin = new QStandardItem("Pin");
+        pin->setData(true, Qt::UserRole+1);
+        native.appendRow(pin);
+        TaskRows rows(&manager);
+        rows.setTaskModel(&native);
+        const auto boundary = rows.roleNames().key("separatorAfter");
+        const auto labels = [&] {
+            QStringList result;
+            for (int i=0; i<rows.rowCount(); ++i) {
+                result << rows.index(i, 0).data().toString();
+                if (rows.index(i, 0).data(boundary).toBool()) result << "|";
+            }
+            return result.join(" ");
+        };
+        rows.setLeadingModules({id});
+        manager.configure({id, other}, {});
+        QCOMPARE(labels(), "Counter (0) | Pin | One Two");
+        QCOMPARE(rows.visualRow(0), 1);
+        QCOMPARE(rows.nativeRow(0), -1);
+        QVERIFY(manager.activate(id, "counter"));
+        QCOMPARE(labels(), "Counter (1) | Pin | One Two");
+        rows.setLeadingModules({});
+        manager.configure({other, id}, {});
+        QCOMPARE(labels(), "Pin | One Two Counter (1)");
+        native.removeRow(0);
+        QCOMPARE(labels(), "One Two Counter (1)");
+        manager.configure({}, {});
+        QCOMPARE(rows.rowCount(), 0);
+    }
+
     void unpinnedTaskSection()
     {
         const QString module = "org.sarbalabs.unpinned";
@@ -116,7 +156,7 @@ private Q_SLOTS:
         TaskRows rows(&manager);
         rows.setProperty("desktopIds", QVariantList{"second", "first"});
         rows.setProperty("activityNames", QVariantMap{{"activity-b", "Reading"}, {"activity-a", "Writing"}});
-        rows.setSourceModel(&source);
+        rows.setTaskModel(&source);
         manager.configure({module}, {});
         QTRY_COMPARE(rows.rowCount(), 3);
         QVERIFY(rows.settingsForRow(-1).isEmpty());
@@ -158,6 +198,22 @@ private Q_SLOTS:
         QCOMPARE(upgraded.values().value("moduleSettings").toMap().value(module).toMap().value("sort"), "desktop");
         QVERIFY(upgraded.apply({{"enabledModules", QStringList{id}}}));
         QCOMPARE(DockSettings(path).values().value("enabledModules").toStringList(), QStringList{id});
+    }
+
+    void independentModuleLayouts()
+    {
+        const QString path = dir.filePath("zones.ini");
+        const QString module = "org.sarbalabs.unpinned";
+        const QVariantMap layout{{"left", QStringList{id}}, {"disabled", QStringList{"off"}},
+                                 {"right", QStringList{module, "inner"}}};
+        DockSettings first(path, true, nullptr, {}, "first");
+        DockSettings second(path, true, nullptr, {}, "second");
+        QVERIFY(first.apply({{"moduleZones", layout}}));
+        QVERIFY(second.apply({{"moduleZones", QVariantMap{{"disabled", QStringList{module}}}}}));
+        DockSettings restored(path, true, nullptr, {}, "first");
+        QCOMPARE(restored.values()["moduleZones"].toMap(), layout);
+        QCOMPARE(restored.values()["enabledModules"].toStringList(), QStringList({id, "inner", module}));
+        QVERIFY(DockSettings(path, true, nullptr, {}, "second").values()["enabledModules"].toStringList().isEmpty());
     }
 
     void profileRoundTrip()

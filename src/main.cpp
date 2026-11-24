@@ -120,6 +120,9 @@ int main(int argc, char **argv)
     QQmlEngine::setContextForObject(configTranslations, configEngine.rootContext());
     configEngine.rootContext()->setContextProperty("dockSettings", profiles.current());
     configEngine.rootContext()->setContextProperty("dockProfiles", &profiles);
+    QVariantMap moduleCatalog;
+    for (auto it = catalog.cbegin(); it != catalog.cend(); ++it) moduleCatalog.insert(it.key(), it->metadata);
+    configEngine.rootContext()->setContextProperty("moduleCatalog", moduleCatalog);
     configEngine.rootContext()->setContextProperty("launcherResolver", new LauncherResolver(&configEngine));
     auto outputs = [&] {
         QStringList names;

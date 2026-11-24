@@ -98,8 +98,10 @@ checklist, not a claim of universal compatibility.
 Configure → Behavior controls grouping, filtering and mouse actions.
 Under Applications and sorting, the sort selector orders pinned launchers.
 Right-click an unpinned task and choose **Configure module: Unpinned applications…** to open the module’s own window and sort its tasks by name, last activation, virtual
-desktop or activity. Unpinned tasks follow the pins on the right (bottom on a
-vertical dock). Manual dragging applies only to manually sorted pins.
+desktop or activity. In **Modules**, drag a block to **Left / Top**, **Disabled**
+or **Right / Bottom**. The top of each active column is the outer end of the dock.
+Placement is saved immediately for the selected dock. The unpinned module starts
+on the right (bottom on a vertical dock). Manual dragging applies only to manually sorted pins.
 See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds

@@ -43,7 +43,7 @@ Native APIs inspected, without copying implementation:
 
 Pinned launchers use the selected native sort order. KDE's manual row map is
 rebuilt only after external launcher changes. The unpinned task provider controls
-the trailing section, with its own per-dock sort preference. TaskRows maps visual
+the order inside its block. Each dock independently positions that block in Modules. TaskRows maps visual
 rows to the native model for actions, previews, drops and minimization targets.
 Direction and separator preferences from older releases have no effect.
 
@@ -78,7 +78,7 @@ Offscreen rendering cannot establish live KWin behavior. On CachyOS validate:
   after restart and changing settings while pinning an app.
 - Desktop/activity/screen filters (including windows moving between outputs) and
   minimized-only filtering; confirm avoidance still concerns local visible windows.
-- Trailing module placement on each edge; open/close/pin/unpin single and grouped
+- Leading and trailing module placement on each edge; open/close/pin/unpin single and grouped
   apps; zoom near the boundary.
 - Attention reveal/clear, inward tooltip/menu placement, media/audio badges,
   theme/blur/glow and hide/reveal regressions.
