@@ -607,41 +607,15 @@ Item {
                         rotation: root.vertical ? -90 : 0
                         opacity: root.dragIndex === slot.index ? 0.65 : 1
                         readonly property bool active: dockOptions.iconHoverHighlight !== false && slot.taskHovered
-                        Item {
-                            id: iconArtwork
+                        TaskIconArtwork {
                             anchors.centerIn: parent
-                            // Keep the shadow render targets at a stable resolution
-                            // while the painted icon moves and grows inside them.
-                            width: root.maximum + 2 * root.iconShadowPad
-                            height: width
-                            layer.enabled: root.iconShadowEnabled
-                            layer.effect: MultiEffect {
-                                autoPaddingEnabled: false
-                                shadowEnabled: true
-                                blurMax: Math.max(1, dockOptions.iconShadowSize ?? 0)
-                                shadowBlur: dockOptions.iconShadowSize > 0 ? 1 : 0
-                                shadowHorizontalOffset: dockOptions.iconShadowX ?? 0
-                                shadowVerticalOffset: dockOptions.iconShadowY ?? 2
-                                shadowOpacity: (dockOptions.iconShadowStrength ?? 0) / 100
-                                shadowColor: dockPalette.resolve(dockOptions.iconShadowRole, dockOptions.iconShadowColor ?? "black", dockPalette.shadowColor)
-                            }
-                        }
-                        Kirigami.Icon {
-                            parent: iconArtwork
-                            anchors.centerIn: parent
-                            width: root.maximum; height: width
-                            scale: width > 0 ? icon.width / width : 1
-                            smooth: true
-                            source: slot.model.decoration
-                            roundToIconSize: false
-                            active: icon.active
-                            layer.enabled: dockOptions.grayscaleIcons === true
-                            layer.smooth: true
-                            layer.effect: ShaderEffect {
-                                property color tint: dockPalette.resolve(dockOptions.iconTintRole, dockOptions.iconTintColor, Kirigami.Theme.highlightColor)
-                                property real strength: dockOptions.tintIcons ? dockOptions.iconTintSaturation / 100 : 0
-                                fragmentShader: "qrc:/shaders/iconcolor.frag.qsb"
-                            }
+                            maximumSize: root.maximum
+                            paintedSize: icon.width
+                            shadowPadding: root.iconShadowPad
+                            shadowEnabled: root.iconShadowEnabled
+                            highlighted: icon.active
+                            iconSource: slot.model.decoration
+                            paletteSource: dockPalette
                         }
                         PlasmaCore.ToolTipArea {
                             id: taskTip

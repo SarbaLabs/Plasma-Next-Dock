@@ -1,13 +1,13 @@
 # Development status and roadmap
 
 Updated after PR #37. The functional scope and source-install compatibility
-campaign are complete. **Code consolidation is in progress.**
+campaign are complete. **The next development branch is code consolidation.**
 
 | Phase | Status | Milestone |
 | --- | --- | --- |
 | 1. Functional development | Complete | Planned dock features accepted on the desktop |
 | 2. Distribution compatibility | Validated | Shared sources built and exercised across KDE Plasma Wayland distributions |
-| 3. Code cleanup and consolidation | In progress | Existing behavior and saved configurations survive the reorganization |
+| 3. Code cleanup and consolidation | Next | Existing behavior and saved configurations survive the reorganization |
 | 4. Packaging | Planned | Installable artifacts validated on their target systems |
 | 5. First release | Planned | User documentation, compatibility matrix and GitHub release ready |
 
@@ -56,11 +56,6 @@ Work on a dedicated branch, preserving features, user settings and the
 `./install.sh` workflow. Remove obsolete or duplicated code, group components
 by responsibility, clarify module dependencies and add concise comments where
 a technical choice is otherwise hard to recover.
-
-The first change groups capsule path construction, exterior stroke generation and
-SVG serialization in `src/capsulegeometry.cpp`. Surface placement and pointer
-regions remain in `src/geometry.cpp`. The next review covers pointer tracking
-and visibility decisions in `DockController`.
 
 Validate the changes with CTest, CI and a staged installation. Before starting
 packaging, recheck the affected interactions on CachyOS and the reference
