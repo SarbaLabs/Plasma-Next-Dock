@@ -52,6 +52,7 @@ Item {
         sourceComponent: CustomIndicators {
             objectName: "customTaskIndicators"
             configuration: root.configuration
+            capsuleAnchored: !!root.configuration.freeLayout
             effectiveEdge: root.edge
             horizontalPadding: root.padding; verticalPadding: root.padding
             windowCount: root.windowCount

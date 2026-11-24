@@ -164,6 +164,8 @@ TestCase {
         verify(!thickness.visible && !offset.visible);
         mode.currentIndex = 1;
         verify(thickness.visible && offset.visible);
+        verify(!findChild(window, "verticalPaddingControl").visible);
+        verify(findChild(window, "horizontalPaddingControl").visible);
         thickness.value = 7;
         offset.value = -12;
         buttons.applied();
@@ -171,6 +173,7 @@ TestCase {
         compare(dockSettings.values.iconOffset, -12);
         verify(dockSettings.values.freeLayout);
         mode.currentIndex = 0;
+        verify(findChild(window, "verticalPaddingControl").visible);
         verify(!thickness.visible && !offset.visible);
         findChild(window, "backgroundTypeControl").currentIndex = 2;
         verify(!findChild(window, "backgroundOpacityControl").visible);

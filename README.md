@@ -111,6 +111,9 @@ capsule. **Free** exposes capsule thickness (1–256 px) and icon offset
 (−256 to +256 px) for the selected dock. Zero aligns the resting centers.
 Positive values move icons toward the desktop on every edge; negative values
 move them toward the screen edge, stopping before the icons would be clipped.
+Free mode keeps the along-dock padding. Running indicators follow the
+screen-facing capsule edge; Custom indicators use their own edge distance.
+The across-dock padding and position override are retained for Centered mode.
 For example, try a 6 px capsule and a +52 px offset for floating icons.
 
 Open Configure → Appearance. Choose a fixed

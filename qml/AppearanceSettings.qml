@@ -7,6 +7,7 @@ import org.kde.kirigami as Kirigami
 Controls.ScrollView {
     id: page
     required property QtObject paletteSource
+    readonly property bool freeLayout: layoutMode.currentIndex === 1
 
     function load(v) {
         layoutMode.currentIndex = v.freeLayout ? 1 : 0;
@@ -241,6 +242,7 @@ Controls.ScrollView {
                 }
                 Measure {
                     id: verticalPadding; objectName: "verticalPaddingControl"
+                    visible: !page.freeLayout
                     caption: i18n("Across the dock")
                     from: 0; to: 64
                 }

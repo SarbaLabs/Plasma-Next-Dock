@@ -145,6 +145,44 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_freeIndicatorAnchor() {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const bar = findChild(root, "capsuleBackground");
+        const changes = {freeLayout: true, capsuleThickness: 4, iconOffset: 48, verticalPadding: 64,
+            indicatorAnimations: false, taskDecorations: 2, indicatorMode: 2, indicatorOverride: true,
+            indicatorEdge: 1, indicatorEdgeDistance: 17, indicatorStyle: 2};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        const running = tasks.get(0).IsWindow;
+        try {
+            tasks.setProperty(0, "IsWindow", true);
+            testEnvironment.behaviorOptions(changes);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                for (const mode of [0, 1, 2]) {
+                    testEnvironment.behaviorOptions({indicatorMode: mode});
+                    const name = ["macIndicator0", "nativeIndicatorStrip", "indicatorSegment0"][mode];
+                    const owner = mode === 0 ? root : findChild(root, "dockIndicators0");
+                    tryVerify(() => !!findChild(owner, name));
+                    const marker = findChild(owner, name);
+                    for (const distance of [5, 21]) {
+                        testEnvironment.behaviorOptions({iconOffset: distance * 2,
+                            verticalPadding: distance, indicatorEdgeDistance: distance});
+                        wait(25);
+                        const bounds = marker.mapToItem(bar, Qt.rect(0, 0, marker.width, marker.height));
+                        const inset = [bar.height - bounds.y - bounds.height, bounds.y,
+                            bounds.x, bar.width - bounds.x - bounds.width][edge];
+                        fuzzyCompare(inset, mode === 2 ? distance : 0, 0.01);
+                    }
+                }
+            }
+        } finally {
+            tasks.setProperty(0, "IsWindow", running);
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
     function test_synthesizedWheel() {
         tryCompare(dock, "status", Loader.Ready);
         const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;

@@ -45,14 +45,19 @@ Item {
         dockOptions.spacing === undefined ? 8 : dockOptions.spacing,
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
-        dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
+        dockOptions.freeLayout ? 0 : (dockOptions.verticalPadding ?? 10),
         blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, bounceHeight, separators * 6,
         dockOptions.freeLayout ? dockOptions.capsuleThickness : 0, dockOptions.iconOffset ?? 0)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
     readonly property real maximum: base * dockOptions.zoom
-    readonly property real depth: layoutMetrics.depth
+    // A custom marker can extend inward beyond a thin free capsule even with
+    // small icons. Its drawing space is independent of the exclusive zone.
+    readonly property real depth: dockOptions.freeLayout && dockOptions.indicatorMode === 2
+        ? Math.max(layoutMetrics.depth, Math.min((vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
+            edgeSpacing + (dockOptions.indicatorEdgeDistance ?? 2) + 24))
+        : layoutMetrics.depth
     readonly property real length: layoutMetrics.length
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
     readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
@@ -522,10 +527,11 @@ Item {
                     // resting cross-axis geometry throughout icon magnification.
                     Item {
                         width: slot.size
-                        height: root.base
+                        height: dockOptions.freeLayout ? root.barThickness : root.base
+                        readonly property real edgeInset: dockOptions.freeLayout ? root.edgeSpacing : root.iconEdge
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.iconEdge
-                            : slot.height - height - root.iconEdge
+                            ? edgeInset
+                            : slot.height - height - edgeInset
                         z: -1
                         DockIndicators {
                             objectName: "dockIndicators" + slot.index
@@ -539,9 +545,9 @@ Item {
                             taskIndex: slot.nativeIndex
                             tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                             edge: dockOptions.edge
-                            padding: Math.min(root.taskPadding, root.iconEdge)
+                            padding: dockOptions.freeLayout ? 0 : root.taskPadding
                             hovered: slot.taskHovered
-                            decorationExtent: icon.height + icon.lift + bounce.offset
+                            decorationExtent: icon.height + icon.lift + bounce.offset + (root.iconEdge - parent.edgeInset)
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
                         }
                     }
@@ -684,8 +690,8 @@ Item {
                         visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
                         width: 4 * root.fitScale; height: width; radius: width / 2
                         x: (slot.size - width) / 2
-                        readonly property real dotInset: root.edgeSpacing + (dockOptions.freeLayout
-                            ? Math.max(0, Math.min(4 * root.fitScale, (root.barThickness - height) / 2)) : 4 * root.fitScale)
+                        objectName: "macIndicator" + slot.index
+                        readonly property real dotInset: root.edgeSpacing + (dockOptions.freeLayout ? 0 : 4 * root.fitScale)
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? dotInset : slot.height - dotInset - height
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }

@@ -286,7 +286,7 @@ Controls.ApplicationWindow {
                     paletteSource: dockPalette
                     behavior: behaviorPage
                 }
-                IndicatorsSettings { id: indicators }
+                IndicatorsSettings { id: indicators; freeLayout: appearanceSettings.freeLayout }
                 Controls.ScrollView {
                     contentWidth: availableWidth
                     ColumnLayout {
