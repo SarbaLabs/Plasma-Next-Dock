@@ -71,6 +71,8 @@ Controls.ApplicationWindow {
             highlightMoveDuration: 0
             highlightFollowsCurrentItem: true
             DropArea {
+                objectName: "folderDropArea"
+                parent: view
                 anchors.fill: parent
                 onEntered: event => {
                     if ((event.supportedActions & Qt.CopyAction) && event.hasUrls && event.urls.some(url => !!folders.directory(url)))
@@ -83,6 +85,7 @@ Controls.ApplicationWindow {
                 }
             }
             Controls.Label {
+                parent: view
                 anchors.centerIn: parent
                 visible: view.count === 0
                 text: i18n("Add a folder or drag folders here.")

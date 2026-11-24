@@ -11,7 +11,11 @@ TestCase {
         tryCompare(loader, "status", Loader.Ready);
         const editor = findChild(loader.item, "folderEditor");
         const sort = findChild(loader.item, "folderSortControl");
-        verify(editor.add(["file:///usr", "file:///tmp", "file:///usr/", "file:///etc/hosts"]));
+        const drop = findChild(loader.item, "folderDropArea");
+        tryVerify(() => drop.width > 40 && drop.height > 40);
+        const urls = ["file:///usr", "file:///tmp", "file:///usr/", "file:///etc/hosts"];
+        verify(testEnvironment.externalDrag(drop, Qt.point(40, 40), urls, 0));
+        verify(testEnvironment.externalDrag(drop, Qt.point(40, 40), urls, 2));
         compare(editor.rows.length, 2);
         editor.move("file:///tmp", 0);
         compare(editor.rows[0].name, "tmp");
