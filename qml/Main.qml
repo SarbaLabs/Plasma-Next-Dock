@@ -667,17 +667,18 @@ Item {
                             mainText: slot.entry?.name || slot.model.AppName || slot.model.display || ""
                             textFormat: Text.PlainText
                             mainItem: previewPanel
-                            interactive: !!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false
+                            interactive: !slot.entry && (!!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false)
                             // Deactivating any ToolTipArea schedules dismissal of Plasma's shared popup.
                             // Settle the active areas when selecting the task, before Enter opens it.
                             active: !root.dragging && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
                             onAboutToShow: {
-                                previewPanel.windowsEnabled = dockOptions.showWindowPreviews !== false || forceWindows;
+                                previewPanel.windowsEnabled = !slot.entry && (dockOptions.showWindowPreviews !== false || forceWindows);
                                 forceWindows = false;
-                                previewPanel.status = taskStatus;
+                                previewPanel.status = slot.entry ? null : taskStatus;
                                 previewPanel.applicationName = mainText;
-                                previewPanel.applicationIcon = slot.model.decoration;
-                                windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, root.nativeRow(slot.index));
+                                previewPanel.applicationIcon = slot.entry?.icon || slot.model.decoration;
+                                if (slot.entry) windowPreviews.clear();
+                                else windowPreviews.select(dockOptions.demo ? null : taskSource.item.tasks, slot.nativeIndex);
                             }
                         }
                         StatusOverlay {

@@ -1261,3 +1261,10 @@ Dragging the original directory from Dolphin onto the same destination copied
 its contents; the source and copied file matched. Automated cases cover disabled
 and empty providers, mixed file/directory selections, alphabetical order and
 persistence of the new manual order.
+
+Folder title tooltips use the shared popup without a native task selection.
+The preview tests clear a previously selected task and switch popup owners;
+only loss of a previously valid task should send the dismissal signal. On
+CachyOS Wayland the name stayed visible under a stationary pointer. On Debian
+Wayland, moving from System Settings to Pictures to Downloads and back showed
+each title while the same dock process remained alive.
