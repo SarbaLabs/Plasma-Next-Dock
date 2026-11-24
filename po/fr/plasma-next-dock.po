@@ -875,3 +875,15 @@ msgstr "Gauche / Haut"
 
 msgid "Right / Bottom"
 msgstr "Droite / Bas"
+
+msgid "Mode:"
+msgstr "Mode :"
+
+msgid "Free"
+msgstr "Libre"
+
+msgid "Capsule thickness (px):"
+msgstr "Épaisseur de la capsule (px) :"
+
+msgid "Icon offset (px):"
+msgstr "Décalage des icônes (px) :"

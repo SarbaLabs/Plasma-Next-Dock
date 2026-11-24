@@ -15,19 +15,28 @@ function hoverWeight(distance, radius) {
 // Reserve the same zoom budget in the canvas and in animated delegates.
 // The renderer caps animation tails to this same fixed budget.
 // Sizing depends only on count/settings/output, never on animated row geometry.
-function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0) {
+function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0, freeThickness = 0, iconOffset = 0) {
     available = Math.max(1, available);
     crossAvailable = Math.max(1, crossAvailable);
     gap = Math.min(Math.max(0, gap), Math.max(0, crossAvailable - 1));
     const resting = separatorSpace + count * preferred + Math.max(0, count - 1) * iconSpacing + 2 * endPadding;
     const zoomReserve = Math.min(count, zoomBudget(blastRadius)) * preferred * (zoom - 1);
     const natural = Math.max(200, resting + zoomReserve);
-    const crossScale = Math.min(1, (crossAvailable - gap) / (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4));
+    // In Free mode both screen-facing edges share an origin. Reserve the
+    // offset before fitting icons so their baseline never depends on the bar.
+    const freeEdge = Math.max(0, Math.min(crossAvailable - 1, gap + iconOffset));
+    const animationDepth = preferred * zoom + hoverLift + bounceHeight;
+    const crossDepth = animationDepth + (freeThickness ? 0 : 2 * crossPadding) + 4;
+    const origin = freeThickness ? freeEdge : gap;
+    const crossScale = Math.min(1, (crossAvailable - origin) / crossDepth);
     const minimumScale = Math.min(1, 24 / preferred, crossScale);
     const scale = Math.min(crossScale, Math.max(minimumScale, Math.min(1, available / natural)));
+    const thickness = freeThickness ? Math.min(crossAvailable - gap, freeThickness * scale)
+                                    : (preferred + 2 * crossPadding) * scale;
     return { scale: scale, base: preferred * scale, restingLength: resting * scale,
         length: Math.min(available, natural * scale),
-        depth: (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4) * scale + gap,
+        depth: Math.max(gap + thickness, origin + crossDepth * scale),
+        thickness: thickness, iconEdge: freeThickness ? freeEdge : gap + crossPadding * scale,
         gap: gap };
 }
 function scrollPosition(position, delta, content, viewport) {

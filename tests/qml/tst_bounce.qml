@@ -32,6 +32,47 @@ TestCase {
             }
         }
     }
+    function test_hoverAcrossGaps_data() {
+        const cases = [];
+        for (const free of [false, true])
+            for (let edge = 0; edge < 4; ++edge)
+                cases.push({tag: (free ? "free-" : "centered-") + edge, free, edge});
+        return cases;
+    }
+    function test_hoverAcrossGaps(data) {
+        const root = dock.item;
+        const first = findChild(root, "task0"), next = findChild(root, "task1");
+        const saved = {};
+        const options = {freeLayout: data.free, capsuleThickness: 4, iconOffset: 48,
+                         iconSpacing: 24, zoom: 2, bounceEnabled: false};
+        for (const key of Object.keys(options)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.setEdge(data.edge);
+            testEnvironment.behaviorOptions(options);
+            mouseMove(this, 990, 790);
+            wait(150);
+            mouseMove(first.iconItem, first.size / 2, first.size / 2);
+            tryVerify(() => first.size > root.maximum - 2);
+            const gap = first.inputItem.mapToItem(root,
+                first.size + 12 * root.fitScale,
+                data.edge === 1 || data.edge === 3 ? first.inputItem.height - 3 : 3);
+            const capsule = findChild(root, "capsuleBackground");
+            verify(!capsule.contains(capsule.mapFromItem(root, gap.x, gap.y)));
+            compare(root.taskAt(gap, false), -1);
+            mouseMove(root, gap.x, gap.y);
+            wait(180);
+            verify(root.hovering, "A gap above the capsule must retain hover");
+            verify(first.size > root.base || next.size > root.base);
+            mouseMove(next.iconItem, next.size / 2, next.size / 2);
+            tryVerify(() => next.size > root.base);
+            mouseMove(this, 990, 790);
+            tryCompare(root, "hovering", false);
+            tryCompare(next, "size", root.base);
+        } finally {
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
     function test_hoverHighlightToggle() {
         testEnvironment.setEdge(0);
         testEnvironment.behaviorOptions({iconHoverHighlight: true});

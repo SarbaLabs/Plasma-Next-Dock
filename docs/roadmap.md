@@ -118,7 +118,7 @@ the module-manager branch. See the [developer guide](modules.md) and
 PR 2 supplies the first official provider, unpinned applications, with its own
 settings window for per-dock sorting, accessed by right-clicking a task supplied by the module.
 PR 3 implements the three-column Modules editor, per-profile block placement and
-automatic separators. The next implementation stage is custom bar geometry.
+automatic separators. The following stage adds per-dock capsule geometry in Appearance.
 
 Discover packages under `plasma-next-dock/modules/` in the XDG user and system
 data directories. Distribution packages can install a shared copy under
@@ -176,7 +176,7 @@ independently and support the same module on multiple docks where appropriate.
 
 ### Bar geometry (PR 4)
 
-Keep centered mode as the default for existing profiles. Custom mode has two
+Centered mode is the default for existing profiles. Free mode has two
 independent per-dock settings: background thickness and icon offset relative
 to that background. Use them for both overlapping icons on a thick capsule and
 floating icons above a thin bar. Resolve offsets relative to the selected edge.

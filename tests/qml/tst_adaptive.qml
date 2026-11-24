@@ -112,6 +112,82 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_freeLayoutAcrossEdges() {
+        const root = dock.item;
+        const capsule = findChild(root, "capsuleBackground");
+        const icon = findChild(root, "icon0");
+        const lane = findChild(root, "taskInput0");
+        try {
+            root.hovering = false;
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                for (const [thickness, offset] of [[4, 46], [90, 46], [72, 0], [4, 0], [90, -3], [4, -256]]) {
+                    testEnvironment.behaviorOptions({freeLayout: true, capsuleThickness: thickness, iconOffset: offset});
+                    wait(60);
+                    const t = thickness * root.fitScale;
+                    fuzzyCompare(root.vertical ? capsule.width : capsule.height, t, 0.01);
+                    const bounds = icon.mapToItem(capsule, Qt.rect(0, 0, icon.width, icon.height));
+                    const inward = [t - bounds.y - bounds.height, bounds.y, bounds.x, t - bounds.x - bounds.width][edge];
+                    fuzzyCompare(inward, Math.max(-root.edgeSpacing, offset), 0.1);
+                    const hit = icon.mapToItem(lane, icon.width / 2, icon.height / 2);
+                    verify(lane.contains(hit));
+                    const reservation = root.reservedThickness;
+                    const footprint = root.dodgeBounds;
+                    fuzzyCompare(root.vertical ? footprint.y : footprint.x, root.barStart, 0.01);
+                    fuzzyCompare(root.vertical ? footprint.height : footprint.width, root.barLength, 0.01);
+                    compare(root.vertical ? footprint.width : footprint.height, reservation);
+                    root.pointerIndex = 0;
+                    root.hovering = true;
+                    wait(120);
+                    compare(root.reservedThickness, reservation);
+                    compare(root.dodgeBounds, footprint);
+                    root.hovering = false;
+                    wait(120);
+                }
+            }
+        } finally {
+            testEnvironment.behaviorOptions({freeLayout: false, capsuleThickness: 60, iconOffset: 0});
+            testEnvironment.setEdge(0);
+        }
+    }
+    function test_freeIndicatorAnchor() {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const bar = findChild(root, "capsuleBackground");
+        const changes = {freeLayout: true, capsuleThickness: 4, iconOffset: 48, verticalPadding: 64,
+            indicatorAnimations: false, taskDecorations: 2, indicatorMode: 2, indicatorOverride: true,
+            indicatorEdge: 1, indicatorEdgeDistance: 17, indicatorStyle: 2};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        const running = tasks.get(0).IsWindow;
+        try {
+            tasks.setProperty(0, "IsWindow", true);
+            testEnvironment.behaviorOptions(changes);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                for (const mode of [0, 1, 2]) {
+                    testEnvironment.behaviorOptions({indicatorMode: mode});
+                    const name = ["macIndicator0", "nativeIndicatorStrip", "indicatorSegment0"][mode];
+                    const owner = mode === 0 ? root : findChild(root, "dockIndicators0");
+                    tryVerify(() => !!findChild(owner, name));
+                    const marker = findChild(owner, name);
+                    for (const distance of [5, 21]) {
+                        testEnvironment.behaviorOptions({iconOffset: distance * 2,
+                            verticalPadding: distance, indicatorEdgeDistance: distance});
+                        wait(25);
+                        const bounds = marker.mapToItem(bar, Qt.rect(0, 0, marker.width, marker.height));
+                        const inset = [bar.height - bounds.y - bounds.height, bounds.y,
+                            bounds.x, bar.width - bounds.x - bounds.width][edge];
+                        fuzzyCompare(inset, mode === 2 ? distance : 0, 0.01);
+                    }
+                }
+            }
+        } finally {
+            tasks.setProperty(0, "IsWindow", running);
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
     function test_synthesizedWheel() {
         tryCompare(dock, "status", Loader.Ready);
         const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;

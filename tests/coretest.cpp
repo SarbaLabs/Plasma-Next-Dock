@@ -234,6 +234,31 @@ private Q_SLOTS:
         dock.setVisibility(DockGeometry::WindowsGoBelow);
         QVERIFY(!dock.hideRequested());
     }
+    void freeDodgeStopsAtBothDockEnds() {
+        DockController dock;
+        WindowModel model;
+        dock.setModel(&model);
+        dock.setEdgeAvailable(true);
+        const QPoint origin(-600, 80);
+        dock.setSurfaceOrigin(origin);
+        for (bool vertical : {false, true}) {
+            const QRectF footprint = vertical ? QRectF(0, 150, 65, 200) : QRectF(150, 0, 200, 65);
+            const QRectF capsule = vertical ? QRectF(0, 150, 4, 200) : QRectF(150, 0, 200, 4);
+            dock.setGeometry(capsule, 0, {}, vertical ? DockGeometry::Left : DockGeometry::Top, {}, {}, footprint);
+            for (int along : {149, 150, 349, 350}) {
+                const QPoint point = vertical ? QPoint(64, along) : QPoint(along, 64);
+                model.rect = QRectF(origin + point, QSize(1, 1));
+                model.changed();
+                QCoreApplication::processEvents();
+                QCOMPARE(dock.hideRequested(), along >= 150 && along < 350);
+            }
+            model.rect = QRectF(origin + footprint.center(), QSize(1, 1));
+            model.changed();
+            QTRY_VERIFY(dock.hideRequested());
+            dock.setGeometry(capsule, 0, {});
+            QTRY_VERIFY(!dock.hideRequested());
+        }
+    }
     void autoHideWithoutOverlap() {
         DockController dock;
         dock.setVisibility(DockGeometry::AutoHide);

@@ -14,6 +14,7 @@ QQC2.ScrollView {
             if (values[key] !== undefined) root["cfg_" + key] = values[key];
         }
     }
+    property bool freeLayout: false
     readonly property bool custom: cfg_indicatorMode === 2
     readonly property bool customEnabled: custom && cfg_customIndicatorsEnabled
     property alias cfg_indicatorMode: indicatorModeControl.currentIndex
@@ -149,14 +150,14 @@ QQC2.ScrollView {
             }
             QQC2.CheckBox {
                 id: indicatorOverrideControl
-                visible: root.customEnabled
+                visible: root.customEnabled && !root.freeLayout
                 text: i18n("Override indicator position")
                 checked: false
             }
             QQC2.ComboBox {
                 implicitWidth: Kirigami.Units.gridUnit * 16
                 id: indicatorEdgeControl
-                visible: root.customEnabled && root.cfg_indicatorOverride
+                visible: root.customEnabled && !root.freeLayout && root.cfg_indicatorOverride
                 Kirigami.FormData.label: i18n("Position:")
                 model: [i18n("Bottom"), i18n("Top"), i18n("Left"), i18n("Right")]
                 currentIndex: 0
@@ -347,7 +348,8 @@ QQC2.ScrollView {
                 }
                 CustomIndicators {
                     anchors.centerIn: parent
-                    width: 140; height: 40
+                    width: 140; height: root.freeLayout ? 70 : 40
+                    capsuleAnchored: root.freeLayout
                     configuration: root.previewConfiguration
                     windowCount: 6
                     activeIndex: 1

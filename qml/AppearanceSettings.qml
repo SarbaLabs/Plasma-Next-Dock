@@ -7,8 +7,12 @@ import org.kde.kirigami as Kirigami
 Controls.ScrollView {
     id: page
     required property QtObject paletteSource
+    readonly property bool freeLayout: layoutMode.currentIndex === 1
 
     function load(v) {
+        layoutMode.currentIndex = v.freeLayout ? 1 : 0;
+        thickness.value = v.capsuleThickness;
+        iconOffset.value = v.iconOffset;
         dockShadowX.value = v.dockShadowX;
         dockShadowY.value = v.dockShadowY;
         dockShadowColor.role = v.dockShadowRole;
@@ -48,6 +52,9 @@ Controls.ScrollView {
     // Return only this page's keys so applying a draft preserves unrelated profile changes.
     function draft() {
         return {
+            freeLayout: layoutMode.currentIndex === 1,
+            capsuleThickness: thickness.value,
+            iconOffset: iconOffset.value,
             backgroundType: backgroundType.mode,
             systemBlur: systemBlur.checked,
             gradientMidpoint: midpoint.value,
@@ -91,6 +98,26 @@ Controls.ScrollView {
         spacing: Kirigami.Units.largeSpacing
         SettingsForm {
             Layout.fillWidth: true
+            Controls.ComboBox {
+                id: layoutMode
+                objectName: "layoutModeControl"
+                Kirigami.FormData.label: i18n("Mode:")
+                model: [i18n("Centered"), i18n("Free")]
+            }
+            Controls.SpinBox {
+                id: thickness
+                objectName: "capsuleThicknessControl"
+                visible: layoutMode.currentIndex === 1
+                Kirigami.FormData.label: i18n("Capsule thickness (px):")
+                from: 1; to: 256; editable: true
+            }
+            Controls.SpinBox {
+                id: iconOffset
+                objectName: "iconOffsetControl"
+                visible: layoutMode.currentIndex === 1
+                Kirigami.FormData.label: i18n("Icon offset (px):")
+                from: -256; to: 256; editable: true
+            }
             Controls.ComboBox {
                 id: backgroundType; objectName: "backgroundTypeControl"
                 implicitWidth: Kirigami.Units.gridUnit * 16
@@ -215,6 +242,7 @@ Controls.ScrollView {
                 }
                 Measure {
                     id: verticalPadding; objectName: "verticalPaddingControl"
+                    visible: !page.freeLayout
                     caption: i18n("Across the dock")
                     from: 0; to: 64
                 }

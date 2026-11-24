@@ -11,6 +11,7 @@ import "code/IndicatorLogic.js" as Logic
 Item {
     id: root
     required property var configuration
+    property bool capsuleAnchored: false
     property int effectiveEdge: 0 // bottom, top, left, right; already un-rotated
     property real horizontalPadding: 8
     property real verticalPadding: 8
@@ -23,16 +24,17 @@ Item {
     SystemPalette { id: activePalette; colorGroup: SystemPalette.Active }
     property color accentColor: activePalette.highlight
     property color dominantColor: "transparent"
-    readonly property int edge: Logic.edge(configuration, effectiveEdge)
+    readonly property int edge: capsuleAnchored ? effectiveEdge : Logic.edge(configuration, effectiveEdge)
     readonly property bool vertical: edge >= 2
     readonly property real padding: Math.max(1, vertical ? horizontalPadding : verticalPadding)
     readonly property bool animated: Logic.flag(configuration, "indicatorAnimations", true)
     readonly property color baseColor: Logic.baseColor(Logic.number(configuration, "indicatorColorSource", 0, 0, 2),
         accentColor, dominantColor, configuration.indicatorCustomColor || "#3daee9")
     readonly property var segments: Logic.segments(configuration, windowCount, activeIndex, hovered,
-        Math.max(0, vertical ? height : width), padding)
+        Math.max(0, vertical ? height : width), capsuleAnchored ? 24 : padding)
     readonly property real lane: segments.reduce((max, s) => Math.max(max, s.thickness), 0)
-    readonly property real edgeDistance: Math.min(Logic.number(configuration, "indicatorEdgeDistance", 2, 0, 32), Math.max(0, padding - lane))
+    readonly property real requestedDistance: Logic.number(configuration, "indicatorEdgeDistance", 2, 0, 32)
+    readonly property real edgeDistance: capsuleAnchored ? requestedDistance : Math.min(requestedDistance, Math.max(0, padding - lane))
 
     Repeater {
         model: root.segments.length
@@ -42,7 +44,7 @@ Item {
             objectName: "indicatorSegment" + index
             readonly property var modelData: root.segments[index] || ({active: false, index: index, length: 0, thickness: 0, offset: 0})
             readonly property real cross: (root.lane - modelData.thickness) / 2
-            readonly property real outside: root.padding - root.edgeDistance - modelData.thickness - cross
+            readonly property real outside: (root.capsuleAnchored ? 0 : root.padding) - root.edgeDistance - modelData.thickness - cross
             readonly property color ink: Logic.segmentColor(root.baseColor, modelData.active, root.windowCount > 1,
                 root.minimizedWindows[modelData.index] === true, root.configuration)
             width: root.vertical ? modelData.thickness : modelData.length

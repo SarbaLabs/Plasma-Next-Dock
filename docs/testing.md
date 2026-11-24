@@ -1204,3 +1204,41 @@ displayed the counter, Dolphin and the running tasks, with two separators.
 The gear on the unpinned block opened its independent settings window. This
 desktop check used one output. On Debian 13.7 the mouse-drag fixture also ran
 in a mapped Qt Quick window on Plasma Wayland, using QtTest input.
+
+## Free capsule layout
+
+The adaptive layout fixture exercises a thin bar with floating icons, a thick
+bar with overlapping icons, and a negative offset on each edge. It checks the
+painted thickness, signed edge-to-edge displacement, input hit and constant exclusive
+zone during magnification. The settings fixture switches modes, applies a
+signed offset and checks that only Free exposes the two controls.
+
+A temporary CachyOS KWin profile showed floating task icons over a 6 px top
+bar at +52 px. The appearance page showed both controls alongside the existing
+background controls. This desktop observation used one output.
+
+The gap-crossing regression test moves the pointer from an enlarged icon into
+the space before its neighbour, beyond the capsule, then out of the dock. It
+failed on all four edges in both Centered and Free before the fix and passed
+afterward. On CachyOS Wayland a 4 px top capsule, +68 px offset and 32 px
+spacing verified sustained zoom between Dolphin and Firefox and reset on exit.
+
+The indicator fixture in the adaptive-layout suite measures all three styles
+against the screen-facing edge on four orientations with a 4 px free capsule.
+It varies icon offset, saved centered padding and custom edge distance.
+The settings fixture checks padding visibility. A temporary CachyOS Wayland
+profile showed the indicators at a 13 px inset with a 5 px capsule and +64 px
+icon offset; only the along-dock padding was visible in Appearance.
+
+The Free layout fixture changes capsule thickness at fixed positive and zero
+offsets on all four edges, and checks negative offsets up to the screen edge.
+
+On CachyOS Wayland, increasing a top capsule from 4 to 84 px at a fixed
++50 px offset left the resting icons at the same screen position.
+
+Free-layout dodge checks the last pixel inside each end of the resting dock
+and the first one outside, horizontally and vertically on an offset output.
+The four-edge layout fixture checks the resting length and reserved depth and
+verifies that magnification leaves this footprint stable.
+On CachyOS Wayland KCalc stayed at y=86: a horizontal move from x=42 to
+x=540 and then x=1250 produced visible, hidden and visible dock states.

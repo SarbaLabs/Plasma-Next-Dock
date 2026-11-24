@@ -10,12 +10,12 @@ effect is required by this first prototype.
 Three geometries have different responsibilities:
 
 1. **Canvas:** accommodates the maximum magnified icon height and task strip.
-2. **Input region:** rounded capsule plus task interaction lanes extended to the physical edge,
+2. **Input region:** rounded capsule plus a continuous hover band across the visible task strip extending to the physical edge,
    intersected with canvas bounds. Transparent margins do not receive pointer input
    under Qt Wayland's QWindow mask implementation.
-3. **Dodge region:** the rounded visible capsule translated into output coordinates.
-   Empty canvas margins never trigger window avoidance. Icon silhouettes are not
-   part of this initial collision policy; hover keeps the dock visible.
+3. **Dodge region:** Centered layout tests the rounded capsule in output coordinates.
+   Free layout tests the aligned resting span of the dock, using the same
+   depth supplied to the exclusive-zone surface. Hover keeps the dock visible.
 
 The canvas is fixed during hover for a given task count; only the task row changes
 size. Long lists scroll within the output-limited canvas. Negative output origins
@@ -339,7 +339,7 @@ dragging, hidden-policy and preview states stop them at rest. See bounce.md.
 
 DockController observes the dock QQuickWindow's pointer events without consuming
 them. Its target item maps window coordinates into the dock; hover is membership
-in the same region used by the Wayland input mask. Main updates magnification's
+in the same region used by the Wayland input mask. The band spans inter-icon gaps and uses the maximum zoom and lift while hovered, so a shrinking neighbour cannot uncover the pointer mid-crossing. Individual lanes still target clicks and drops. Main updates magnification's
 logical pointer index only for changed positions or real window entry, not child
 hover re-delivery during bounce. The previous root HoverHandler is removed; native
 menu/tooltip/audio input routing remains intact. Target/window changes detach the

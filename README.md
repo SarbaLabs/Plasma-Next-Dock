@@ -106,6 +106,19 @@ See [behavior settings and desktop checks](docs/behavior.md).
 
 ## Capsule backgrounds
 
+In **Appearance → Mode**, **Centered** keeps icons centered in the padded
+capsule. **Free** exposes capsule thickness (1–256 px) and icon offset
+(−256 to +256 px) for the selected dock. Zero aligns the screen-facing edges of the resting icons and the capsule.
+Changing capsule thickness keeps this icon baseline fixed.
+Positive values move icons toward the desktop on every edge; negative values
+move them toward the screen edge, stopping before the icons would be clipped.
+Free mode keeps the along-dock padding. Running indicators follow the
+screen-facing capsule edge; Custom indicators use their own edge distance.
+The across-dock padding and position override are retained for Centered mode.
+In Free mode, Dodge windows uses the depth reserved by Always visible over the
+length of this dock at rest. Windows beside either end keep the dock visible.
+For example, try a 6 px capsule and a +52 px offset for floating icons.
+
 Open Configure → Appearance. Choose a fixed
 color or a KDE palette role for the fill and exterior border. Gradient has
 independent desktop-side and screen-edge colors and opacities. Move the midpoint
