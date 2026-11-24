@@ -70,6 +70,7 @@ QVariantMap DockSettings::defaults()
         {"borderRole", "automatic"}, {"borderOpacity", 1.0}, {"backgroundType", 0}, {"backgroundOpacity", 1.0}, {"glassOpacity", 0.35}, {"systemBlur", false}, {"gradientMidpoint", 50},
         {"borderWidth", 1}, {"borderUseTheme", true}, {"borderColor", "#808080"},
         {"iconSpacing", 10}, {"horizontalPadding", 12}, {"verticalPadding", 10},
+        {"freeLayout", false}, {"capsuleThickness", 60}, {"iconOffset", 0},
         {"indicatorUnfocusedColorEnabled", false},
         {"indicatorUnfocusedColor", "#3daee9"},
         {"indicatorMode", 0}, {"iconHoverHighlight", true},
@@ -151,6 +152,8 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     for (const auto key : {"borderOpacity", "gradientTopOpacity", "gradientBottomOpacity"}) number(key, 0, 1, false);
     number("backgroundOpacity", 0, 1, false);
     number("borderWidth", 0, 12, true);
+    result["freeLayout"] = result["freeLayout"].toBool();
+    number("capsuleThickness", 1, 256, true); number("iconOffset", -256, 256, true);
     number("iconSpacing", 0, 64, true); number("horizontalPadding", 0, 128, true); number("verticalPadding", 0, 64, true);
     result["borderUseTheme"] = result["borderRole"].toString() != "custom";
     result["borderColor"] = QColor::isValidColorName(result["borderColor"].toString()) ? result["borderColor"].toString() : defaults()["borderColor"];

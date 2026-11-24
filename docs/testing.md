@@ -1204,3 +1204,15 @@ displayed the counter, Dolphin and the running tasks, with two separators.
 The gear on the unpinned block opened its independent settings window. This
 desktop check used one output. On Debian 13.7 the mouse-drag fixture also ran
 in a mapped Qt Quick window on Plasma Wayland, using QtTest input.
+
+## Free capsule layout
+
+The adaptive layout fixture exercises a thin bar with floating icons, a thick
+bar with overlapping icons, and a negative offset on each edge. It checks the
+painted thickness, signed center displacement, input hit and constant exclusive
+zone during magnification. The settings fixture switches modes, applies a
+signed offset and checks that only Free exposes the two controls.
+
+A temporary CachyOS KWin profile showed floating task icons over a 6 px top
+bar at +52 px. The appearance page showed both controls alongside the existing
+background controls. This desktop observation used one output.

@@ -46,7 +46,8 @@ Item {
         dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing,
         dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding,
         dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding,
-        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, bounceHeight, separators * 6)
+        blastRadius, dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift, bounceHeight, separators * 6,
+        dockOptions.freeLayout ? dockOptions.capsuleThickness : 0, dockOptions.iconOffset ?? 0)
     readonly property real fitScale: layoutMetrics.scale
     readonly property real base: layoutMetrics.base
     readonly property real edgeSpacing: layoutMetrics.gap
@@ -212,8 +213,9 @@ Item {
     }
     property bool hovering: dockController.pointerHovered
     property color applicationColor: Kirigami.Theme.highlightColor
-    readonly property real barThickness: base + 2 * taskPadding
-    readonly property int reservedThickness: Math.ceil(edgeSpacing + barThickness + (dockOptions.borderWidth ?? 1))
+    readonly property real barThickness: layoutMetrics.thickness
+    readonly property real iconEdge: layoutMetrics.iconEdge
+    readonly property int reservedThickness: Math.ceil(Math.max(edgeSpacing + barThickness, layoutCount ? iconEdge + base : 0) + (dockOptions.borderWidth ?? 1))
     readonly property real alignmentFactor: (dockOptions.dockAlignment ?? 1) / 2
     readonly property real barStart: startPad + endClearance + (length - barLength) * alignmentFactor
     // Row updates its implicit width during polish. Size the painted path from
@@ -334,7 +336,7 @@ Item {
     DockPalette { id: dockPalette }
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
         dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
-    readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
+    readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.freeLayout ? dockOptions.capsuleThickness / 2 : dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
     Item {
         id: dockArtwork
         anchors.fill: parent
@@ -504,8 +506,8 @@ Item {
                         height: root.base * 0.65
                         x: slot.size + (slot.width - slot.size + taskRow.spacing - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding + (root.base - height) / 2
-                            : slot.height - root.edgeSpacing - root.taskPadding - (root.base + height) / 2
+                            ? root.iconEdge + (root.base - height) / 2
+                            : slot.height - root.iconEdge - (root.base + height) / 2
                         color: Kirigami.Theme.textColor
                         opacity: 0.45
                     }
@@ -518,8 +520,8 @@ Item {
                         width: slot.size
                         height: root.base
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding
-                            : slot.height - height - root.edgeSpacing - root.taskPadding
+                            ? root.iconEdge
+                            : slot.height - height - root.iconEdge
                         z: -1
                         DockIndicators {
                             objectName: "dockIndicators" + slot.index
@@ -533,7 +535,7 @@ Item {
                             taskIndex: slot.nativeIndex
                             tasksModel: dockOptions.demo ? null : taskSource.item.tasks
                             edge: dockOptions.edge
-                            padding: root.taskPadding
+                            padding: Math.min(root.taskPadding, root.iconEdge)
                             hovered: slot.taskHovered
                             decorationExtent: icon.height + icon.lift + bounce.offset
                             dominantColor: colorLoader.item ? colorLoader.item.dominant : "transparent"
@@ -571,7 +573,7 @@ Item {
                         id: inputLane
                         objectName: "taskInput" + slot.index
                         width: slot.size
-                        height: root.edgeSpacing + root.taskPadding + slot.size + icon.lift + bounce.amplitude
+                        height: root.iconEdge + slot.size + icon.lift + bounce.amplitude
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? 0 : slot.height - height
                         onYChanged: root.queueGeometry()
                         onHeightChanged: root.queueGeometry()
@@ -609,8 +611,8 @@ Item {
                         // After a clockwise rotation, local bottom is the screen's left.
                         readonly property real lift: (dockOptions.hoverLift === undefined ? 0 : dockOptions.hoverLift) * root.fitScale * slot.animatedFactor * root.zoomBudgetScale
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
-                            ? root.edgeSpacing + root.taskPadding + lift + bounce.offset
-                            : slot.height - height - root.edgeSpacing - root.taskPadding - lift - bounce.offset
+                            ? root.iconEdge + lift + bounce.offset
+                            : slot.height - height - root.iconEdge - lift - bounce.offset
                         onYChanged: root.queueGeometry()
                         rotation: root.vertical ? -90 : 0
                         opacity: slot.entry?.enabled === false ? 0.45 : (root.dragIndex === slot.index ? 0.65 : 1)
@@ -678,7 +680,9 @@ Item {
                         visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
                         width: 4 * root.fitScale; height: width; radius: width / 2
                         x: (slot.size - width) / 2
-                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? root.edgeSpacing + 4 * root.fitScale : slot.height - root.edgeSpacing - 8 * root.fitScale
+                        readonly property real dotInset: root.edgeSpacing + (dockOptions.freeLayout
+                            ? Math.max(0, Math.min(4 * root.fitScale, (root.barThickness - height) / 2)) : 4 * root.fitScale)
+                        y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? dotInset : slot.height - dotInset - height
                         color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                     }
                 }

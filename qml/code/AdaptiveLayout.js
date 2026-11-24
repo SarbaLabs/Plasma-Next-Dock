@@ -15,19 +15,25 @@ function hoverWeight(distance, radius) {
 // Reserve the same zoom budget in the canvas and in animated delegates.
 // The renderer caps animation tails to this same fixed budget.
 // Sizing depends only on count/settings/output, never on animated row geometry.
-function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0) {
+function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0, freeThickness = 0, iconOffset = 0) {
     available = Math.max(1, available);
     crossAvailable = Math.max(1, crossAvailable);
     gap = Math.min(Math.max(0, gap), Math.max(0, crossAvailable - 1));
     const resting = separatorSpace + count * preferred + Math.max(0, count - 1) * iconSpacing + 2 * endPadding;
     const zoomReserve = Math.min(count, zoomBudget(blastRadius)) * preferred * (zoom - 1);
     const natural = Math.max(200, resting + zoomReserve);
-    const crossScale = Math.min(1, (crossAvailable - gap) / (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4));
+    const thickness = freeThickness || preferred + 2 * crossPadding;
+    // Offset is measured between resting centers, positive toward the desktop.
+    const inset = freeThickness ? (thickness - preferred) / 2 + iconOffset : crossPadding;
+    const animationDepth = preferred * zoom + hoverLift + bounceHeight;
+    const crossDepth = Math.max(thickness, Math.max(0, inset) + animationDepth + crossPadding + 4);
+    const crossScale = Math.min(1, (crossAvailable - gap) / crossDepth);
     const minimumScale = Math.min(1, 24 / preferred, crossScale);
     const scale = Math.min(crossScale, Math.max(minimumScale, Math.min(1, available / natural)));
     return { scale: scale, base: preferred * scale, restingLength: resting * scale,
         length: Math.min(available, natural * scale),
-        depth: (preferred * zoom + hoverLift + bounceHeight + 2 * crossPadding + 4) * scale + gap,
+        depth: crossDepth * scale + gap,
+        thickness: thickness * scale, iconEdge: Math.max(0, gap + inset * scale),
         gap: gap };
 }
 function scrollPosition(position, delta, content, viewport) {
