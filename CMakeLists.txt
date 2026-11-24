@@ -43,7 +43,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
-    qml/ModuleSettingsHost.qml qml/ApplicationsSettings.qml qml/ApplicationChooser.qml qml/ExternalDrop.qml
+    qml/ModulesSettings.qml qml/ModuleSettingsHost.qml qml/ApplicationsSettings.qml qml/ApplicationChooser.qml qml/ExternalDrop.qml
     qml/TaskIconArtwork.qml qml/TaskBounce.qml
     qml/BehaviorSettings.qml qml/code/TaskBehavior.js
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml

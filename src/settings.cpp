@@ -46,7 +46,10 @@ bool DockSettings::setStartAtLogin(bool enabled)
 }
 QVariantMap DockSettings::defaults()
 {
-    return {{"unpinnedTasksMigrated", true}, {"enabledModules", QStringList{"org.sarbalabs.unpinned"}}, {"moduleSettings", QVariantMap{}}, {"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
+    const QStringList trailing{"org.sarbalabs.unpinned"};
+    const QVariantMap zones{{"left", QStringList{}}, {"disabled", QStringList{}}, {"right", trailing}};
+    return {{"unpinnedTasksMigrated", true}, {"enabledModules", trailing}, {"moduleSettings", QVariantMap{}},
+        {"moduleZones", zones}, {"edge", 0}, {"screen", ""}, {"iconSize", 40}, {"zoom", 1.5},
         {"dockShadowRole", "custom"}, {"dockShadowColor", "#000000"}, {"dockShadowX", 0}, {"dockShadowY", 2}, {"dockShadowStrength", 0}, {"dockShadowSize", 12},
         {"iconShadowRole", "custom"}, {"iconShadowColor", "#000000"}, {"iconShadowX", 0}, {"iconShadowY", 2}, {"iconShadowStrength", 0}, {"iconShadowSize", 6},
         {"grayscaleIcons", false}, {"tintIcons", false}, {"iconTintRole", "highlight"},
@@ -205,6 +208,26 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
 
     for (const auto *key : {"enabledModules", "groupingAppIdBlacklist", "groupingLauncherUrlBlacklist"})
         result[key] = result[key].toStringList();
+    // Editor columns run from the outside toward the pins on both sides.
+    // Legacy enabledModules is in physical display order on the trailing side.
+    auto zones = input.value("moduleZones").toMap();
+    if (zones.isEmpty()) {
+        auto trailing = result["enabledModules"].toStringList();
+        std::reverse(trailing.begin(), trailing.end());
+        zones.insert("right", trailing);
+    }
+    QSet<QString> placed;
+    for (const auto key : {"left", "right", "disabled"}) {
+        QStringList unique;
+        for (const auto &id : zones.value(key).toStringList()) {
+            if (!id.isEmpty() && !placed.contains(id)) { unique.append(id); placed.insert(id); }
+        }
+        zones[key] = unique;
+    }
+    auto trailing = zones["right"].toStringList();
+    std::reverse(trailing.begin(), trailing.end());
+    result["enabledModules"] = zones["left"].toStringList() + trailing;
+    result["moduleZones"] = zones;
     QStringList launchers;
     for (const auto &entry : result["launchers"].toStringList()) {
         const QUrl url(entry);
@@ -219,6 +242,7 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
 static QVariantMap mergeChanges(QVariantMap merged, const QVariantMap &changes)
 {
     for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
+    if (changes.contains("enabledModules") && !changes.contains("moduleZones")) merged.remove("moduleZones");
     if (changes.contains("dodge") && !changes.contains("visibilityMode"))
         merged["visibilityMode"] = changes["dodge"].toBool() ? 2 : 3;
     if (changes.contains("radius")) {

@@ -91,7 +91,7 @@ Item {
         filterNotMinimized: source.options.onlyMinimized === true
     }
     // Publish only task data to the module engine; KDE actions stay on this model.
-    Binding { target: typeof dockTaskRows === "undefined" ? null : dockTaskRows; property: "sourceModel"; value: tasks }
+    Binding { target: typeof dockTaskRows === "undefined" ? null : dockTaskRows; property: "taskModel"; value: tasks }
     Binding { target: typeof dockTaskRows === "undefined" ? null : dockTaskRows; property: "desktopIds"; value: desktops.desktopIds }
     Binding {
         target: typeof dockTaskRows === "undefined" ? null : dockTaskRows

@@ -154,7 +154,7 @@ TestCase {
         compare(findChild(window, "blurSaturationControl"), null);
         compare(findChild(window, "topLeftControl").value, 0);
         const navigation = findChild(window, "settingsNavigation");
-        compare(navigation.count, 6);
+        compare(navigation.count, 7);
         navigation.currentIndex = 1;
         tryCompare(findChild(window, "backgroundTypeControl"), "visible", true);
         findChild(window, "backgroundTypeControl").currentIndex = 2;

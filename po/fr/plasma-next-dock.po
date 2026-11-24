@@ -866,3 +866,12 @@ msgstr "Configurer le module « %1 »…"
 
 msgid "Unpinned applications"
 msgstr "Applications non épinglées"
+
+msgid "Modules"
+msgstr "Modules"
+
+msgid "Left / Top"
+msgstr "Gauche / Haut"
+
+msgid "Right / Bottom"
+msgstr "Droite / Bas"

@@ -5,10 +5,11 @@ Loader {
     id: host
     required property var profile
     property string moduleId: ""
+    onProfileChanged: active = false
     active: false
 
     function open(info) {
-        if (!info.settingsUrl || !profile.values.enabledModules.includes(info.id)) return;
+        if (!info.settingsUrl) return;
         if (item && moduleId === info.id) {
             item.raise();
             item.requestActivate();

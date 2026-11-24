@@ -117,6 +117,8 @@ the module-manager branch. See the [developer guide](modules.md) and
 [installable counter example](../examples/modules/org.example.counter).
 PR 2 supplies the first official provider, unpinned applications, with its own
 settings window for per-dock sorting, accessed by right-clicking a task supplied by the module.
+PR 3 implements the three-column Modules editor, per-profile block placement and
+automatic separators. The next implementation stage is custom bar geometry.
 
 Discover packages under `plasma-next-dock/modules/` in the XDG user and system
 data directories. Distribution packages can install a shared copy under

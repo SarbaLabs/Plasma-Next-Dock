@@ -104,6 +104,7 @@ void DockHost::update(bool settingsOpen)
     // Opening or closing settings changes visibility policy even when all
     // drawing options are identical. Keep the existing QML bindings intact.
     if (options != m_options) {
+        m_taskRows.setLeadingModules(options.value("moduleZones").toMap().value("left").toStringList());
         if (m_options.value("enabledModules") != options.value("enabledModules")
             || m_options.value("moduleSettings") != options.value("moduleSettings")) {
             m_modules.configure(options.value("enabledModules").toStringList(), options.value("moduleSettings").toMap());
