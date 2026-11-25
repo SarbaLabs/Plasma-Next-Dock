@@ -1305,3 +1305,15 @@ the volume available. After releasing it, unmount succeeded. Reattaching
 the image as a USB disk and selecting **Safely remove drive** removed the
 entry from both the dock and Dolphin. The full suite passed on CachyOS and
 Debian 13. A physical USB device was not part of this run.
+
+### Standalone applications menu
+
+The ApplicationsMenu Quick Test uses an isolated XDG menu with Internet and
+Browsers groups and a fixture application. It verifies initial favorites,
+independent presentations, navigation into the subgroup and returning one
+level. On the CachyOS Wayland desktop the menu opened inward from a right-edge
+dock, switched categories, displayed a favorite action, dismissed with Escape
+and resized from the free left edge; the new width appeared in Settings.
+On Debian 13 a simulated touch opened the French menu at the right-edge icon
+with favorites, real KDE categories and the session controls. Session-ending
+actions and simultaneous mixed-scale screens remain manual test cases.

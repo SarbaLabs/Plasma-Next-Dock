@@ -935,3 +935,99 @@ msgstr "Retirer le périphérique en toute sécurité"
 
 msgid "Eject"
 msgstr "Éjecter"
+
+msgid "Applications menu"
+msgstr "Menu des applications"
+
+msgid "Edit Applications…"
+msgstr "Éditer les applications…"
+
+msgid "Favorites"
+msgstr "Favoris"
+
+msgid "Back to %1"
+msgstr "Retour à %1"
+
+msgid "Remove from favorites"
+msgstr "Retirer des favoris"
+
+msgid "Add to favorites"
+msgstr "Ajouter aux favoris"
+
+msgid "Power"
+msgstr "Alimentation"
+
+msgid "Sleep"
+msgstr "Mettre en veille"
+
+msgid "Hibernate"
+msgstr "Hiberner"
+
+msgid "Restart…"
+msgstr "Redémarrer…"
+
+msgid "Shut Down…"
+msgstr "Éteindre…"
+
+msgid "Lock"
+msgstr "Verrouiller"
+
+msgid "Switch User"
+msgstr "Changer d’utilisateur"
+
+msgid "Log Out…"
+msgstr "Se déconnecter…"
+
+msgid "Menu icon:"
+msgstr "Icône du menu :"
+
+msgid "Restore default"
+msgstr "Restaurer par défaut"
+
+msgid "Applications pane:"
+msgstr "Volet des applications :"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Grid"
+msgstr "Grille"
+
+msgid "Favorites:"
+msgstr "Favoris :"
+
+msgid "Categories:"
+msgstr "Catégories :"
+
+msgid "Application labels:"
+msgstr "Libellés des applications :"
+
+msgid "Name only"
+msgstr "Nom seul"
+
+msgid "Description only"
+msgstr "Description seule"
+
+msgid "Name (description)"
+msgstr "Nom (description)"
+
+msgid "Description (name)"
+msgstr "Description (nom)"
+
+msgid "Sort applications alphabetically"
+msgstr "Trier les applications par ordre alphabétique"
+
+msgid "Switch sidebar categories on hover"
+msgstr "Basculer les catégories de la barre latérale au survol"
+
+msgid "Width × height (px):"
+msgstr "Largeur × hauteur (px) :"
+
+msgid "All applications"
+msgstr "Toutes les applications"
+
+msgid "Move earlier"
+msgstr "Déplacer vers le début"
+
+msgid "Move later"
+msgstr "Déplacer vers la fin"

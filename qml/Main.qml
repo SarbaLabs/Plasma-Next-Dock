@@ -149,7 +149,7 @@ Item {
         event.accepted = true;
     }
     function refreshHover() {
-        dockController.setHovered(keyboardActive || dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
+        dockController.setHovered(!!modulePopup.item?.visible || keyboardActive || dockController.pointerHovered || contextMenu.visibleMenu || dragging || externalDrop.containsDrag || previewPanel.displayed);
     }
     onDraggingChanged: { if (dragging) previewPanel.dismiss(); refreshHover(); }
     TaskPreview {
@@ -354,6 +354,21 @@ Item {
         ignoreUnknownSignals: true
         function onLaunchRequested(row) { root.rememberLaunch(root.nativeSlot(row)); }
     }
+    Loader {
+        id: modulePopup
+        active: false
+        function openEntry(entry, icon) {
+            active = true;
+            item.showEntry(entry, icon);
+        }
+        sourceComponent: ModulePopup {
+            host: root
+            capsule: bar
+            paletteSource: dockPalette
+            onVisibleChanged: root.refreshHover()
+            onClosed: modulePopup.active = false
+        }
+    }
     DockPalette { id: dockPalette }
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
         dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
@@ -454,7 +469,8 @@ Item {
                     readonly property bool separatorAfter: root.taskRows ? !!model.separatorAfter : false
                     onSeparatorAfterChanged: Qt.callLater(root.syncTaskCount)
                     function activateEntry() {
-                        if (entry) dockModules.activate(entry.moduleId, entry.id);
+                        if (entry?.popup) modulePopup.openEntry(entry, icon);
+                        else if (entry) dockModules.activate(entry.moduleId, entry.id);
                         else if (nativeIndex >= 0) taskSource.item.activate(nativeIndex);
                     }
                     readonly property bool taskHovered: !root.dragging && ((root.hovering && root.pointerTask === slot)
@@ -670,7 +686,7 @@ Item {
                             interactive: !slot.entry && (!!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false)
                             // Deactivating any ToolTipArea schedules dismissal of Plasma's shared popup.
                             // Settle the active areas when selecting the task, before Enter opens it.
-                            active: !root.dragging && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
+                            active: !root.dragging && !modulePopup.item?.visible && !contextMenu.visibleMenu && (!root.keyboardActive || root.keyboardItem === slot)
                             onAboutToShow: {
                                 previewPanel.windowsEnabled = !slot.entry && (dockOptions.showWindowPreviews !== false || forceWindows);
                                 forceWindows = false;
@@ -800,6 +816,7 @@ Item {
     }
     TapHandler {
         acceptedButtons: Qt.RightButton
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
         onTapped: eventPoint => root.showContextMenu(dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false), eventPoint.position)
     }
     ExternalDrop {

@@ -214,9 +214,9 @@ public Q_SLOTS:
         const auto menus = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/menus";
         QDir().mkpath(apps);
         QDir().mkpath(menus);
-        QFile applicationsMenu(menus + "/applications.menu");
+        QFile applicationsMenu(menus + "/pnd-test-applications.menu");
         if (!applicationsMenu.open(QIODevice::WriteOnly)) qFatal("Cannot write test menu fixture");
-        applicationsMenu.write("<Menu><Name>Applications</Name><DefaultAppDirs/><Include><All/></Include></Menu>");
+        applicationsMenu.write("<Menu><Name>Applications</Name><DefaultAppDirs/><Menu><Name>Internet</Name><Menu><Name>Browsers</Name><Include><Filename>First.desktop</Filename></Include></Menu></Menu><Include><All/></Include></Menu>");
         applicationsMenu.close();
         QStringList urls;
         for (const auto &name : {"First", "Second"}) {
@@ -229,6 +229,7 @@ public Q_SLOTS:
         if (QProcess::execute(QStringLiteral(DOCK_KBUILDSYCOCA), {QStringLiteral("--noincremental")}) != 0)
             qFatal("Could not build isolated test service cache");
         engine->rootContext()->setContextProperty("testLauncherUrls", urls);
+        engine->rootContext()->setContextProperty("appMenuUrl", QUrl::fromLocalFile(QStringLiteral(APPMENU_PACKAGE) + "/Popup.qml"));
         engine->rootContext()->setContextProperty("foldersSettingsUrl", QUrl::fromLocalFile(QStringLiteral(FOLDERS_PACKAGE) + "/Settings.qml"));
         engine->rootContext()->setContextProperty("unpinnedSettingsUrl", QUrl::fromLocalFile(QStringLiteral(UNPINNED_SETTINGS)));
         engine->rootContext()->setContextProperty("dockSettings", new DockSettings("/unused", false, engine));
@@ -262,6 +263,7 @@ int main(int argc, char **argv) {
     qputenv("XDG_DATA_HOME", (environment.path() + "/data").toUtf8());
     qputenv("XDG_CONFIG_HOME", (environment.path() + "/config").toUtf8());
     qputenv("XDG_CACHE_HOME", (environment.path() + "/cache").toUtf8());
+    qputenv("XDG_MENU_PREFIX", "pnd-test-");
     QApplication app(argc, argv);
     Setup setup;
     return quick_test_main_with_setup(argc, argv, "hover", nullptr, &setup);

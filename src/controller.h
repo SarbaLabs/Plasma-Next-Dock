@@ -22,6 +22,7 @@ public:
     void setModel(QAbstractItemModel *model);
     bool pointerHovered() const { return m_pointerHovered; }
     QPointF pointerPosition() const { return m_pointerPosition; }
+    Q_INVOKABLE void popupBlur(QQuickItem *item, const QList<qreal> &corners, bool vertical, bool enabled);
     Q_INVOKABLE void setPointerTarget(QQuickItem *target);
     bool overlapping() const { return m_overlapping; }
     bool hideRequested() const { return m_hideRequested; }

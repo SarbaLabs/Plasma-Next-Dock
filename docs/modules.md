@@ -151,6 +151,18 @@ the package also reads the UDisks2 drive's power-off and eject capabilities
 asynchronously. Physical removal requires all its volumes to be unmounted.
 UDisks performs its own in-use and authorization checks.
 
+## Module popups
+
+An entry with `popup: true` opens its installed package’s `Popup.qml`.
+The dock anchors the popup at the selected entry, loads its content on demand
+and owns the background and transient window. The content is a Qt Quick Item
+with a `configuration` property and `edited(var changes)` and `dismiss()`
+signals. Preferences are merged into the selected profile.
+The [Applications menu](../modules/org.sarbalabs.appmenu) browses KService
+groups lazily and launches applications via KIO. Session actions use the
+Plasma Workspace sessions QML plugin available on both supported Plasma
+baselines. Its private import is confined to SessionBar.qml.
+
 ## Native task entries
 
 The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "backgroundeffects.h"
 #include <QMouseEvent>
 #include <QEnterEvent>
 #include <QtMath>
@@ -192,4 +193,14 @@ void DockController::evaluate()
     m_overlapping = overlap;
     m_hideRequested = hide;
     Q_EMIT stateChanged();
+}
+
+void DockController::popupBlur(QQuickItem *item, const QList<qreal> &corners, bool vertical, bool enabled)
+{
+    if (!item || !item->window() || item->window() == m_window) return;
+    auto *window = item->window();
+    auto *effects = window->findChild<BackgroundEffects *>(QString(), Qt::FindDirectChildrenOnly);
+    if (!effects) effects = new BackgroundEffects(window, window);
+    effects->configure({{"systemBlur", enabled}});
+    effects->setGeometry(DockGeometry::capsule(item->mapRectToScene(item->boundingRect()), corners, vertical));
 }
