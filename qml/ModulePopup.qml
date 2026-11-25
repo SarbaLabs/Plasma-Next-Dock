@@ -40,7 +40,7 @@ Controls.Popup {
         const ay = edge === 1 ? offset : edge === 0 ? host.height - offset : center.y;
         const availableDepth = (host.vertical ? outputSize.width : outputSize.height) - host.modulePopupDepth;
         const needsCrossSlide = (host.vertical ? width : height) - inset > availableDepth;
-        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, needsCrossSlide);
+        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, needsCrossSlide, true);
         x = edge === 2 ? ax : edge === 3 ? ax-width : ax-width/2;
         y = edge === 0 ? ay-height : edge === 1 ? ay : ay-height/2;
         open();

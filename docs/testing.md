@@ -1365,3 +1365,13 @@ changed the menu from 960 to 1080 px wide. A top-right corner drag then
 produced a 1008 × 550 menu. Closing and reopening it yielded the same
 1056 × 598 native surface including its shadow. The core tests cover the
 input outline, the shadow on resize and a button release outside the popup.
+
+### Menu and manual reorder animations
+
+On CachyOS Wayland, a bottom-edge module popup requested KWin's slide effect
+from the bottom. Dragging Konsole from first to last reordered the dock and
+persisted the launcher list. Dragging Dolphin onto Konsole in the favorites
+grid exchanged their positions. In Applications and sorting, dragging the first
+row by its handle to the third row saved the order shown on release. These
+checks used a disposable dock profile. The dock gesture test also checks that
+crossing a slot updates the destination before changing the task model.
