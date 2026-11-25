@@ -1437,3 +1437,19 @@ session reached the relay and mapped the keyboard layer on Virtual-0. Adding
 Kickoff removed the relay there. Stopping the dock with SIGTERM also removed
 the relay in an isolated CachyOS session. Footer tests move across available
 buttons with a mock session backend and return to the application list.
+
+### Exterior capsule shadow
+
+Run the targeted Qt Quick test on a Wayland session using an accelerated
+backend (the software adaptation skips shaders):
+
+```sh
+QT_QPA_PLATFORM=wayland QSG_RHI_BACKEND=opengl build/hoverqmltest -input tests/qml/tst_background.qml CapsuleBackground::test_exteriorShadow CapsuleBackground::test_thinCapsuleShadowPadding
+```
+
+It samples the rendered capsule on white, checking that the transparent
+interior stays white and that the same outside pixel stays constant as the
+fill changes from transparent to opaque and to a transparent gradient.
+It also checks reduced and zero shadow strength and a sharp negative offset.
+The padding test covers horizontal and vertical 8 px capsules with a −96 px
+corner, which needs only 4 px of extra clearance.

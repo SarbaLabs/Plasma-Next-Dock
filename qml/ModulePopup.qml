@@ -2,7 +2,6 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls as Controls
-import QtQuick.Effects
 
 Controls.Popup {
     id: popup
@@ -93,18 +92,9 @@ Controls.Popup {
             width: popup.panelWidth; height: popup.panelHeight
             onXChanged: Qt.callLater(popup.refreshSurface)
             onYChanged: Qt.callLater(popup.refreshSurface)
-            layer.enabled: popup.host.dockShadowEnabled
-            layer.effect: MultiEffect {
-                autoPaddingEnabled: false
-                shadowEnabled: true
-                blurMax: Math.max(1, dockOptions.dockShadowSize ?? 0)
-                shadowBlur: dockOptions.dockShadowSize > 0 ? 1 : 0
-                shadowHorizontalOffset: dockOptions.dockShadowX ?? 0
-                shadowVerticalOffset: dockOptions.dockShadowY ?? 2
-                shadowOpacity: (dockOptions.dockShadowStrength ?? 0)/100
-                shadowColor: popup.paletteSource.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor, popup.paletteSource.shadowColor)
-            }
             CapsuleBackground {
+                shadowEnabled: popup.host.dockShadowEnabled
+                shadowTint: popup.paletteSource.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor, popup.paletteSource.shadowColor)
                 id: surface
                 anchors.fill: parent
                 anchors.margins: popup.inset
