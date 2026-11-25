@@ -99,13 +99,15 @@ FocusScope {
             const pixels = event.pixelDelta.y;
             const delta = -(pixels || event.angleDelta.y / 120 * notch) * page.wheelSpeed;
             if (!delta) return;
+            // Wayland also reports discrete wheel ticks as touchpad pixel deltas.
+            // Only a phased pixel stream should bypass the wheel animation.
+            const continuous = pixels !== 0 && event.phase !== Qt.NoScrollPhase;
             // Accumulate quick notches but respond immediately to a direction reversal.
-            const remaining = motion.running ? motion.to - list.contentY : 0;
+            const remaining = !continuous && motion.running ? motion.to - list.contentY : 0;
             const start = list.contentY + (remaining * delta > 0 ? remaining : 0);
             const end = Math.max(list.originY, Math.min(list.originY + list.contentHeight - list.height, start + delta));
             motion.stop();
-            // Trackpads already deliver a continuous stream, including kinetic scrolling.
-            if (pixels && (event.device?.type === PointerDevice.TouchPad || event.phase !== Qt.NoScrollPhase))
+            if (continuous)
                 list.contentY = end;
             else if (end !== list.contentY) {
                 motion.from = list.contentY;

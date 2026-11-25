@@ -141,6 +141,21 @@ TestCase {
         tryCompare(view, "contentY", start + distance + 8 * data.speed);
     }
 
+    function test_waylandWheelPhases() {
+        const page = loader.item;
+        page.configuration = {favoritesGrid:false};
+        const view = page.currentView;
+        view.model.model = Array.from({length:64}, (_, i) => ({name:"Application " + i, id:String(i)}));
+        tryCompare(view, "count", 64);
+        wait(30);
+        const start = view.contentY;
+        testEnvironment.waylandWheel(view, Qt.NoScrollPhase);
+        compare(view.contentY, start); // The wheel animation advances on subsequent frames.
+        tryCompare(view, "contentY", start + 60);
+        testEnvironment.waylandWheel(view, Qt.ScrollUpdate);
+        compare(view.contentY, start + 120); // Track the continuous gesture immediately.
+    }
+
     function test_nestedNavigation() {
         const page = loader.item;
         const view = findChild(page, "menuContents");
