@@ -1,0 +1,10 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<title>Plasma Next Dock — Capsule</title>
+<desc>Front view of the dock with an active application indicator.</desc>
+<rect x="2" y="15" width="60" height="36" rx="15" fill="#23384a" stroke="#90abbc" stroke-width="2"/>
+<rect x="9" y="25" width="11" height="12" rx="3" fill="#90b4c9"/>
+<rect x="24" y="21" width="16" height="16" rx="4" fill="#6de0ba"/>
+<rect x="44" y="25" width="11" height="12" rx="3" fill="#90b4c9"/>
+<path d="M28 43h8" stroke="#6de0ba" stroke-width="4" stroke-linecap="round"/>
+</svg>
