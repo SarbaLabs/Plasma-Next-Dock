@@ -16,6 +16,8 @@ ColumnLayout {
     property var entries: []
     property string draggedUrl: ""
     property int dropIndex: -1
+    property real grabOffset: 0
+    readonly property int sourceIndex: draggedUrl ? entries.findIndex(row => row.url === draggedUrl) : -1
     property real pointerY: 0
 
     function refresh() {
@@ -65,7 +67,8 @@ ColumnLayout {
     }
     function updateDrop() {
         const y = Math.max(0, Math.min(view.height - 1, pointerY));
-        dropIndex = view.indexAt(1, y + view.contentY);
+        const source = view.itemAtIndex(sourceIndex);
+        if (source) dropIndex = Math.max(0, Math.min(view.count - 1, Math.floor((y + view.contentY - view.originY) / source.height)));
     }
     component IconButton: Controls.ToolButton {
         display: Controls.AbstractButton.IconOnly
@@ -102,16 +105,29 @@ ColumnLayout {
         clip: true
         model: page.entries
         Controls.ScrollBar.vertical: Controls.ScrollBar { id: scroll }
-        highlight: Rectangle { visible: page.draggedUrl.length > 0; color: Kirigami.Theme.highlightColor; opacity: 0.22 }
-        currentIndex: page.draggedUrl.length ? page.dropIndex : -1
-        highlightMoveDuration: 0
-        highlightFollowsCurrentItem: true
+        // The current delegate keeps the grabbed handle alive during autoscroll.
+        currentIndex: page.sourceIndex
+        highlightFollowsCurrentItem: false
         delegate: RowLayout {
             id: row
             required property var modelData
             required property int index
             width: view.width - (scroll.visible ? scroll.width : 0)
             height: Math.max(38, implicitHeight)
+            z: page.sourceIndex === index ? 1 : 0
+            transform: Translate {
+                y: {
+                    if (page.sourceIndex < 0) return 0;
+                    if (row.index === page.sourceIndex) return page.pointerY + view.contentY - page.grabOffset - row.y;
+                    if (row.index > page.sourceIndex && row.index <= page.dropIndex) return -row.height;
+                    if (row.index < page.sourceIndex && row.index >= page.dropIndex) return row.height;
+                    return 0;
+                }
+                Behavior on y {
+                    enabled: page.sourceIndex >= 0 && page.sourceIndex !== row.index
+                    NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+                }
+            }
             Kirigami.Icon {
                 id: handle
                 visible: page.manual
@@ -123,8 +139,9 @@ ColumnLayout {
                     preventStealing: true
                     cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
                     onPressed: mouse => {
-                        page.draggedUrl = row.modelData.url;
+                        page.grabOffset = mapToItem(row, mouse.x, mouse.y).y;
                         page.pointerY = mapToItem(view, mouse.x, mouse.y).y;
+                        page.draggedUrl = row.modelData.url;
                         page.updateDrop();
                     }
                     onPositionChanged: mouse => {

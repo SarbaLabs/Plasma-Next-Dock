@@ -125,6 +125,9 @@ TestCase {
         mousePress(first, first.width / 2, first.height / 2, Qt.LeftButton);
         mouseMove(dock.item, start.x + 30, start.y, 30);
         mouseMove(dock.item, end.x, end.y, 150);
+        verify(dock.item.dragDestination > dock.item.dragIndex);
+        compare(source.item.moves, 0);
+        compare(source.item.saves, 0);
         mouseRelease(dock.item, end.x, end.y, Qt.LeftButton);
         tryVerify(() => source.item.moves > 0);
         compare(source.item.activations, 0);

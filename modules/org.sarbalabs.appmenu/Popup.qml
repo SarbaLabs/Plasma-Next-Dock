@@ -241,6 +241,23 @@ FocusScope {
                         Accessible.name: primary
                         highlighted: (favoriteDrop.containsDrag && favoriteDrop.targetIndex === index) || hovered
                                    || ((view.activeFocus || (page.searching && search.activeFocus)) && view.currentIndex === index)
+                        // Translate delegates without moving their logical drop cells.
+                        readonly property int previewIndex: {
+                            const from = favoriteDrop.sourceIndex, to = favoriteDrop.targetIndex;
+                            if (from < 0 || to < 0) return index;
+                            if (index === from) return to;
+                            if (index > from && index <= to) return index - 1;
+                            if (index < from && index >= to) return index + 1;
+                            return index;
+                        }
+                        readonly property int columns: Math.max(1, Math.round(view.width / view.cellWidth))
+                        opacity: favoriteDrop.sourceIndex === index ? 0 : 1
+                        transform: Translate {
+                            x: ((tile.previewIndex % tile.columns) - (tile.index % tile.columns)) * view.cellWidth
+                            y: (Math.floor(tile.previewIndex / tile.columns) - Math.floor(tile.index / tile.columns)) * view.cellHeight
+                            Behavior on x { enabled: favoriteDrop.containsDrag; NumberAnimation { duration: K.Units.shortDuration; easing.type: Easing.OutCubic } }
+                            Behavior on y { enabled: favoriteDrop.containsDrag; NumberAnimation { duration: K.Units.shortDuration; easing.type: Easing.OutCubic } }
+                        }
                         // Qt can send the button a release as the native drag ends.
                         property bool consumedPress: false
                         onPressed: consumedPress = false
@@ -258,6 +275,7 @@ FocusScope {
                             onActiveChanged: {
                                 if (!active) return;
                                 tile.consumedPress = true;
+                                favoriteDrop.sourceId = page.favoritesPage ? tile.applicationId : "";
                                 catalog.dragApplication(tile.Window.window, tile.applicationId, page.favoritesPage);
                             }
                         }
@@ -307,10 +325,14 @@ FocusScope {
                         anchors.fill: parent
                         enabled: page.favoritesPage
                         keys: [catalog.favoriteFormat]
+                        property string sourceId: ""
+                        readonly property int sourceIndex: containsDrag ? catalogRows.model.findIndex(row => row.id === sourceId) : -1
                         function indexFor(x, y) {
                             const p = view.contentItem.mapFromItem(favoriteDrop, x, y);
-                            const index = view.indexAt(p.x, p.y);
-                            return index < 0 ? view.count - 1 : index;
+                            const columns = Math.max(1, Math.round(view.width / view.cellWidth));
+                            const index = Math.floor((p.y - view.originY) / view.cellHeight) * columns
+                                + Math.max(0, Math.min(columns - 1, Math.floor(p.x / view.cellWidth)));
+                            return Math.max(0, Math.min(view.count - 1, index));
                         }
                         readonly property int targetIndex: {
                             view.contentY;

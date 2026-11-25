@@ -11,7 +11,7 @@ class PopupAnchor : public QObject
     Q_OBJECT
 public:
     explicit PopupAnchor(QObject *parent = nullptr);
-    Q_INVOKABLE void prepare(QQuickItem *item, QPointF point, int edge, bool slideAcrossEdge = true);
+    Q_INVOKABLE void prepare(QQuickItem *item, QPointF point, int edge, bool slideAcrossEdge = true, bool animate = false);
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 private:
@@ -20,5 +20,6 @@ private:
     QPointer<QWindow> m_popup;
     QRect m_anchor;
     Qt::Edges m_gravity;
+    bool m_animate = false;
     uint m_constraints = 0;
 };

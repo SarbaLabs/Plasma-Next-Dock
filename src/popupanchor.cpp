@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "popupanchor.h"
 #include "geometry.h"
+#include <KWindowEffects>
 #include <QGuiApplication>
 #include <QQuickWindow>
 #include <QPlatformSurfaceEvent>
@@ -11,11 +12,12 @@ PopupAnchor::PopupAnchor(QObject *parent) : QObject(parent)
 {
     qApp->installEventFilter(this);
 }
-void PopupAnchor::prepare(QQuickItem *item, QPointF point, int edge, bool slideAcrossEdge)
+void PopupAnchor::prepare(QQuickItem *item, QPointF point, int edge, bool slideAcrossEdge, bool animate)
 {
     if (!item || !item->window()) return;
     if (m_parentWindow != item->window()) m_popup.clear();
     m_parentWindow = item->window();
+    m_animate = animate;
     const QPoint scene = item->mapToScene(point).toPoint();
     // xdg_positioner anchors must intersect the parent surface, even near corners.
     m_anchor = QRect(QPoint(std::clamp(scene.x(), 0, std::max(0, m_parentWindow->width() - 1)),
@@ -57,6 +59,12 @@ bool PopupAnchor::eventFilter(QObject *object, QEvent *event)
             if (m_parentWindow && window->transientParent() == m_parentWindow) {
                 m_popup = window;
                 apply(window);
+                if (m_animate) {
+                    const auto edge = m_gravity == Qt::TopEdge ? KWindowEffects::BottomEdge
+                        : m_gravity == Qt::BottomEdge ? KWindowEffects::TopEdge
+                        : m_gravity == Qt::LeftEdge ? KWindowEffects::RightEdge : KWindowEffects::LeftEdge;
+                    KWindowEffects::slideWindow(window, edge, -1);
+                }
             }
         };
         attach();

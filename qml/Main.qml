@@ -87,6 +87,8 @@ Item {
     height: vertical ? canvasLength + startPad + endPad : canvasDepth + inwardPad
     readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,
         vertical ? startPad : (dockOptions.edge === 0 ? inwardPad : 0), vertical ? canvasDepth : canvasLength, vertical ? canvasLength : canvasDepth)
+    property int dragDestination: -1
+    property string draggedLauncher: ""
     property int dragIndex: -1
     property var draggedModuleEntry: null
     readonly property bool dragging: dragIndex >= 0
@@ -180,10 +182,21 @@ Item {
         }
         return result;
     }
-    function finishDrag() {
+    function finishDrag(commit = false) {
         if (!dragging) return;
+        const from = dragIndex, to = dragDestination, source = draggedModuleEntry;
+        const target = repeater.itemAt(to);
+        const moving = repeater.itemAt(from);
         dragIndex = -1;
-        if (!draggedModuleEntry && taskSource.item && taskSource.item.finishMove) taskSource.item.finishMove();
+        dragDestination = -1;
+        if (commit && from !== to && target && moving) {
+            if (source && moving.entry?.id === source.id && moving.entry.moduleId === source.moduleId
+                && target.entry?.moduleId === source.moduleId && target.entry.reorderable)
+                dockModules.moveEntry(source.moduleId, source.id, target.entry.id);
+            else if (!source && !dockOptions.taskSort && moving.pinned && moving.launchKey === draggedLauncher && target.pinned
+                     && taskSource.item.moveTask(nativeRow(from), nativeRow(to)))
+                taskSource.item.finishMove();
+        }
         draggedModuleEntry = null;
         root.refreshHover();
     }
@@ -478,6 +491,25 @@ Item {
                     readonly property int nativeIndex: root.taskRows ? model.nativeTaskRow : index
                     readonly property var entry: root.taskRows ? model.moduleEntry : null
                     readonly property bool separatorAfter: root.taskRows ? !!model.separatorAfter : false
+                    // Keep logical slots fixed while their artwork makes room for the drop.
+                    z: root.dragIndex === index ? 1 : 0
+                    transform: Translate {
+                        x: {
+                            if (!root.dragging) return 0;
+                            if (slot.index === root.dragIndex) {
+                                const p = taskRow.mapFromItem(null, reorder.centroid.scenePosition.x, reorder.centroid.scenePosition.y);
+                                return p.x - slot.x - slot.size / 2;
+                            }
+                            const stride = (repeater.itemAt(root.dragIndex)?.size ?? root.base) + taskRow.spacing;
+                            if (slot.index > root.dragIndex && slot.index <= root.dragDestination) return -stride;
+                            if (slot.index < root.dragIndex && slot.index >= root.dragDestination) return stride;
+                            return 0;
+                        }
+                        Behavior on x {
+                            enabled: root.dragging && root.dragIndex !== slot.index
+                            NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+                        }
+                    }
                     onSeparatorAfterChanged: Qt.callLater(root.syncTaskCount)
                     function activateEntry() {
                         if (entry?.popup) modulePopup.openEntry(entry, icon);
@@ -788,24 +820,30 @@ Item {
                 const slot = repeater.itemAt(row);
                 root.draggedModuleEntry = slot?.entry?.reorderable ? slot.entry : null;
                 root.dragIndex = root.draggedModuleEntry || (slot?.pinned && !dockOptions.taskSort) ? row : -1;
+                root.draggedLauncher = slot?.launchKey ?? "";
+                root.dragDestination = root.dragIndex;
                 if (root.dragging) dockController.setHovered(true);
-            } else root.finishDrag();
+            }
+        }
+        onGrabChanged: (transition, point) => {
+            if (transition === PointerDevice.UngrabExclusive) root.finishDrag(true);
+            else if (transition === PointerDevice.CancelGrabExclusive) root.finishDrag();
         }
         onActiveTranslationChanged: {
             if (!active || !root.dragging) return;
             const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
-            const targetIndex = root.taskAt(p, true);
-            if (targetIndex < 0 || targetIndex === root.dragIndex) return;
-            const target = repeater.itemAt(targetIndex);
-            const source = root.draggedModuleEntry;
-            if (source) {
-                if (target?.entry?.moduleId === source.moduleId && target.entry.reorderable
-                    && dockModules.moveEntry(source.moduleId, source.id, target.entry.id))
-                    root.dragIndex = targetIndex;
-            } else if (!dockOptions.taskSort && target?.pinned
-                       && taskSource.item.moveTask(root.nativeRow(root.dragIndex), root.nativeRow(targetIndex))) {
-                root.dragIndex = targetIndex;
+            const axis = taskRow.mapFromItem(root, p.x, p.y).x;
+            // Hit-test layout positions, independent of animated translations.
+            let nearest = root.dragIndex, distance = Infinity;
+            for (let i = 0; i < repeater.count; ++i) {
+                const slot = repeater.itemAt(i);
+                if (!slot || (root.draggedModuleEntry
+                    ? slot.entry?.moduleId !== root.draggedModuleEntry.moduleId || !slot.entry?.reorderable
+                    : !slot.pinned)) continue;
+                const delta = Math.abs(axis - slot.x - slot.size / 2);
+                if (delta < distance) { nearest = i; distance = delta; }
             }
+            root.dragDestination = nearest;
         }
     }
     function showContextMenu(row, position) {
