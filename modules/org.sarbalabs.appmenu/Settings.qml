@@ -67,6 +67,20 @@ C.ApplicationWindow {
                 enabled: Config.KAuthorized.authorizeControlModule("kcm_plasmasearch")
                 onClicked: KCM.KCMLauncher.openSystemSettings("kcm_plasmasearch")
             }
+            RowLayout {
+                K.FormData.label: i18n("Scroll speed:")
+                C.Slider {
+                    id: speed
+                    Accessible.name: i18n("Scroll speed:")
+                    from: 1
+                    to: 10
+                    stepSize: 1
+                    snapMode: C.Slider.SnapAlways
+                    value: page.configuration.wheelSpeed ?? 4
+                    onMoved: page.edited({wheelSpeed: Math.round(value)})
+                }
+                C.Label { text: i18n("%1×", Math.round(speed.value)) }
+            }
             component Dimension: C.SpinBox { editable: true; to: 2400 }
             RowLayout {
                 K.FormData.label: i18n("Width × height (px):")

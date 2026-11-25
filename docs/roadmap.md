@@ -209,7 +209,7 @@ The shadow passes pointer input through to the dock. Free edges and corners supp
 The menu also searches installed Plasma Search providers through KF6 KRunner. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
-Manual reorder previews and the compositor-driven menu transition landed in PR #50. The next polish pass previews external launcher and folder shortcut insertions on the dock.
+Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. Menu navigation polish adds adjustable smooth wheel scrolling and directional transitions between nested categories.
 
 ### Validation before packaging
 

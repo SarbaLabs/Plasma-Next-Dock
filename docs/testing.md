@@ -1389,3 +1389,12 @@ The QML tests exercise the launcher gap on all four edges, the two-second
 folder dwell across moving targets, insertion at the end, exit/re-entry and
 direct copy routing. The module test checks ordered insertion, deduplication,
 stale destinations and automatic sorting.
+
+### Applications menu scrolling and subcategories
+
+On CachyOS Wayland a disposable menu contained Internet → Navigateurs.
+Opening the subcategory showed Firefox and the current category beside the
+Back button. Returning restored the parent category. The menu tests check
+the header, forward/back navigation and wheel distances at the default 4×
+and at both ends of the 1×–10× range, including consecutive notches,
+reversals and pixel deltas.

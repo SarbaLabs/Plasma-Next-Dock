@@ -1046,3 +1046,9 @@ msgstr "Recherche en cours…"
 
 msgid "No results"
 msgstr "Aucun résultat"
+
+msgid "Scroll speed:"
+msgstr "Vitesse de défilement :"
+
+msgid "%1×"
+msgstr "%1×"
