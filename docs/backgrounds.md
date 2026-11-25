@@ -151,7 +151,11 @@ size (0–32 logical pixels) and signed X/Y offsets (−32 to 32 logical pixels)
 for the capsule and the icon artwork. Both strengths default to zero. Positive
 X moves the shadow right and positive Y moves it down, including on vertical
 docks. Zero size produces a sharp silhouette. The theme default uses the
-system shadow color. The icon shadow follows the icon alpha, zoom and bounce.
+system shadow color. The dock and applications menu both cast an exterior shadow
+from the opaque geometry of their capsule and outer border. The displaced,
+blurred mask is multiplied by the inverse of the original silhouette. The fill
+and border can therefore be transparent without showing shadow through the
+interior or changing the intensity outside. The icon shadow follows the icon alpha, zoom and bounce.
 
 Qt Quick Effects renders the shadows on an accelerated Qt Quick scene graph
 (including Mesa software OpenGL). The Qt Quick software adaptation bypasses

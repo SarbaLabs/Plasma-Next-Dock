@@ -2,7 +2,6 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Window
-import QtQuick.Effects
 import org.kde.plasma.private.mpris as Mpris
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
@@ -404,23 +403,9 @@ Item {
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
         dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
     readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.freeLayout ? dockOptions.capsuleThickness / 2 : dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
-    Item {
-        id: dockArtwork
-        anchors.fill: parent
-        layer.enabled: root.dockShadowEnabled
-        layer.effect: MultiEffect {
-            autoPaddingEnabled: false
-            shadowEnabled: true
-            blurMax: Math.max(1, dockOptions.dockShadowSize ?? 0)
-            shadowBlur: dockOptions.dockShadowSize > 0 ? 1 : 0
-            shadowHorizontalOffset: dockOptions.dockShadowX ?? 0
-            shadowVerticalOffset: dockOptions.dockShadowY ?? 2
-            shadowOpacity: (dockOptions.dockShadowStrength ?? 0) / 100
-            shadowColor: dockPalette.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor ?? "black", dockPalette.shadowColor)
-        }
-    }
     CapsuleBackground {
-        parent: dockArtwork
+        shadowEnabled: root.dockShadowEnabled
+        shadowTint: dockPalette.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor ?? "black", dockPalette.shadowColor)
         id: bar
         objectName: "capsuleBackground"
         x: root.vertical ? (dockOptions.edge === 2 ? root.edgeSpacing : root.width - width - root.edgeSpacing) : root.barStart

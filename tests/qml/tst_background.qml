@@ -6,6 +6,37 @@ TestCase {
     when: windowShown
     visible: true
     width: 400; height: 120
+    Component { id: backdrop; Rectangle { width: 240; height: 110; color: "white" } }
+    function test_exteriorShadow() {
+        const panel = createTemporaryObject(backdrop, this);
+        if (panel.GraphicsInfo.api === GraphicsInfo.Software) skip("Requires Qt Quick shaders");
+        const shape = Qt.createComponent("qrc:/qml/CapsuleBackground.qml");
+        const capsule = createTemporaryObject(shape, panel, {x:40, y:20, width:140, height:52,
+            corners:[14,-8,4,10], customBorderWidth:0, customBackgroundColor:"red", tintOpacity:0,
+            shadowEnabled:true, shadowRadius:8, shadowX:0, shadowY:10, shadowStrength:1});
+        verify(capsule);
+        function sample(x, y) { return grabImage(panel).red(x, y); }
+        waitForRendering(panel);
+        tryVerify(() => sample(100, 77) < 220);
+        const exterior = sample(100, 77);
+        compare(sample(100, 60), 255);
+        compare(sample(100, 70), 255);
+        capsule.tintOpacity = 1;
+        tryVerify(() => grabImage(panel).green(100, 60) < 5);
+        compare(sample(100, 77), exterior);
+        capsule.backgroundType = 5;
+        capsule.topOpacity = 0; capsule.bottomOpacity = 0;
+        tryVerify(() => grabImage(panel).green(100, 60) === 255);
+        compare(sample(100, 77), exterior);
+        capsule.shadowStrength = 0.4;
+        tryVerify(() => sample(100, 77) > exterior + 10 && sample(100, 77) < 255);
+        capsule.shadowRadius = 0;
+        capsule.shadowY = -10;
+        tryVerify(() => sample(100, 15) < 240 && sample(100, 77) === 255);
+        compare(sample(100, 23), 255);
+        capsule.shadowStrength = 0;
+        tryVerify(() => sample(100, 15) === 255);
+    }
     function test_uniformGradient_data() {
         return [0, 0.4, 1].map(opacity => ({tag: "opacity" + opacity, opacity: opacity}));
     }

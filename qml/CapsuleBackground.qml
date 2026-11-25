@@ -9,6 +9,12 @@ import org.kde.kirigami as Kirigami
 Item {
     id: root
     property var corners: [10, 10, 10, 10]
+    property bool shadowEnabled: false
+    property real shadowStrength: (dockOptions.dockShadowStrength ?? 0) / 100
+    property int shadowRadius: dockOptions.dockShadowSize ?? 0
+    property int shadowX: dockOptions.dockShadowX ?? 0
+    property int shadowY: dockOptions.dockShadowY ?? 2
+    property color shadowTint: "black"
     property bool glowEnabled: false
     readonly property bool drawGlow: glowEnabled && glowIntensity > 0 && glowOpacity > 0
         && (backgroundType === 5 ? desktopTint.a > 0 || screenTint.a > 0 : backgroundType !== 0 || tintOpacity > 0)
@@ -40,6 +46,24 @@ Item {
     readonly property color screenTint: tint(lowerColor, bottomOpacity)
     readonly property bool varyingGradient: backgroundType === 5 && !Qt.colorEqual(desktopTint, screenTint)
 
+    Loader {
+        id: exteriorShadow
+        active: root.shadowEnabled && root.shadowStrength > 0
+        readonly property int padding: active ? Math.ceil(root.shadowRadius
+            + Math.max(Math.abs(root.shadowX), Math.abs(root.shadowY))
+            + root.customBorderWidth + Math.max(0, -Math.min(...root.corners)) + 2) : 0
+        anchors.fill: parent
+        anchors.margins: -padding
+        sourceComponent: CapsuleShadow {
+            capsule: root
+            padding: exteriorShadow.padding
+            radius: root.shadowRadius
+            offsetX: root.shadowX
+            offsetY: root.shadowY
+            tint: root.shadowTint
+            strength: root.shadowStrength
+        }
+    }
     Shape {
         id: base
         anchors.fill: parent
