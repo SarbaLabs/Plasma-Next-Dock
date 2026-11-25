@@ -11,7 +11,7 @@ PopupAnchor::PopupAnchor(QObject *parent) : QObject(parent)
 {
     qApp->installEventFilter(this);
 }
-void PopupAnchor::prepare(QQuickItem *item, QPointF point, int edge)
+void PopupAnchor::prepare(QQuickItem *item, QPointF point, int edge, bool slideAcrossEdge)
 {
     if (!item || !item->window()) return;
     if (m_parentWindow != item->window()) m_popup.clear();
@@ -26,6 +26,12 @@ void PopupAnchor::prepare(QQuickItem *item, QPointF point, int edge)
     case DockGeometry::Right: m_gravity = Qt::LeftEdge; break;
     default: m_gravity = Qt::TopEdge; break;
     }
+    // xdg_positioner.constraint_adjustment is a Wayland protocol bitmask.
+    // Preserve the requested size at corners. When the menu fits inward its
+    // shadow may overlap the dock's exclusive zone without moving the fill.
+    constexpr uint slideX = 1u, slideY = 2u;
+    const bool vertical = edge == DockGeometry::Left || edge == DockGeometry::Right;
+    m_constraints = slideAcrossEdge ? slideX | slideY : (vertical ? slideY : slideX);
     if (m_popup) apply(m_popup);
 }
 void PopupAnchor::apply(QWindow *popup)
@@ -36,7 +42,7 @@ void PopupAnchor::apply(QWindow *popup)
     popup->setProperty("_q_waylandPopupAnchor", QVariant::fromValue(Qt::Edges(Qt::TopEdge | Qt::LeftEdge)));
     popup->setProperty("_q_waylandPopupGravity", QVariant::fromValue(m_gravity));
     // Let KWin slide within the output, without flipping across the dock.
-    popup->setProperty("_q_waylandPopupConstraintAdjustment", 8u | 16u);
+    popup->setProperty("_q_waylandPopupConstraintAdjustment", m_constraints);
 }
 bool PopupAnchor::eventFilter(QObject *object, QEvent *event)
 {

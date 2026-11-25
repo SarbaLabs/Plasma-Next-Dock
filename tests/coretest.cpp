@@ -106,6 +106,57 @@ private Q_SLOTS:
         QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(50,70,1,1));
     }
 
+    void popupShadowPassesPointerInput() {
+        QQuickWindow dock;
+        dock.resize(450, 300);
+        DockController controller(&dock);
+        QQuickWindow popup;
+        popup.setFlags(Qt::Popup);
+        popup.resize(400, 240);
+        QQuickItem surface(popup.contentItem());
+        surface.setPosition({25, 25});
+        surface.setSize({350, 190});
+        const QList<qreal> corners{24, 0, -18, 0};
+        controller.updatePopupSurface(&surface, corners, false, 3, false);
+        const auto mask = popup.mask();
+        QVERIFY(mask.contains({200, 100}));    // Menu content
+        QVERIFY(mask.contains({200, 217}));    // Outer border
+        QVERIFY(mask.contains({380, 214}));    // Inverse corner
+        QVERIFY(!mask.contains({27, 27}));     // Rounded corner cutout
+        QVERIFY(!mask.contains({200, 230}));   // Shadow towards the dock
+        surface.setSize({260, 190});
+        controller.updatePopupSurface(&surface, corners, false, 3, false);
+        QVERIFY(!popup.mask().contains({330, 100}));
+        QVERIFY(dock.mask().isEmpty());
+    }
+
+    void popupResizeTracksTheReleaseOutsideItsWindow() {
+        QQuickWindow dock;
+        DockController controller(&dock);
+        QQuickWindow popup;
+        popup.setFlags(Qt::Popup);
+        popup.setTransientParent(&dock);
+        popup.resize(400, 240);
+        QQuickItem surface(popup.contentItem());
+        surface.setSize({400, 240});
+        controller.updatePopupSurface(&surface, {0, 0, 0, 0}, false, 0, false);
+        QQuickItem grip(&surface);
+        grip.setPosition({392, 0});
+        grip.setSize({8, 240});
+        const QPointF press(6, 120);
+        controller.beginPopupResize(&grip, press);
+        QSignalSpy moved(&controller, &DockController::popupResizeMoved);
+        QSignalSpy finished(&controller, &DockController::popupResizeFinished);
+        const QPointF delta(120, -35);
+        QMouseEvent release(QEvent::MouseButtonRelease, grip.mapToScene(press) + delta, grip.mapToGlobal(press) + delta,
+                            Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+        QCoreApplication::sendEvent(&popup, &release);
+        QCOMPARE(moved.count(), 1);
+        QCOMPARE(moved.first().first().toPointF(), delta);
+        QCOMPARE(finished.count(), 1);
+        QVERIFY(finished.first().first().toBool());
+    }
+
     void nativePopupAnchorLifecycle() {
         QQuickWindow dock;
         dock.resize(300, 400);
@@ -119,7 +170,9 @@ private Q_SLOTS:
             popup.create();
             QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(80, 120 + edge * 20, 1, 1));
             QCOMPARE(popup.property("_q_waylandPopupGravity").value<Qt::Edges>(), gravity[edge]);
-            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 24u);
+            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 3u);
+            anchor.prepare(dock.contentItem(), QPointF(0, 0), edge, false);
+            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), edge < 2 ? 1u : 2u);
         }
         // Reuse and recreation must both pick up the new click, not the first one.
         popup.destroy();

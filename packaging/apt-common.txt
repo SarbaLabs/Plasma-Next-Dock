@@ -36,6 +36,7 @@ libkf6kio-dev
 libkf6solid-dev
 libkf6iconthemes-dev
 libkf6service-dev
+libkf6runner-dev
 libkf6notifications-dev
 libplasmaactivitiesstats-dev
 gettext

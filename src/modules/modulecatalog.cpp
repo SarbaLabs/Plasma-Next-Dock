@@ -54,6 +54,8 @@ ModuleCatalog discoverModules(const QStringList &dataRoots)
             QVariantMap metadata{{"id", id}, {"name", localized(manifest, "name")},
                 {"description", localized(manifest, "description")}, {"version", manifest.value("version").toString()},
                 {"apiVersion", 1}};
+            const auto popup = package.filePath("Popup.qml");
+            if (QFileInfo(popup).isFile()) metadata.insert("popupUrl", QUrl::fromLocalFile(popup));
             const auto settings = package.filePath("Settings.qml");
             if (QFileInfo(settings).isFile()) metadata.insert("settingsUrl", QUrl::fromLocalFile(settings));
             catalog.insert(id, {metadata, QUrl::fromLocalFile(package.filePath("Main.qml"))});

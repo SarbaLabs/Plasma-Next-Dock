@@ -151,6 +151,25 @@ the package also reads the UDisks2 drive's power-off and eject capabilities
 asynchronously. Physical removal requires all its volumes to be unmounted.
 UDisks performs its own in-use and authorization checks.
 
+## Module popups
+
+An entry with `popup: true` opens its installed package’s `Popup.qml`.
+The dock anchors the popup at the selected entry, loads its content on demand
+and owns the background and transient window. The content is a Qt Quick Item
+with a `configuration` property and `edited(var changes)` and `dismiss()`
+signals. Preferences are merged into the selected profile. An entry can set
+`preferredPopupWidth` in logical pixels for the initial size. An optional
+`launcherActions` property on the popup receives the current dock's
+`pinned(url)` and `togglePinned(url)` methods.
+The [Applications menu](../modules/org.sarbalabs.appmenu) browses KService
+groups lazily and launches applications via KIO. On the first nonblank search
+it loads the public KF6 KRunner ResultsModel. The system configuration supplies
+enabled search providers and favorite priorities. The menu keeps typed terms
+out of KRunner history. Clearing the field releases the search model.
+Session actions use the
+Plasma Workspace sessions QML plugin available on both supported Plasma
+baselines. Its private import is confined to SessionBar.qml.
+
 ## Native task entries
 
 The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses

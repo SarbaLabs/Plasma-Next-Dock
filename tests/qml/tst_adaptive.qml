@@ -8,7 +8,33 @@ TestCase {
     width: 1000; height: 800
     visible: true
     when: windowShown
-    Loader { id: dock; source: "qrc:/qml/Main.qml" }
+    Loader {
+        id: dock
+        property var dockModules: ({entries: [{popup: true}]})
+        source: "qrc:/qml/Main.qml"
+    }
+    function test_modulePopupGap() {
+        const root = dock.item;
+        const changes = {zoom: 1, spacing: 0, freeLayout: true, capsuleThickness: 8, iconOffset: 14};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                for (const spacing of [0, 16, 128]) {
+                    testEnvironment.behaviorOptions({spacing: spacing});
+                    compare(root.modulePopupDepth - root.reservedThickness, spacing);
+                    verify(root.modulePopupDepth < (root.vertical ? root.width : root.height));
+                    compare(root.vertical ? root.interactionBounds.width : root.interactionBounds.height, root.canvasDepth);
+                    compare(root.vertical ? root.dodgeBounds.width : root.dodgeBounds.height, root.reservedThickness);
+                }
+            }
+        } finally {
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
     function test_initialCanvasIncludesTasks() {
         // Inspect the component before queued row-count notifications can run.
         dock.active = false;

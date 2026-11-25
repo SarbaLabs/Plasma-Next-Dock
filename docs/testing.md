@@ -1305,3 +1305,63 @@ the volume available. After releasing it, unmount succeeded. Reattaching
 the image as a USB disk and selecting **Safely remove drive** removed the
 entry from both the dock and Dolphin. The full suite passed on CachyOS and
 Debian 13. A physical USB device was not part of this run.
+
+### Standalone applications menu
+
+The ApplicationsMenu Quick Test uses an isolated XDG menu with Internet and
+Browsers groups and a fixture application. It verifies initial favorites,
+independent presentations, navigation into the subgroup and returning one
+level. On the CachyOS Wayland desktop the menu opened inward from a right-edge
+dock, switched categories, displayed a favorite action, dismissed with Escape
+and resized from the free left edge; the new width appeared in Settings.
+On Debian 13 a simulated touch opened the French menu at the right-edge icon
+with favorites, real KDE categories and the session controls. Session-ending
+actions and simultaneous mixed-scale screens remain manual test cases.
+
+The menu Quick Tests also cover favorite order in grid and list views, category
+order, per-dock pin/unpin actions and both footer breakpoints in both resize
+directions. All 19 CTest targets passed on CachyOS and Debian 13.
+On the CachyOS Wayland desktop, dragging between favorites changed their order
+in both views while the menu stayed open. Dropping Konsole from favorites and
+Ark from the application list onto a disposable dock pinned each application.
+Pinning and unpinning via the context menu updated that dock. Clicking the KDE
+profile opened Users in System Settings. A fresh menu showed seven direct
+buttons in French. Dragging the free edge inward grouped Session first and
+then Power; both buttons opened their corresponding actions. No session-ending
+operation was invoked.
+
+An additional regression test starts a favorite drag and unloads the source
+popup before releasing the pointer. This reproduces the lifetime sequence
+from the maintainer's Qt abort. On CachyOS Wayland, dropping Ark from a Plasma
+Search result and Konsole from Favorites added the missing launcher and left
+the dock running. A copy of the maintainer's bottom-dock profile retained
+its shadow and zoom settings during testing.
+
+With a saved menu size of 818 × 633 logical pixels, KWin received and granted
+856 × 671 including transparent margins, both at the bottom-left corner and
+near the bottom of the right edge. The geometry test checks the native slide flags
+for all four edges and the fallback for limited cross-axis space.
+
+On CachyOS Wayland, the bottom-left menu met the resting dock at zero screen-edge
+spacing and showed a matching 16 px gap with shadows and zoom enabled. KWin kept
+the same 856 × 671 surface size in both cases. On the right edge, a 128 px gap
+was visible on both sides of the dock with shadows and zoom disabled. The Quick
+Test checks 0, 16 and 128 px on all four edges with a thin capsule and protruding
+resting icons, including the input and dodge bounds.
+
+The search test uses a disposable krunnerrc and service catalog. It finds the
+fixture application when its provider is enabled, returns to Favorites when
+cleared, then checks an empty result set with the provider disabled. The live
+settings button opened the Plasma Search KCM.
+
+With a 28 px shadow on CachyOS Wayland, the pointer moved laterally across
+several dock icons inside the menu's shadow and their zoom followed it.
+Clicking the launcher through the shadow closed the menu. The menu body is
+still a native popup above the dock when the painted surfaces overlap.
+
+On Debian 13.7 with Qt 6.8.2, a virtual USB mouse reproduced the original
+lost grab on the first move. Dragging the corrected right edge by 120 px
+changed the menu from 960 to 1080 px wide. A top-right corner drag then
+produced a 1008 × 550 menu. Closing and reopening it yielded the same
+1056 × 598 native surface including its shadow. The core tests cover the
+input outline, the shadow on resize and a button release outside the popup.

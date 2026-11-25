@@ -18,6 +18,7 @@ find_package(KF6I18n 6.8 REQUIRED)
 find_package(KF6KIO REQUIRED)
 find_package(KF6Solid REQUIRED)
 find_package(KF6Service REQUIRED)
+find_package(KF6Runner REQUIRED)
 find_package(KF6IconThemes REQUIRED)
 find_package(KF6Notifications REQUIRED)
 find_package(PlasmaActivitiesStats REQUIRED)
@@ -45,7 +46,7 @@ endif()
 qt6_generate_wayland_protocol_client_sources(plasma-next-dock ${wayland_codegen_options} FILES
     ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-screen-edge-v1.xml)
 set(DOCK_QML_FILES
-    qml/ModulesSettings.qml qml/ModuleSettingsHost.qml qml/ApplicationsSettings.qml qml/ApplicationChooser.qml qml/ExternalDrop.qml
+    qml/ModulePopup.qml qml/ModulesSettings.qml qml/ModuleSettingsHost.qml qml/ApplicationsSettings.qml qml/ApplicationChooser.qml qml/ExternalDrop.qml
     qml/TaskIconArtwork.qml qml/TaskBounce.qml
     qml/BehaviorSettings.qml qml/code/TaskBehavior.js
     qml/TaskStatus.qml qml/StatusOverlay.qml qml/MediaControls.qml qml/AudioService.qml
@@ -56,6 +57,7 @@ install(DIRECTORY modules/org.sarbalabs.unpinned DESTINATION ${CMAKE_INSTALL_DAT
 add_subdirectory(modules/org.sarbalabs.folders)
 add_subdirectory(modules/org.sarbalabs.trash)
 add_subdirectory(modules/org.sarbalabs.usb)
+add_subdirectory(modules/org.sarbalabs.appmenu)
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.
@@ -97,9 +99,9 @@ if(BUILD_TESTING)
     add_test(NAME native-application-menus COMMAND applicationmenutest)
     set_tests_properties(native-application-menus PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;LANGUAGE=en;LANG=C.UTF-8")
     add_executable(hoverqmltest tests/hoverqmltest.cpp)
-    target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest Qt6::DBus)
-    target_compile_definitions(hoverqmltest PRIVATE FOLDERS_PACKAGE="${CMAKE_CURRENT_BINARY_DIR}/modules/org.sarbalabs.folders/package" UNPINNED_SETTINGS="${CMAKE_CURRENT_SOURCE_DIR}/modules/org.sarbalabs.unpinned/Settings.qml" DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
-    add_dependencies(hoverqmltest pofiles foldertools)
+    target_link_libraries(hoverqmltest PRIVATE dockcore Qt6::QuickTest Qt6::DBus KF6::Runner)
+    target_compile_definitions(hoverqmltest PRIVATE APPMENU_PACKAGE="${CMAKE_CURRENT_BINARY_DIR}/modules/org.sarbalabs.appmenu/package" FOLDERS_PACKAGE="${CMAKE_CURRENT_BINARY_DIR}/modules/org.sarbalabs.folders/package" UNPINNED_SETTINGS="${CMAKE_CURRENT_SOURCE_DIR}/modules/org.sarbalabs.unpinned/Settings.qml" DOCK_TEST_LOCALE="${CMAKE_CURRENT_BINARY_DIR}/locale" DOCK_KBUILDSYCOCA="${DOCK_KBUILDSYCOCA}")
+    add_dependencies(hoverqmltest pofiles foldertools menutools)
     add_dependencies(modulemanagertest foldertools)
     # Resource names determine generated paths, not only linker symbols. Never
     # reuse the application's name for another target in this build directory.

@@ -30,6 +30,7 @@ kf6-kio-devel
 kf6-solid-devel
 kf6-kiconthemes-devel
 kf6-kservice-devel
+kf6-krunner-devel
 kf6-knotifications-devel
 plasma6-activities-stats-devel
 gettext-tools

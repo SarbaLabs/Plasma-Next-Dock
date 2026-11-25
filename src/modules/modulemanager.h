@@ -54,7 +54,7 @@ public:
     void configure(QStringList enabled, const QVariantMap &settings);
     QVariantList entries() const { return m_entries; }
     void setTaskCandidates(const QVariantList &value);
-    QVariantMap metadata(const QString &id) const { return m_catalog.value(id).metadata; }
+    Q_INVOKABLE QVariantMap metadata(const QString &id) const { return m_catalog.value(id).metadata; }
     bool loaded(const QString &id) const { return m_instances.contains(id); }
     Q_INVOKABLE bool moveEntry(const QString &moduleId, const QString &entryId, const QString &destinationId);
     Q_INVOKABLE bool acceptsDirectories() const { return directoryReceiver() != nullptr; }

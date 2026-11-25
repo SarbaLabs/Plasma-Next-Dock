@@ -129,6 +129,25 @@ for mount and unmount actions. After unmounting all volumes on a drive, choose
 already eject removable media when unmounting. The module takes up no space
 when its last volume disappears.
 
+Enable **Applications menu** in **Modules** for a launcher on that dock.
+It opens on Favorites. Type in the search field to query your enabled Plasma
+Search plugins. Click a result or select it and press Enter to run it. Open
+**Configure search plugins…** in the module settings to change providers and
+their priority in KDE System Settings. Clear the field to return to browsing.
+Select a KDE menu category, enter folders in the
+application pane and use Back to return. Right-click an application to manage
+favorites or pin and unpin it on the current dock. Drag a favorite onto another
+to change its position in grid or list view. Drag an application from either
+view onto the dock to pin it. Categories retain their configured order.
+Click the profile picture or name to open KDE’s Users settings. The launcher icon’s context menu opens KMenuEdit (when installed)
+and the module settings. Choose separate grid/list modes for favorites and
+categories, application labels, pane order, menu size, corners and icon.
+The gap between the menu and the resting dock matches the dock's distance from
+the screen edge. The menu slides along the edge to preserve its size near a
+corner. Resize from a free edge or corner. Power and session actions use KDE's session
+service. A wide menu shows each action directly. Narrowing it groups Session
+first, then Power. Each dock remembers its own preferences and favorites.
+
 ## Capsule backgrounds
 
 In **Appearance → Mode**, **Centered** keeps icons centered in the padded
@@ -226,7 +245,7 @@ For the desktop session, use Plasma 6 on Wayland. The dock uses Plasma
 Workspace and Desktop, Qt SVG, Qt Quick Controls, Layouts, Dialogs, Shapes
 and Effects, Kirigami, Breeze icons, Plasma Audio Volume and KPipeWire.
 The build also links KDE Frameworks (KIO, KService, KI18n, KNotifications,
-KGlobalAccel and KWindowSystem) and Plasma Activities Stats. The installer
+KGlobalAccel, KWindowSystem and KRunner) and Plasma Activities Stats. The installer
 builds the tests, so the package lists include the Qt test tools and D-Bus.
 
 | Family and tested desktop | Package names and distribution specifics | Full package list |

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "controller.h"
+#include "backgroundeffects.h"
 #include <QMouseEvent>
 #include <QEnterEvent>
 #include <QtMath>
@@ -34,6 +35,8 @@ void DockController::attachPointerWindow(QQuickWindow *window)
 }
 bool DockController::eventFilter(QObject *watched, QEvent *event)
 {
+    if (m_modulePopup && (watched == m_modulePopup || watched == m_pointerWindow)
+        && filterPopupEvent(watched, event)) return true;
     if (watched != m_pointerWindow || !m_pointerTarget) return false;
     QPointF position;
     switch (event->type()) {
@@ -192,4 +195,75 @@ void DockController::evaluate()
     m_overlapping = overlap;
     m_hideRequested = hide;
     Q_EMIT stateChanged();
+}
+
+bool DockController::filterPopupEvent(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::Hide && m_resizingPopup) {
+        m_resizingPopup = false;
+        Q_EMIT popupResizeFinished(false);
+    }
+    if (event->type() != QEvent::MouseMove && event->type() != QEvent::MouseButtonPress
+        && event->type() != QEvent::MouseButtonRelease) return false;
+
+    const auto *mouse = static_cast<QMouseEvent *>(event);
+    if (m_resizingPopup) {
+        // Qt 6.8 drops Quick grabs while forwarding popup moves. Track the
+        // window events through release even if the pointer outruns the resize.
+        if (event->type() == QEvent::MouseMove && mouse->buttons().testFlag(Qt::LeftButton)) {
+            Q_EMIT popupResizeMoved(mouse->globalPosition() - m_resizePress);
+            return true;
+        }
+        if (event->type() == QEvent::MouseButtonRelease && mouse->button() == Qt::LeftButton) {
+            m_resizingPopup = false;
+            Q_EMIT popupResizeMoved(mouse->globalPosition() - m_resizePress);
+            Q_EMIT popupResizeFinished(true);
+        }
+        return false;
+    }
+    if (watched != m_modulePopup || !m_pointerWindow) return false;
+    const auto global = mouse->globalPosition().toPoint();
+    // Qt offers the active popup a copy of dock mouse events even when Wayland
+    // selected the dock through the shadow. Decline it so Qt delivers the original.
+    if (!m_modulePopup->mask().contains(m_modulePopup->mapFromGlobal(global))
+        && m_lastInput.contains(m_pointerWindow->mapFromGlobal(global))) {
+        event->ignore();
+        return true;
+    }
+    return false;
+}
+
+void DockController::beginPopupResize(QQuickItem *grip, QPointF press)
+{
+    if (!grip || !m_modulePopup || grip->window() != m_modulePopup) return;
+    m_resizePress = grip->mapToGlobal(press);
+    m_resizingPopup = true;
+}
+
+void DockController::updatePopupSurface(QQuickItem *item, const QList<qreal> &corners, bool vertical, qreal border, bool blur)
+{
+    if (!item || !item->window() || item->window()->type() != Qt::Popup || item->size().isEmpty()) return;
+    auto *window = item->window();
+    if (m_modulePopup != window) {
+        if (m_modulePopup) m_modulePopup->removeEventFilter(this);
+        m_resizingPopup = false;
+        m_modulePopup = window;
+        window->installEventFilter(this);
+    }
+    const auto fill = DockGeometry::capsule(item->mapRectToScene(item->boundingRect()), corners, vertical);
+    if (fill.isEmpty()) return;
+    // The Wayland surface includes room for the shadow. Only the fill and
+    // its outer border receive input, leaving the dock reachable underneath.
+    QRegion input(fill.toFillPolygon().toPolygon());
+    if (border > 0) {
+        QPainterPathStroker stroke;
+        stroke.setWidth(2 * border);
+        stroke.setJoinStyle(Qt::RoundJoin);
+        input |= QRegion(stroke.createStroke(fill).toFillPolygon().toPolygon(), Qt::WindingFill);
+    }
+    if (window->mask() != input) window->setMask(input);
+    auto *effects = window->findChild<BackgroundEffects *>(QString(), Qt::FindDirectChildrenOnly);
+    if (!effects) effects = new BackgroundEffects(window, window);
+    effects->configure({{"systemBlur", blur}});
+    effects->setGeometry(fill);
 }
