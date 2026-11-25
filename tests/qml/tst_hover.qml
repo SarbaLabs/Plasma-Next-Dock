@@ -2,7 +2,6 @@
 import QtQuick
 import QtQuick.Window
 import QtTest
-import "../../qml/code/InteractionGeometry.js" as Interaction
 TestCase {
     id: testCase
     name: "StandaloneHover"
@@ -52,6 +51,25 @@ TestCase {
         testCase.Window.window.requestActivate();
         tryCompare(testCase.Window.window, "active", true);
     }
+    function test_pointerMenuAnchor() {
+        tryCompare(dock, "status", Loader.Ready);
+        const menu = findChild(dock.item, "dockMenu");
+        for (let edge = 0; edge < 4; ++edge) {
+            testEnvironment.setEdge(edge);
+            wait(30);
+            const icon = findChild(dock.item, "icon0");
+            const p = icon.mapToItem(dock.item, 3, 4);
+            const click = Qt.point(Math.round(p.x), Math.round(p.y));
+            mouseClick(dock.item, click.x, click.y, Qt.RightButton);
+            tryCompare(menu, "visibleMenu", true);
+            compare(menu.activeMenu.visualParent.mapToItem(dock.item, 0, 0), click);
+            menu.close();
+            tryCompare(menu, "visibleMenu", false);
+            testCase.Window.window.requestActivate();
+            tryCompare(testCase.Window.window, "active", true);
+        }
+        testEnvironment.setEdge(0);
+    }
     function test_magnificationContinuesAndResets() {
         tryCompare(dock, "status", Loader.Ready);
         const first = findChild(dock.item, "task0");
@@ -84,30 +102,6 @@ TestCase {
         mouseMove(testCase, 700, 250);
         tryCompare(last, "size", 40);
         verify(!dock.item.hovering);
-    }
-    function test_nativeMenuAnchorAllEdges() {
-        const bar = Qt.rect(40, 50, 80, 200);
-        const click = Qt.point(65, 140);
-        compare(Interaction.menuAnchor(0, bar, click, 6).y, 44);
-        compare(Interaction.menuAnchor(1, bar, click, 6).y, 256);
-        compare(Interaction.menuAnchor(2, bar, click, 6).x, 126);
-        compare(Interaction.menuAnchor(3, bar, click, 6).x, 34);
-        compare(Interaction.menuAnchor(2, bar, click, 6).y, 140);
-        compare(Interaction.menuAnchor(0, bar, click, 6).x, 65);
-    }
-    function test_menuPositionAllEdges() {
-        const bar = Qt.rect(100, 100, 200, 60);
-        const size = Qt.size(180, 120);
-        const click = Qt.point(160, 130);
-        const bottom = Interaction.menuPosition(0, bar, click, size, 6);
-        compare(bottom.y + size.height, bar.y - 6);
-        compare(bottom.x + size.width / 2, click.x);
-        compare(Interaction.menuPosition(1, bar, click, size, 6).y, bar.y + bar.height + 6);
-        const left = Interaction.menuPosition(2, bar, click, size, 6);
-        compare(left.x, bar.x + bar.width + 6);
-        compare(left.y + size.height / 2, click.y);
-        compare(Interaction.menuPosition(3, bar, click, size, 6).x + size.width, bar.x - 6);
-        compare(Interaction.menuPosition(2, bar, Qt.point(160, 150), size, 6).y - left.y, 20);
     }
     function test_dragReordersWithoutActivating() {
         const source = findChild(dock.item, "taskSourceLoader");
