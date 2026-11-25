@@ -75,7 +75,14 @@ Item {
     readonly property int startPad: alignmentFactor === 0 ? alignedPad : freePad
     readonly property int endPad: alignmentFactor === 1 ? alignedPad : freePad
     readonly property int surfaceMargin: effectiveAlignmentMargin - alignedPad
-    readonly property real inwardPad: Math.min(shadowExtent, Math.max(0, (vertical ? outputSize.width : outputSize.height) - canvasDepth))
+    readonly property real modulePopupDepth: reservedThickness + edgeSpacing
+    // Wayland requires the popup anchor to lie inside the parent surface.
+    // A large edge gap can put it beyond the drawing canvas. Keep the extra
+    // transparent space outside the dock's input and exclusive regions.
+    readonly property real popupAnchorPad: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.popup)
+        ? Math.max(0, modulePopupDepth + 1 - canvasDepth) : 0
+    readonly property real inwardPad: Math.min(Math.max(shadowExtent, popupAnchorPad),
+        Math.max(0, (vertical ? outputSize.width : outputSize.height) - canvasDepth))
     width: vertical ? canvasDepth + inwardPad : canvasLength + startPad + endPad
     height: vertical ? canvasLength + startPad + endPad : canvasDepth + inwardPad
     readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,

@@ -142,8 +142,9 @@ view onto the dock to pin it. Categories retain their configured order.
 Click the profile picture or name to open KDE’s Users settings. The launcher icon’s context menu opens KMenuEdit (when installed)
 and the module settings. Choose separate grid/list modes for favorites and
 categories, application labels, pane order, menu size, corners and icon.
-The popup meets the dock at its resting thickness and slides along the screen
-edge to preserve its size near a corner. Resize from a free edge or corner. Power and session actions use KDE's session
+The gap between the menu and the resting dock matches the dock's distance from
+the screen edge. The menu slides along the edge to preserve its size near a
+corner. Resize from a free edge or corner. Power and session actions use KDE's session
 service. A wide menu shows each action directly. Narrowing it groups Session
 first, then Power. Each dock remembers its own preferences and favorites.
 

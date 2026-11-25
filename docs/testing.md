@@ -1339,9 +1339,15 @@ its shadow and zoom settings during testing.
 
 With a saved menu size of 818 × 633 logical pixels, KWin received and granted
 856 × 671 including transparent margins, both at the bottom-left corner and
-near the bottom of the right edge. The painted edge met the resting dock
-even in Always Visible mode. The geometry test checks the native slide flags
+near the bottom of the right edge. The geometry test checks the native slide flags
 for all four edges and the fallback for limited cross-axis space.
+
+On CachyOS Wayland, the bottom-left menu met the resting dock at zero screen-edge
+spacing and showed a matching 16 px gap with shadows and zoom enabled. KWin kept
+the same 856 × 671 surface size in both cases. On the right edge, a 128 px gap
+was visible on both sides of the dock with shadows and zoom disabled. The Quick
+Test checks 0, 16 and 128 px on all four edges with a thin capsule and protruding
+resting icons, including the input and dodge bounds.
 
 The search test uses a disposable krunnerrc and service catalog. It finds the
 fixture application when its provider is enabled, returns to Favorites when
