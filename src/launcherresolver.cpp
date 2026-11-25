@@ -49,6 +49,11 @@ QString LauncherResolver::launcher(const QUrl &url) const
 QVariantMap LauncherResolver::classify(const QList<QUrl> &urls) const
 {
     if (urls.isEmpty() || urls.size() > 128) return {};
+    // A module can receive a local file as data even when it is not an
+    // installed launcher. Keep the ordinary task/pinning classification separate.
+    QVariantMap plan{{"localFiles", std::all_of(urls.cbegin(), urls.cend(), [](const QUrl &url) {
+        return url.isValid() && url.isLocalFile() && url.host().isEmpty() && url.path().startsWith('/');
+    })}};
     const auto services = KApplicationTrader::query([](const KService::Ptr &s) { return s->isApplication(); });
     QStringList applications;
     bool documents = false;
@@ -65,13 +70,16 @@ QVariantMap LauncherResolver::classify(const QList<QUrl> &urls) const
         } else {
             if (!url.isValid() || url.isRelative() || url.scheme() == "applications"
                 || url.path().endsWith(".desktop", Qt::CaseInsensitive)
-                || !(url.isLocalFile() || url.scheme() == "https" || url.scheme() == "http" || url.scheme() == "smb" || url.scheme() == "sftp")) return {};
+                || !(url.isLocalFile() || url.scheme() == "https" || url.scheme() == "http" || url.scheme() == "smb" || url.scheme() == "sftp")) return plan;
             documents = true;
         }
     }
     // Mixed documents/launchers have no unambiguous action.
-    if (documents && !applications.isEmpty()) return {};
-    return {{"kind", documents ? "documents" : "applications"}, {"launchers", applications}, {"directoriesOnly", directoriesOnly}};
+    if (documents && !applications.isEmpty()) return plan;
+    plan.insert("kind", documents ? "documents" : "applications");
+    plan.insert("launchers", applications);
+    plan.insert("directoriesOnly", directoriesOnly);
+    return plan;
 }
 QStringList LauncherResolver::insert(const QStringList &existing, const QStringList &added, const QString &before) const
 {

@@ -124,6 +124,19 @@ the drop, even if its entry list is empty. A provider may set `reorderable` on
 its entries and handle `onMoveRequested(entryId, destinationId)`. Both IDs
 belong to that provider. Folders uses the same saved manual order as its editor.
 
+## Trash and local file moves
+
+The [Trash package](../modules/org.sarbalabs.trash) contributes one persistent
+entry. KIO lists the shared `trash:/` location and reports additions and removals,
+including hidden items. The package selects a theme icon and delegates opening,
+trashing, emptying, confirmations and errors to KDE.
+
+A module entry can declare `localFileMove: true` alongside `acceptsDocuments`.
+The dock negotiates a move for that entry only when the source offers a move and
+supplies exclusively local file URLs. This also lets the module receive a local
+desktop file as data. Document opening, folder copying and launcher pinning on
+other targets retain their existing actions.
+
 ## Native task entries
 
 The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses
