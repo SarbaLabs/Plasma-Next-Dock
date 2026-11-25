@@ -7,6 +7,24 @@ Item {
     id: bar
     objectName: "sessionBar"
     signal dismiss()
+    signal navigateUp()
+    function availableButtons() {
+        return power.availableButtons().concat(personal.availableButtons());
+    }
+    function focusFirst() {
+        availableButtons()[0]?.forceActiveFocus(Qt.TabFocusReason);
+    }
+    Keys.onPressed: event => {
+        const items = availableButtons();
+        const index = items.findIndex(button => button.activeFocus);
+        if (index < 0 || event.modifiers !== Qt.NoModifier) return;
+        if (event.key === Qt.Key_Up) navigateUp();
+        else if (event.key === Qt.Key_Left || event.key === Qt.Key_Right) {
+            const next = index + (event.key === Qt.Key_Left ? -1 : 1);
+            items[next]?.forceActiveFocus(Qt.TabFocusReason);
+        } else return;
+        event.accepted = true;
+    }
     Sessions.SessionManagement { id: session }
     property var backend: session
     implicitHeight: buttons.implicitHeight
@@ -19,6 +37,11 @@ Item {
         required property string title
         required property string iconName
         required property bool compact
+        function availableButtons() {
+            if (!visible) return [];
+            if (compact) return [trigger];
+            return Array.from(direct.children).filter(button => button.visible && button.enabled && button.action);
+        }
         readonly property real directWidth: direct.implicitWidth
         readonly property real groupedWidth: trigger.implicitWidth
         visible: directWidth > 0
@@ -33,6 +56,7 @@ Item {
                 C.ToolButton {
                     required property var modelData
                     action: modelData
+                    Keys.onReturnPressed: modelData.trigger()
                     display: C.AbstractButton.TextBesideIcon
                 }
             }
@@ -43,6 +67,7 @@ Item {
             text: group.title
             icon.name: group.iconName
             display: C.AbstractButton.TextBesideIcon
+            Keys.onReturnPressed: menu.open()
             onClicked: menu.open()
             C.Menu {
                 id: menu

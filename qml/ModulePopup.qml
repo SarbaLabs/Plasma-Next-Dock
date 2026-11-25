@@ -16,8 +16,9 @@ Controls.Popup {
     readonly property var options: dockOptions.moduleSettings?.[moduleId] ?? ({})
     readonly property var radii: ["tl","tr","br","bl"].map(key => Number(options[key] ?? 10))
     readonly property int inset: Math.ceil(host.dockShadowPad + capsule.customBorderWidth + Math.max(0, -Math.min(...radii)) + 1)
-    parent: host
-    popupType: Controls.Popup.Window
+    property Item keyboardSurface: null
+    parent: keyboardSurface || host
+    popupType: keyboardSurface ? Controls.Popup.Item : Controls.Popup.Window
     focus: true
     padding: 0
     property alias contextAnchor: nestedAnchor
@@ -33,9 +34,9 @@ Controls.Popup {
 
     // The grabbed popup must also be a valid parent for a context menu on the
     // farthest dock icon. Only the visible panel gets an input/blur region.
-    readonly property int frameLength: Math.min(verticalDock ? outputSize.height : outputSize.width,
+    readonly property int frameLength: keyboardSurface ? (verticalDock ? keyboardSurface.height : keyboardSurface.width) : Math.min(verticalDock ? outputSize.height : outputSize.width,
         Math.max(panelLength, Math.ceil(2 * Math.max(along, (verticalDock ? host.height : host.width) - along))))
-    readonly property int frameDepth: Math.min(verticalDock ? outputSize.width : outputSize.height,
+    readonly property int frameDepth: keyboardSurface ? (verticalDock ? keyboardSurface.width : keyboardSurface.height) : Math.min(verticalDock ? outputSize.width : outputSize.height,
         Math.max(dockGap + panelDepth, verticalDock ? host.width : host.height))
     implicitWidth: verticalDock ? frameDepth : frameLength
     implicitHeight: verticalDock ? frameLength : frameDepth
@@ -61,6 +62,11 @@ Controls.Popup {
         const edge = dockOptions.edge;
         const ax = edge === 2 ? 0 : edge === 3 ? host.width - 1 : trigger.x;
         const ay = edge === 1 ? 0 : edge === 0 ? host.height - 1 : trigger.y;
+        if (keyboardSurface) {
+            x = 0; y = 0;
+            open();
+            return;
+        }
         dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, false, true);
         x = edge === 2 ? ax : edge === 3 ? ax-width : ax-width/2;
         y = edge === 0 ? ay-height : edge === 1 ? ay : ay-height/2;
@@ -69,6 +75,8 @@ Controls.Popup {
     function refreshSurface() {
         if (opened) dockController.updatePopupSurface(surface, radii, dockOptions.edge >= 2, surface.customBorderWidth, !!dockOptions.systemBlur);
     }
+    Component.onDestruction: if (keyboardSurface) keyboardSurface.Window.window.hide()
+    onAboutToHide: if (keyboardSurface) keyboardSurface.Window.window.hide()
     onOpened: {
         if (loader.item) loader.item.forceActiveFocus();
         refreshSurface();
@@ -118,6 +126,15 @@ Controls.Popup {
     // background layer may be rendered into a texture for its shadow.
     contentItem: Item {
         id: canvas
+        MouseArea {
+            anchors.fill: parent
+            enabled: !!popup.keyboardSurface
+            acceptedButtons: Qt.AllButtons
+            onPressed: mouse => {
+                const p = mapToItem(surface, mouse.x, mouse.y);
+                if (!surface.contains(p)) popup.close();
+            }
+        }
         Item { id: nestedAnchor; width: 1; height: 1 }
         Loader {
             id: loader

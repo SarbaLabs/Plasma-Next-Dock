@@ -77,6 +77,46 @@ TestCase {
         compare(updates.count, 0);
     }
 
+    function test_arrowRoute_data() { return [{tag:"left sidebar", left:false}, {tag:"right sidebar", left:true}]; }
+    function test_arrowRoute(data) {
+        const page = loader.item;
+        page.configuration = {contentLeft:data.left, favorites:["First.desktop", "Second.desktop"]};
+        const search = findChild(page, "menuSearch");
+        const sidebar = findChild(page, "menuCategories");
+        const view = findChild(page, "menuContents");
+        search.forceActiveFocus();
+        keyClick(Qt.Key_Down);
+        verify(sidebar.activeFocus);
+        keyClick(Qt.Key_Down);
+        compare(page.history[0].id, "@all");
+        keyClick(data.left ? Qt.Key_Left : Qt.Key_Right);
+        verify(view.activeFocus);
+        keyClick(data.left ? Qt.Key_Right : Qt.Key_Left);
+        verify(sidebar.activeFocus);
+        keyClick(Qt.Key_Up);
+        compare(page.history.length, 0);
+        keyClick(Qt.Key_Up);
+        verify(search.activeFocus);
+    }
+
+    function test_arrowFooter() {
+        const page = loader.item;
+        const view = findChild(page, "menuContents");
+        const bar = findChild(page, "sessionBar");
+        bar.backend = {canSuspend:true, canHibernate:true, canReboot:true, canShutdown:true,
+                       canLock:true, canSwitchUser:true, canLogout:true};
+        page.configuration = {favorites:["First.desktop"]};
+        view.forceActiveFocus();
+        keyClick(Qt.Key_Down);
+        const buttons = bar.availableButtons();
+        verify(buttons.length > 1);
+        verify(buttons[0].activeFocus);
+        keyClick(Qt.Key_Right);
+        verify(buttons[1].activeFocus);
+        keyClick(Qt.Key_Up);
+        verify(view.activeFocus);
+    }
+
     function test_plasmaSearch() {
         const page = loader.item;
         const field = findChild(page, "menuSearch");

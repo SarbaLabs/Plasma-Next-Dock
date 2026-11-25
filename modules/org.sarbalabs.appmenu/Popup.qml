@@ -38,6 +38,20 @@ FocusScope {
             }
         }
     }
+    function focusSidebar() {
+        const selected = sidebar.model.findIndex(row => row.id === (history[0]?.id ?? ""));
+        search.clear();
+        sidebar.currentIndex = Math.max(0, selected);
+        sidebar.forceActiveFocus(Qt.TabFocusReason);
+    }
+    function selectCategory(index) {
+        const row = sidebar.model[index];
+        if (!row) return;
+        sidebar.currentIndex = index;
+        search.clear();
+        currentView.path = row.id ? [row] : [];
+        sidebar.positionViewAtIndex(index, ListView.Contain);
+    }
     function group(path, sorted) { page.revision; return catalog.group(path, sorted); }
     function navigate(path, transition) {
         const hadFocus = currentView.activeFocus;
@@ -123,6 +137,9 @@ FocusScope {
             Layout.fillWidth: true
             C.ItemDelegate {
                 id: profile
+                Keys.onReturnPressed: clicked()
+                KeyNavigation.right: search
+                Keys.onDownPressed: page.focusSidebar()
                 Core.KUser { id: user }
                 readonly property string displayName: user.fullName || user.loginName
                 enabled: Config.KAuthorized.authorizeControlModule("kcm_users")
@@ -159,7 +176,14 @@ FocusScope {
                 autoAccept: false
                 placeholderText: i18n("Search…")
                 onAccepted: if (page.searching && !runner.item?.querying) page.currentView.activateCurrent()
-                Keys.onDownPressed: page.currentView.forceActiveFocus()
+                Keys.onDownPressed: {
+                    if (page.searching) page.currentView.forceActiveFocus(Qt.TabFocusReason);
+                    else page.focusSidebar();
+                }
+                Keys.onLeftPressed: event => {
+                    if (!text.length && profile.enabled) profile.forceActiveFocus(Qt.TabFocusReason);
+                    else event.accepted = false;
+                }
                 Keys.onEscapePressed: event => {
                     if (page.searching) clear();
                     else event.accepted = false;
@@ -173,6 +197,30 @@ FocusScope {
             layoutDirection: page.configuration.contentLeft ? Qt.RightToLeft : Qt.LeftToRight
             ListView {
                 id: sidebar
+                objectName: "menuCategories"
+                activeFocusOnTab: true
+                keyNavigationEnabled: false
+                Keys.onPressed: event => {
+                    if (event.modifiers !== Qt.NoModifier) return;
+                    switch (event.key) {
+                    case Qt.Key_Up:
+                        if (currentIndex > 0) page.selectCategory(currentIndex - 1);
+                        else search.forceActiveFocus(Qt.TabFocusReason);
+                        break;
+                    case Qt.Key_Down:
+                        if (currentIndex + 1 < count) page.selectCategory(currentIndex + 1);
+                        else sessionActionsBar.focusFirst();
+                        break;
+                    case Qt.Key_Return:
+                    case Qt.Key_Enter:
+                    case (page.configuration.contentLeft ? Qt.Key_Left : Qt.Key_Right):
+                        page.selectCategory(currentIndex);
+                        page.currentView.forceActiveFocus(Qt.TabFocusReason);
+                        break;
+                    default: return;
+                    }
+                    event.accepted = true;
+                }
                 Layout.preferredWidth: Math.min(page.width * .32, 190)
                 Layout.fillHeight: true
                 clip: true
@@ -184,7 +232,8 @@ FocusScope {
                     text: modelData.name
                     icon.name: modelData.icon || "folder"
                     highlighted: !page.searching && (page.history[0]?.id ?? "") === modelData.id
-                    function selectCategory() { search.clear(); page.currentView.path = modelData.id ? [modelData] : []; }
+                    required property int index
+                    function selectCategory() { page.selectCategory(index); }
                     onClicked: selectCategory()
                     HoverHandler { onPointChanged: if (hovered && !page.searching && page.configuration.hoverCategories) parent.selectCategory() }
                 }
@@ -199,6 +248,13 @@ FocusScope {
                     Layout.fillWidth: true
                     visible: !page.searching && page.history.length > 1
                     C.Button {
+                        id: backButton
+                        Keys.onReturnPressed: {
+                            page.back();
+                            page.currentView.forceActiveFocus(Qt.TabFocusReason);
+                        }
+                        Keys.onDownPressed: page.currentView.forceActiveFocus(Qt.TabFocusReason)
+                        Keys.onUpPressed: search.forceActiveFocus(Qt.TabFocusReason)
                         Layout.maximumWidth: page.width * 0.40
                         icon.name: "go-previous"
                         text: i18n("Back to %1", page.history[page.history.length - 2]?.name ?? "")
@@ -227,7 +283,12 @@ FocusScope {
             }
         }
         K.Separator { Layout.fillWidth: true }
-        SessionBar { Layout.fillWidth: true; onDismiss: page.dismiss() }
+        SessionBar {
+            id: sessionActionsBar
+            Layout.fillWidth: true
+            onNavigateUp: page.currentView.forceActiveFocus(Qt.TabFocusReason)
+            onDismiss: page.dismiss()
+        }
     }
     Component {
         id: contents
@@ -277,6 +338,39 @@ FocusScope {
             C.ScrollBar.vertical: C.ScrollBar { onPressedChanged: if (pressed) wheel.motion.stop() }
             function activateCurrent() {
                 if (currentItem?.enabled) currentItem.activate();
+            }
+            keyNavigationEnabled: false
+            Keys.onPressed: event => {
+                if (event.modifiers !== Qt.NoModifier) return;
+                const columns = grid ? Math.max(1, Math.round(width / cellWidth)) : 1;
+                const column = currentIndex % columns;
+                const towardSidebar = page.configuration.contentLeft ? Qt.Key_Right : Qt.Key_Left;
+                switch (event.key) {
+                case Qt.Key_Left:
+                case Qt.Key_Right: {
+                    const step = event.key === Qt.Key_Left ? -1 : 1;
+                    const next = currentIndex + step;
+                    if (next >= 0 && next < count && column + step >= 0 && column + step < columns)
+                        currentIndex = next;
+                    else if (event.key === towardSidebar) {
+                        if (!page.searching && path.length > 1) page.back();
+                        else page.focusSidebar();
+                    } else if (!page.searching && currentItem?.modelData?.group) page.enter(currentItem.modelData);
+                    break;
+                }
+                case Qt.Key_Up:
+                    if (currentIndex >= columns) currentIndex -= columns;
+                    else if (backButton.visible) backButton.forceActiveFocus(Qt.TabFocusReason);
+                    else search.forceActiveFocus(Qt.TabFocusReason);
+                    break;
+                case Qt.Key_Down:
+                    if (Math.floor(currentIndex / columns) < Math.ceil(count / columns) - 1)
+                        currentIndex = Math.min(count - 1, currentIndex + columns);
+                    else sessionActionsBar.focusFirst();
+                    break;
+                default: return;
+                }
+                event.accepted = true;
             }
             Keys.onReturnPressed: activateCurrent()
             Keys.onEnterPressed: activateCurrent()

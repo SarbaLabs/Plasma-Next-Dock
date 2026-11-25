@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "org.sarbalabs.nextdock.launcherrelay",
+        "Name": "Plasma Next Dock launcher relay",
+        "Icon": "org.sarbalabs.PlasmaNextDock",
+        "License": "GPL-2.0-or-later",
+        "Category": "Application Launchers"
+    },
+    "NoDisplay": true,
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": ["org.kde.plasma.launchermenu"]
+}

@@ -862,6 +862,23 @@ Item {
             root.dragDestination = nearest;
         }
     }
+    function dismissKeyboardMenu() {
+        if (modulePopup.item?.keyboardSurface) modulePopup.item.close();
+    }
+    function toggleApplicationsMenu() {
+        for (let i = 0; i < repeater.count; ++i) {
+            const slot = repeater.itemAt(i);
+            if (slot?.entry?.moduleId === "org.sarbalabs.appmenu" && slot.entry.popup) {
+                if (modulePopup.item?.visible) modulePopup.item.close();
+                else {
+                    modulePopup.active = true;
+                    modulePopup.item.keyboardSurface = dockHost.keyboardMenuSurface();
+                    modulePopup.item.showEntry(slot.entry, slot.iconItem);
+                }
+                return;
+            }
+        }
+    }
     function showContextMenu(row, position) {
         previewPanel.dismiss();
         contextMenu.showAt(position, dockOptions.demo ? null : taskSource.item, root.nativeRow(row),

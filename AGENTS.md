@@ -4,6 +4,8 @@
   docs, commits and PRs in English. Use Qt/KDE translation mechanisms.
 - Work exclusively in SarbaLabs/Plasma-Next-Dock; PRs target main. Do not alter the
   separate plasma-macos-dock repository, Plasma configuration or compositor binaries.
+  The approved Meta launcher relay is the sole layout exception: manage only
+  the dock-owned relay on eligible desktops, preserving all user widgets and shortcuts.
 - Do not merge, publish a release, create autostart entries or install into system
   directories without explicit authorization. Prefer ./install.sh; user checkouts
   are under ~/git and CachyOS package installation uses paru.

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
+#include "launcherrelay.h"
 #include "dockhost.h"
 #include <QIcon>
 #include <QJsonDocument>
@@ -154,7 +155,9 @@ int main(int argc, char **argv)
     auto *configWindow = qobject_cast<QQuickWindow *>(configEngine.rootObjects().first());
     std::map<DockSettings *, std::unique_ptr<DockHost>> hosts;
     QObject connections;
+    LauncherRelay launcherRelay;
     auto refresh = [&] {
+        QStringList launcherOutputs;
         std::erase_if(hosts, [&](const auto &entry) { return !profiles.profiles().contains(entry.first); });
         for (auto *profile : profiles.profiles()) {
             const QString output = profiles.assignedOutput(profile);
@@ -171,8 +174,10 @@ int main(int argc, char **argv)
                 host = std::make_unique<DockHost>(profile, screen, demo, wayland, catalog);
             }
             host->update(configWindow->isVisible() && profiles.current() == profile);
+            if (host->hasApplicationsMenu()) launcherOutputs.append(output);
             if (host->failed()) { configFailed = true; app.exit(1); }
         }
+        launcherRelay.setOutputs(launcherOutputs);
         const auto selected = hosts.find(profiles.current());
         auto *root = selected == hosts.end() ? nullptr : selected->second->view()->rootObject();
         configWindow->setProperty("selectedTasks", root ? root->property("presentationTasks") : QVariant::fromValue<QObject *>(nullptr));
@@ -201,6 +206,19 @@ int main(int argc, char **argv)
     if (configFailed && smoke) return 1;
     QAction focusDock(i18n("Focus Plasma Next Dock"));
     if (wayland && !demo && !smoke) {
+        QObject::connect(&launcherRelay, &LauncherRelay::requested, &connections, [&](const QString &output) {
+            for (const auto &entry : hosts) {
+                if (entry.second->output()->name() != output)
+                    QMetaObject::invokeMethod(entry.second->view()->rootObject(), "dismissKeyboardMenu");
+            }
+            for (auto *profile : profiles.profiles()) {
+                const auto it = hosts.find(profile);
+                if (it == hosts.end() || it->second->output()->name() != output || !it->second->hasApplicationsMenu()) continue;
+                QMetaObject::invokeMethod(it->second->view()->rootObject(), "toggleApplicationsMenu");
+                break;
+            }
+        });
+        launcherRelay.start();
         focusDock.setObjectName(QStringLiteral("focus-dock"));
         focusDock.setProperty("componentDisplayName", QStringLiteral("Plasma Next Dock"));
         const QKeySequence shortcut(Qt::META | Qt::ALT | Qt::Key_Space);

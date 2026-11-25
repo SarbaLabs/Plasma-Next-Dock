@@ -14,7 +14,9 @@ public:
     DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayland, const ModuleCatalog &catalog);
     ~DockHost() override;
     void update(bool settingsOpen);
+    Q_INVOKABLE QQuickItem *keyboardMenuSurface();
     bool beginKeyboard();
+    bool hasApplicationsMenu() const { return m_modules.loaded(QStringLiteral("org.sarbalabs.appmenu")); }
     bool keyboardActive() const;
     void endKeyboard();
     QScreen *output() const { return m_screen; }
@@ -36,6 +38,7 @@ private:
     ModuleManager m_modules;
     TaskRows m_taskRows;
     QQuickView m_view;
+    std::unique_ptr<QQuickWindow> m_menuSurface;
     DockController m_controller;
     BackgroundEffects m_backgroundEffects;
     LayerSurfacePosition *m_surfacePosition = nullptr;
