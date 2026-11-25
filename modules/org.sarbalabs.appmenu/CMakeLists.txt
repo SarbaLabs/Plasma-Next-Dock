@@ -5,7 +5,7 @@ foreach(file metadata.json Main.qml Settings.qml Popup.qml SessionBar.qml native
     configure_file(${file} ${package_dir}/${file} COPYONLY)
 endforeach()
 add_library(menutools MODULE native/menutools.cpp)
-target_link_libraries(menutools PRIVATE Qt6::Quick KF6::Service KF6::KIOWidgets KF6::IconWidgets)
+target_link_libraries(menutools PRIVATE Qt6::Quick KF6::Service KF6::KIOWidgets KF6::IconWidgets KF6::Runner)
 set_target_properties(menutools PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${package_dir}/native)
 install(FILES metadata.json Main.qml Settings.qml Popup.qml SessionBar.qml DESTINATION ${destination})
 install(FILES native/qmldir DESTINATION ${destination}/native)

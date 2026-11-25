@@ -19,6 +19,9 @@
 #include <QStandardPaths>
 #include <QProcess>
 #include <QDir>
+#include <KConfigGroup>
+#include <KRunner/RunnerManager>
+#include <KSharedConfig>
 #include <KLocalizedQmlContext>
 #include <KLocalizedString>
 #include "icons.h"
@@ -66,6 +69,18 @@ class Setup : public QObject
     PreviewFixture m_previewModel;
     QQmlEngine *m_engine = nullptr;
 public:
+    // This krunnerrc lives in the test's temporary XDG_CONFIG_HOME. Keep
+    // online, system and personal-data providers out of the catalog fixture.
+    Q_INVOKABLE void configureSearchFixture(bool applicationsEnabled) {
+        const auto config = KSharedConfig::openConfig(QStringLiteral("krunnerrc"), KConfig::NoGlobals);
+        auto plugins = config->group(QStringLiteral("Plugins"));
+        for (const auto &metadata : KRunner::RunnerManager::runnerMetaDataList()) {
+            const QString id = metadata.pluginId();
+            const bool applications = id == QLatin1String("krunner_services") || id == QLatin1String("services");
+            plugins.writeEntry(id + QStringLiteral("Enabled"), applications && applicationsEnabled);
+        }
+        config->sync();
+    }
     Q_INVOKABLE bool externalDrag(QQuickItem *item, const QPointF &point, const QList<QUrl> &urls, int phase) {
         if (!item || !item->window()) return false;
         QMimeData mime;

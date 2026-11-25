@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include <KApplicationTrader>
+#include <KConfigGroup>
+#include <KConfigWatcher>
 #include <KIconDialog>
 #include <KIO/ApplicationLauncherJob>
 #include <KIO/JobUiDelegateFactory>
+#include <KRunner/ResultsModel>
 #include <KServiceGroup>
+#include <KSharedConfig>
 #include <KSycoca>
 #include <QCollator>
 #include <QDrag>
+#include <QGuiApplication>
 #include <QIcon>
 #include <QMimeData>
 #include <QProcess>
@@ -58,16 +63,25 @@ public:
     {
         const auto service = KService::serviceByStorageId(id);
         if (!window || !service || !service->isApplication()) return;
-        auto *mime = new QMimeData;
-        mime->setUrls({launcherUrl(service->storageId())});
-        if (favorite) mime->setData(m_favoriteFormat, id.toUtf8());
-        auto *drag = new QDrag(window);
-        drag->setMimeData(mime);
+        const auto url = launcherUrl(service->storageId());
+        const auto format = favorite ? m_favoriteFormat : QString();
         const auto image = QIcon::fromTheme(service->icon(), QIcon::fromTheme(QStringLiteral("application-x-executable")))
                                .pixmap(QSize(32, 32), window->devicePixelRatio());
-        drag->setPixmap(image);
-        drag->setHotSpot(QPoint(16, 16));
-        drag->exec(Qt::CopyAction);
+
+        // QDrag runs a nested event loop. A successful drop can close the
+        // popup and destroy the delegate that requested it. Unwind the QML
+        // handler first and give the drag a source that outlives both windows.
+        QMetaObject::invokeMethod(window, [window, url, format, image] {
+            if (!window->isVisible()) return;
+            auto *drag = new QDrag(qGuiApp);
+            auto *mime = new QMimeData;
+            mime->setUrls({url});
+            if (!format.isEmpty()) mime->setData(format, url.path().toUtf8());
+            drag->setMimeData(mime);
+            drag->setPixmap(image);
+            drag->setHotSpot(QPoint(16, 16));
+            drag->exec(Qt::CopyAction);
+        }, Qt::QueuedConnection);
     }
     Q_INVOKABLE QVariantList group(const QString &path, bool alphabetical) const
     {
@@ -134,6 +148,47 @@ private:
                 {"generic", s->genericName()}, {"comment", s->comment()}};
     }
 };
+// Expose an application identity only for plain service hits. Other runners
+// (and desktop actions) keep their own activation through ResultsModel::run().
+class SearchModel : public KRunner::ResultsModel
+{
+    Q_OBJECT
+public:
+    SearchModel()
+    {
+        // This menu has no query history of its own. Keep searches out of
+        // Alt+Space's history, including sessions where history is disabled.
+        runnerManager()->setHistoryEnabled(false);
+        const auto config = KSharedConfig::openConfig(QStringLiteral("krunnerrc"), KConfig::NoGlobals);
+        m_configWatcher = KConfigWatcher::create(config);
+        const auto readFavorites = [this, config] {
+            const auto favorites = config->group(QStringLiteral("Plugins")).group(QStringLiteral("Favorites"));
+            setFavoriteIds(favorites.readEntry("plugins", QStringList{QStringLiteral("krunner_services")}));
+        };
+        connect(m_configWatcher.data(), &KConfigWatcher::configChanged, this, readFavorites);
+        readFavorites();
+    }
+
+    enum { LauncherIdRole = KRunner::ResultsModel::FavoriteCountRole + 1 };
+
+    QHash<int, QByteArray> roleNames() const override
+    {
+        auto names = KRunner::ResultsModel::roleNames();
+        names.insert(LauncherIdRole, "launcherId");
+        return names;
+    }
+
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        if (role != LauncherIdRole) return KRunner::ResultsModel::data(index, role);
+        const QUrl url = getQueryMatch(index).data().toUrl();
+        if (url.scheme() != QLatin1String("applications") || !url.authority().isEmpty() || url.hasQuery() || url.hasFragment()) return QString();
+        const auto service = KService::serviceByStorageId(url.path());
+        return service && service->isApplication() && service->storageId() == url.path() ? service->storageId() : QString();
+    }
+private:
+    KConfigWatcher::Ptr m_configWatcher;
+};
 class MenuPlugin : public QQmlExtensionPlugin
 {
     Q_OBJECT
@@ -142,6 +197,7 @@ public:
     void registerTypes(const char *uri) override
     {
         qmlRegisterType<MenuTools>(uri, 1, 0, "MenuTools");
+        qmlRegisterType<SearchModel>(uri, 1, 0, "SearchModel");
         qmlRegisterType<Catalog>(uri, 1, 0, "Catalog");
     }
 };

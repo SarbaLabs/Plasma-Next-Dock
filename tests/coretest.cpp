@@ -119,7 +119,9 @@ private Q_SLOTS:
             popup.create();
             QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(80, 120 + edge * 20, 1, 1));
             QCOMPARE(popup.property("_q_waylandPopupGravity").value<Qt::Edges>(), gravity[edge]);
-            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 24u);
+            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 3u);
+            anchor.prepare(dock.contentItem(), QPointF(0, 0), edge, false);
+            QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), edge < 2 ? 1u : 2u);
         }
         // Reuse and recreation must both pick up the new click, not the first one.
         popup.destroy();

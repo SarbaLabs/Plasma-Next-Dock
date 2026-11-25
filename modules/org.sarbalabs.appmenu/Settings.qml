@@ -3,6 +3,8 @@ import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
 import org.kde.kirigami as K
+import org.kde.config as Config
+import org.kde.kcmutils as KCM
 import "native" as Native
 C.ApplicationWindow {
     id: page
@@ -58,6 +60,12 @@ C.ApplicationWindow {
                 text: i18n("Switch sidebar categories on hover")
                 checked: !!page.configuration.hoverCategories
                 onClicked: page.edited({hoverCategories:checked})
+            }
+            C.Button {
+                text: i18n("Configure search plugins…")
+                icon.name: "configure"
+                enabled: Config.KAuthorized.authorizeControlModule("kcm_plasmasearch")
+                onClicked: KCM.KCMLauncher.openSystemSettings("kcm_plasmasearch")
             }
             component Dimension: C.SpinBox { editable: true; to: 2400 }
             RowLayout {

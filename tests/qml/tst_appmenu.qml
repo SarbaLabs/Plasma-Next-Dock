@@ -2,6 +2,7 @@
 import QtQuick
 import QtTest
 TestCase {
+    id: testCase
     name: "ApplicationsMenu"
     when: windowShown
     width: 640
@@ -18,6 +19,25 @@ TestCase {
     }
     function cleanup() { loader.active = false; }
 
+    Timer { id: releaseDrag; interval: 120; onTriggered: mouseRelease(testCase, width / 2, height / 2) }
+    function test_dragSurvivesSourceRemoval() {
+        loader.item.configuration = {favorites:["First.desktop"]};
+        const view = findChild(loader.item, "menuContents");
+        tryVerify(() => view.currentItem?.applicationId === "First.desktop");
+        const tile = view.currentItem;
+        // A pin can retire this entire popup while the platform drag still
+        // owns the pointer. Let deferred deletion run before ending the drag.
+        tile.consumedPressChanged.connect(() => Qt.callLater(() => {
+            loader.active = false;
+            releaseDrag.restart();
+        }));
+        mousePress(tile, 8, 12);
+        mouseMove(tile, 32, 12);
+        mouseMove(tile, 54, 12);
+        tryCompare(loader, "active", false);
+        tryCompare(releaseDrag, "running", false);
+    }
+
     function test_favoriteOrder_data() { return [{tag:"grid", grid:true}, {tag:"list", grid:false}]; }
     function test_favoriteOrder(data) {
         const page = loader.item;
@@ -30,7 +50,7 @@ TestCase {
         page.enter({group:true, id:"@all"});
         page.moveFavorite("First.desktop", "Second.desktop");
         compare(updates.count, 1);
-        compare(view.model.map(row => row.id).filter(id => ["First.desktop", "Second.desktop"].includes(id)),
+        compare(view.model.model.map(row => row.id).filter(id => ["First.desktop", "Second.desktop"].includes(id)),
                 ["First.desktop", "Second.desktop"]);
     }
 
@@ -43,7 +63,7 @@ TestCase {
         };
         page.configuration = {favorites:["First.desktop"]};
         const view = findChild(page, "menuContents");
-        tryVerify(() => !!view.currentItem);
+        tryVerify(() => view.currentItem?.applicationId === "First.desktop");
         const tile = view.currentItem;
         const action = findChild(page, "menuPinAction");
         tile.context();
@@ -55,6 +75,28 @@ TestCase {
         action.triggered();
         compare(pinned, "");
         compare(updates.count, 0);
+    }
+
+    function test_plasmaSearch() {
+        const page = loader.item;
+        const field = findChild(page, "menuSearch");
+        const view = findChild(page, "menuContents");
+        page.configuration = {favorites:["Second.desktop"]};
+        compare(view.model.model[0].id, "Second.desktop");
+        testEnvironment.configureSearchFixture(true);
+        field.text = "First";
+        tryVerify(() => page.searching && !!view.model.model);
+        tryVerify(() => {
+            for (let i = 0; i < view.count; ++i) {
+                if (view.itemAtIndex(i)?.applicationId === "First.desktop") return true;
+            }
+            return false;
+        });
+        field.clear();
+        tryVerify(() => page.favoritesPage && view.currentItem?.applicationId === "Second.desktop");
+        testEnvironment.configureSearchFixture(false);
+        field.text = "First";
+        tryVerify(() => !!view.model.model && !view.model.model.querying && view.count === 0);
     }
 
     function test_sessionBreakpoints() {
@@ -82,18 +124,18 @@ TestCase {
         const view = findChild(page, "menuContents");
         page.configuration = {favorites:["Second.desktop"], favoritesGrid:true, categoryGrid:false, format:3};
         verify(page.favoritesPage);
-        compare(view.model[0].name, "Second");
+        compare(view.model.model[0].name, "Second");
         verify(page.grid);
         const internet = page.group("", false).find(row => row.name === "Internet");
         verify(!!internet);
         page.enter(internet);
         verify(!page.grid);
-        const browsers = view.model.find(row => row.name === "Browsers");
-        verify(!!browsers, JSON.stringify({internet:internet,rows:view.model}));
+        const browsers = view.model.model.find(row => row.name === "Browsers");
+        verify(!!browsers, JSON.stringify({internet:internet,rows:view.model.model}));
         page.enter(browsers);
-        compare(view.model[0].name, "First");
+        compare(view.model.model[0].name, "First");
         compare(page.history.length, 2);
         page.back();
-        compare(view.model[0].id, browsers.id);
+        compare(view.model.model[0].id, browsers.id);
     }
 }

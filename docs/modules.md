@@ -162,7 +162,11 @@ signals. Preferences are merged into the selected profile. An entry can set
 `launcherActions` property on the popup receives the current dock's
 `pinned(url)` and `togglePinned(url)` methods.
 The [Applications menu](../modules/org.sarbalabs.appmenu) browses KService
-groups lazily and launches applications via KIO. Session actions use the
+groups lazily and launches applications via KIO. On the first nonblank search
+it loads the public KF6 KRunner ResultsModel. The system configuration supplies
+enabled search providers and favorite priorities. The menu keeps typed terms
+out of KRunner history. Clearing the field releases the search model.
+Session actions use the
 Plasma Workspace sessions QML plugin available on both supported Plasma
 baselines. Its private import is confined to SessionBar.qml.
 

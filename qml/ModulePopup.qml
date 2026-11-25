@@ -32,9 +32,14 @@ Controls.Popup {
         contentUrl = url;
         const center = icon.mapToItem(host, icon.width/2, icon.height/2);
         const edge = dockOptions.edge;
-        const ax = edge === 2 ? capsule.x + capsule.width : edge === 3 ? capsule.x : center.x;
-        const ay = edge === 0 ? Math.min(capsule.y, center.y-icon.height/2) : edge === 1 ? Math.max(capsule.y+capsule.height, center.y+icon.height/2) : center.y;
-        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge);
+        // The painted popup meets the resting capsule or protruding resting
+        // icons. Let the transparent shadow inset overlap that contact line.
+        const offset = host.reservedThickness - inset;
+        const ax = edge === 2 ? offset : edge === 3 ? host.width - offset : center.x;
+        const ay = edge === 1 ? offset : edge === 0 ? host.height - offset : center.y;
+        const availableDepth = (host.vertical ? outputSize.width : outputSize.height) - host.reservedThickness;
+        const needsCrossSlide = (host.vertical ? width : height) - inset > availableDepth;
+        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, needsCrossSlide);
         x = edge === 2 ? ax : edge === 3 ? ax-width : ax-width/2;
         y = edge === 0 ? ay-height : edge === 1 ? ay : ay-height/2;
         open();

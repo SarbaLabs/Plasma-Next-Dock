@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
+import QtQml.Models
 import org.kde.kirigami as K
 import org.kde.kirigamiaddons.components as Components
 import org.kde.coreaddons as Core
@@ -17,11 +18,25 @@ FocusScope {
     signal dismiss()
     property var history: []
     property int revision: 0
-    readonly property bool favoritesPage: history.length === 0
+    readonly property string searchTerm: search.text.trim()
+    readonly property bool searching: searchTerm.length > 0
+    readonly property bool favoritesPage: !searching && history.length === 0
     readonly property var favorites: configuration.favorites ?? ["org.kde.dolphin.desktop", "org.kde.konsole.desktop"]
-    readonly property bool grid: favoritesPage ? configuration.favoritesGrid !== false : !!configuration.categoryGrid
+    readonly property bool grid: !searching && (favoritesPage ? configuration.favoritesGrid !== false : !!configuration.categoryGrid)
     readonly property int format: configuration.format ?? 0
     Native.Catalog { id: catalog; onChanged: ++page.revision }
+    Loader {
+        id: runner
+        active: page.searching
+        sourceComponent: Native.SearchModel {
+            queryString: page.searchTerm
+            onQueryStringChangeRequested: (query, pos) => {
+                search.text = query;
+                search.cursorPosition = pos;
+                search.forceActiveFocus();
+            }
+        }
+    }
     function group(path, sorted) { page.revision; return catalog.group(path, sorted); }
     function back() { if (history.length > 1) history = history.slice(0,-1); }
     function enter(row) {
@@ -47,34 +62,51 @@ FocusScope {
     Shortcut { sequence: "Alt+Left"; enabled: page.history.length > 1; onActivated: page.back() }
     ColumnLayout {
         anchors.fill: parent
-        C.ItemDelegate {
-            id: profile
-            Core.KUser { id: user }
-            readonly property string displayName: user.fullName || user.loginName
-            enabled: Config.KAuthorized.authorizeControlModule("kcm_users")
-            Layout.maximumWidth: page.width
-            Accessible.name: displayName
-            Accessible.description: i18n("Open user settings")
-            contentItem: RowLayout {
-                Components.Avatar {
-                    Layout.preferredWidth: K.Units.iconSizes.medium
-                    Layout.preferredHeight: K.Units.iconSizes.medium
-                    name: profile.displayName
-                    source: user.faceIconUrl
-                    cache: false
+        RowLayout {
+            Layout.fillWidth: true
+            C.ItemDelegate {
+                id: profile
+                Core.KUser { id: user }
+                readonly property string displayName: user.fullName || user.loginName
+                enabled: Config.KAuthorized.authorizeControlModule("kcm_users")
+                Layout.maximumWidth: page.width / 2
+                Accessible.name: displayName
+                Accessible.description: i18n("Open user settings")
+                contentItem: RowLayout {
+                    Components.Avatar {
+                        Layout.preferredWidth: K.Units.iconSizes.medium
+                        Layout.preferredHeight: K.Units.iconSizes.medium
+                        name: profile.displayName
+                        source: user.faceIconUrl
+                        cache: false
+                    }
+                    C.Label {
+                        Layout.fillWidth: true
+                        text: profile.displayName
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                    }
                 }
-                C.Label {
-                    Layout.fillWidth: true
-                    text: profile.displayName
-                    textFormat: Text.PlainText
-                    elide: Text.ElideRight
+                C.ToolTip.visible: hovered
+                C.ToolTip.text: Accessible.description
+                onClicked: {
+                    KCM.KCMLauncher.openSystemSettings("kcm_users");
+                    page.dismiss();
                 }
             }
-            C.ToolTip.visible: hovered
-            C.ToolTip.text: Accessible.description
-            onClicked: {
-                KCM.KCMLauncher.openSystemSettings("kcm_users");
-                page.dismiss();
+            K.SearchField {
+                id: search
+                objectName: "menuSearch"
+                Layout.fillWidth: true
+                focus: true
+                autoAccept: false
+                placeholderText: i18n("Search…")
+                onAccepted: if (page.searching && !runner.item?.querying) view.activateCurrent()
+                Keys.onDownPressed: view.forceActiveFocus()
+                Keys.onEscapePressed: event => {
+                    if (page.searching) clear();
+                    else event.accepted = false;
+                }
             }
         }
         K.Separator { Layout.fillWidth: true }
@@ -94,10 +126,10 @@ FocusScope {
                     width: sidebar.width
                     text: modelData.name
                     icon.name: modelData.icon || "folder"
-                    highlighted: (page.history[0]?.id ?? "") === modelData.id
-                    function selectCategory() { page.history = modelData.id ? [modelData] : []; }
+                    highlighted: !page.searching && (page.history[0]?.id ?? "") === modelData.id
+                    function selectCategory() { search.clear(); page.history = modelData.id ? [modelData] : []; }
                     onClicked: selectCategory()
-                    HoverHandler { onPointChanged: if (hovered && page.configuration.hoverCategories) parent.selectCategory() }
+                    HoverHandler { onPointChanged: if (hovered && !page.searching && page.configuration.hoverCategories) parent.selectCategory() }
                 }
                 C.ScrollBar.vertical: C.ScrollBar {}
             }
@@ -106,7 +138,7 @@ FocusScope {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 C.Button {
-                    visible: page.history.length > 1
+                    visible: !page.searching && page.history.length > 1
                     icon.name: "go-previous"
                     text: i18n("Back to %1", page.history[page.history.length - 2]?.name ?? "")
                     onClicked: page.back()
@@ -117,7 +149,6 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
-                    focus: true
                     interactive: false
                     function scrollBy(delta) {
                         contentY = Math.max(originY, Math.min(originY + contentHeight - height, contentY + delta));
@@ -130,48 +161,103 @@ FocusScope {
                             event.accepted = true;
                         }
                     }
-                    model: {
-                        page.revision;
-                        if (page.favoritesPage) return catalog.favorites(page.favorites);
-                        if (page.history[0].id === "@all") return catalog.allApplications();
-                        return page.group(page.history[page.history.length-1].id, !!page.configuration.alphabetical);
+                    // Each data source owns its delegate. Changing the query cannot
+                    // briefly bind a runner result to a catalog row (or vice versa).
+                    model: page.searching ? resultRows : catalogRows
+                    DelegateModel {
+                        id: catalogRows
+                        model: {
+                            page.revision;
+                            if (!page.history.length) return catalog.favorites(page.favorites);
+                            if (page.history[0].id === "@all") return catalog.allApplications();
+                            return page.group(page.history[page.history.length-1].id, !!page.configuration.alphabetical);
+                        }
+                        delegate: catalogDelegate
+                        onModelChanged: if (!page.searching) Qt.callLater(view.resetPosition)
                     }
-                    onModelChanged: Qt.callLater(() => { currentIndex = 0; positionViewAtBeginning(); })
+                    DelegateModel {
+                        id: resultRows
+                        model: runner.item
+                        delegate: resultDelegate
+                    }
+                    function resetPosition() {
+                        currentIndex = count ? 0 : -1;
+                        positionViewAtBeginning();
+                    }
+                    onModelChanged: Qt.callLater(resetPosition)
+                    onCountChanged: if (count && currentIndex < 0) currentIndex = 0
                     cellWidth: page.grid ? width / Math.max(1, Math.floor(width/104)) : width
                     cellHeight: page.grid ? 100 : 46
                     C.ScrollBar.vertical: C.ScrollBar {}
-                    Keys.onReturnPressed: if (currentItem) page.enter(currentItem.modelData)
+                    function activateCurrent() {
+                        if (currentItem?.enabled) currentItem.activate();
+                    }
+                    Keys.onReturnPressed: activateCurrent()
+                    Keys.onEnterPressed: activateCurrent()
+                    Keys.onEscapePressed: event => {
+                        if (page.searching) { search.clear(); search.forceActiveFocus(); }
+                        else event.accepted = false;
+                    }
                     Keys.onMenuPressed: if (currentItem) currentItem.context()
-                    delegate: C.ItemDelegate {
+                    Component {
+                        id: catalogDelegate
+                        MenuEntry {
+                            required property var modelData
+                            applicationId: modelData.group ? "" : modelData.id
+                            artwork: modelData.icon || (modelData.group ? "folder" : "application-x-executable")
+                            readonly property string description: (page.format === 2 ? modelData.comment || modelData.generic : modelData.generic || modelData.comment) || ""
+                            readonly property bool reversed: !modelData.group && description.length && [1,3].includes(page.format)
+                            primary: reversed ? description : modelData.name
+                            secondary: page.format >= 2 && description.length ? (reversed ? modelData.name : description) : ""
+                            onActivate: page.enter(modelData)
+                        }
+                    }
+                    Component {
+                        id: resultDelegate
+                        MenuEntry {
+                            required property var model
+                            applicationId: model.launcherId
+                            artwork: model.decoration
+                            primary: model.display
+                            secondary: model.subtext || ""
+                            enabled: model.enabled
+                            onActivate: {
+                                const results = runner.item;
+                                if (results && results.run(results.index(index, 0))) page.dismiss();
+                            }
+                        }
+                    }
+                    component MenuEntry: C.ItemDelegate {
                         id: tile
-                        required property var modelData
                         required property int index
+                        required property string applicationId
+                        required property var artwork
+                        required property string primary
+                        required property string secondary
+                        signal activate()
                         width: view.cellWidth
                         height: view.cellHeight
-                        readonly property string description: (page.format === 2 ? modelData.comment || modelData.generic : modelData.generic || modelData.comment) || ""
-                        readonly property bool reversed: !modelData.group && description.length && [1,3].includes(page.format)
-                        readonly property string primary: reversed ? description : modelData.name
-                        readonly property string secondary: page.format >= 2 && description.length ? (reversed ? modelData.name : description) : ""
                         Accessible.name: primary
-                        highlighted: (favoriteDrop.containsDrag && favoriteDrop.targetIndex === index) || hovered || (view.activeFocus && view.currentIndex === index)
+                        highlighted: (favoriteDrop.containsDrag && favoriteDrop.targetIndex === index) || hovered
+                                   || ((view.activeFocus || (page.searching && search.activeFocus)) && view.currentIndex === index)
                         // Qt can send the button a release as the native drag ends.
                         property bool consumedPress: false
                         onPressed: consumedPress = false
-                        onClicked: if (!consumedPress) page.enter(modelData)
+                        onClicked: if (!consumedPress) activate()
                         function context() {
-                            if (modelData.group) return;
-                            actions.targetId = modelData.id;
+                            if (!applicationId) return;
+                            actions.targetId = applicationId;
                             actions.pinned = page.launcherActions?.pinned(actions.targetUrl) ?? false;
                             actions.popup(tile);
                         }
                         DragHandler {
                             target: null
-                            enabled: !tile.modelData.group
+                            enabled: tile.applicationId.length > 0
                             acceptedButtons: Qt.LeftButton
                             onActiveChanged: {
                                 if (!active) return;
                                 tile.consumedPress = true;
-                                catalog.dragApplication(tile.Window.window, tile.modelData.id, page.favoritesPage);
+                                catalog.dragApplication(tile.Window.window, tile.applicationId, page.favoritesPage);
                             }
                         }
                         TapHandler { acceptedButtons: Qt.RightButton; acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus; onTapped: tile.context() }
@@ -179,7 +265,7 @@ FocusScope {
                             columns: page.grid ? 1 : 2
                             rowSpacing: 2
                             K.Icon {
-                                source: tile.modelData.icon || (tile.modelData.group ? "folder" : "application-x-executable")
+                                source: tile.artwork
                                 Layout.preferredWidth: page.grid ? 44 : 30
                                 Layout.preferredHeight: Layout.preferredWidth
                                 Layout.alignment: Qt.AlignCenter
@@ -208,6 +294,12 @@ FocusScope {
                             }
                         }
                     }
+                    C.Label {
+                        parent: view
+                        anchors.centerIn: parent
+                        visible: page.searching && view.count === 0
+                        text: runner.item?.querying ? i18n("Searching…") : i18n("No results")
+                    }
                     DropArea {
                         id: favoriteDrop
                         parent: view
@@ -233,7 +325,7 @@ FocusScope {
                         }
                         onDropped: event => {
                             const id = event.getDataAsString(catalog.favoriteFormat);
-                            const dest = view.model[indexFor(event.x, event.y)];
+                            const dest = catalogRows.model[indexFor(event.x, event.y)];
                             if (!dest || !page.favorites.includes(id)) return;
                             event.accept(Qt.CopyAction);
                             Qt.callLater(page.moveFavorite, id, dest.id);

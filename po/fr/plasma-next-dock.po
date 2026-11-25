@@ -1034,3 +1034,15 @@ msgstr "Déplacer vers la fin"
 
 msgid "Open user settings"
 msgstr "Ouvrir les paramètres des utilisateurs"
+
+msgid "Configure search plugins…"
+msgstr "Configurer les modules externes de recherche…"
+
+msgid "Search…"
+msgstr "Rechercher…"
+
+msgid "Searching…"
+msgstr "Recherche en cours…"
+
+msgid "No results"
+msgstr "Aucun résultat"

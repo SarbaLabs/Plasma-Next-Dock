@@ -17,6 +17,7 @@ kio
 solid
 kiconthemes
 kservice
+krunner
 knotifications
 plasma-activities-stats
 plasma-integration

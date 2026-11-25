@@ -1329,3 +1329,21 @@ profile opened Users in System Settings. A fresh menu showed seven direct
 buttons in French. Dragging the free edge inward grouped Session first and
 then Power; both buttons opened their corresponding actions. No session-ending
 operation was invoked.
+
+An additional regression test starts a favorite drag and unloads the source
+popup before releasing the pointer. This reproduces the lifetime sequence
+from the maintainer's Qt abort. On CachyOS Wayland, dropping Ark from a Plasma
+Search result and Konsole from Favorites added the missing launcher and left
+the dock running. A copy of the maintainer's bottom-dock profile retained
+its shadow and zoom settings during testing.
+
+With a saved menu size of 818 × 633 logical pixels, KWin received and granted
+856 × 671 including transparent margins, both at the bottom-left corner and
+near the bottom of the right edge. The painted edge met the resting dock
+even in Always Visible mode. The geometry test checks the native slide flags
+for all four edges and the fallback for limited cross-axis space.
+
+The search test uses a disposable krunnerrc and service catalog. It finds the
+fixture application when its provider is enabled, returns to Favorites when
+cleared, then checks an empty result set with the provider disabled. The live
+settings button opened the Plasma Search KCM.
