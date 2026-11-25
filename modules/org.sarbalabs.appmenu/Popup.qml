@@ -164,16 +164,17 @@ FocusScope {
                     // Each data source owns its delegate. Changing the query cannot
                     // briefly bind a runner result to a catalog row (or vice versa).
                     model: page.searching ? resultRows : catalogRows
+                    readonly property var catalogEntries: {
+                        page.revision;
+                        if (!page.history.length) return catalog.favorites(page.favorites);
+                        if (page.history[0].id === "@all") return catalog.allApplications();
+                        return page.group(page.history[page.history.length-1].id, !!page.configuration.alphabetical);
+                    }
+                    onCatalogEntriesChanged: if (!page.searching) Qt.callLater(resetPosition)
                     DelegateModel {
                         id: catalogRows
-                        model: {
-                            page.revision;
-                            if (!page.history.length) return catalog.favorites(page.favorites);
-                            if (page.history[0].id === "@all") return catalog.allApplications();
-                            return page.group(page.history[page.history.length-1].id, !!page.configuration.alphabetical);
-                        }
+                        model: view.catalogEntries
                         delegate: catalogDelegate
-                        onModelChanged: if (!page.searching) Qt.callLater(view.resetPosition)
                     }
                     DelegateModel {
                         id: resultRows
