@@ -126,9 +126,9 @@ These APIs are used, not copied into this repository.
 
 ### Context menu placement and reorder gestures
 
-Menu popup coordinates are explicitly relative to the dock root, using the click
-along the dock axis and the visible capsule/icon envelope on the cross axis.
-Negative margins prevent fitting a window popup inside the narrow host. Saved
+Context menus use both coordinates of the click on the dock. Keyboard menus
+use the selected icon center. The native anchor is relative to the actual
+parent popup when the applications menu is already open. Saved
 launcher lists are observed directly from DockSettings; external order changes
 reset the native manual sort map through SortDisabled -> SortManual. Native drag
 moves keep their current manual map and sync/persist only at release.
@@ -199,8 +199,7 @@ or output changes immediately respect the new bounds without stale larger icons.
 
 Overflow at the floor uses the existing Flickable content, with wheel/trackpad
 input and clamped offsets on content/output changes. Left dragging belongs only
-to native task reorder, avoiding competing Flickable grabs. The popup envelope
-ignores offscreen icons. Input remains clipped to the drawing surface and dodge
+to native task reorder, avoiding competing Flickable grabs. Input remains clipped to the drawing surface and dodge
 continues to follow the capsule only. No timers or compositor changes are added.
 
 Wheel input is received by unrotated root-level handlers rather than the

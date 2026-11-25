@@ -14,6 +14,7 @@ import org.kde.plasma.private.mpris as Mpris
 Item {
     id: controller
     property var activeMenu: null
+    property var launcherPopup: null
     property Item audioTarget: null
     readonly property bool hasTaskAudio: !!audioTarget && menuTarget.valid
         && audioTarget.taskIndex === menuTarget.index.row && audioTarget.streams.length > 0
@@ -190,7 +191,15 @@ Item {
         }
         add(menu, i18n("Configure Plasma Next Dock…"), "configure", () => dockSettings.configure());
         add(menu, i18n("Quit Plasma Next Dock"), "application-exit", () => Qt.quit());
-        dockMenuAnchor.prepare(controller, Qt.point(anchorItem.x, anchorItem.y), dockOptions.edge);
+        // A second grabbed popup must use the open launcher's surface as parent.
+        const nested = launcherPopup?.visible ? launcherPopup.contextAnchor : null;
+        if (nested) {
+            const click = anchorItem.mapToItem(nested.parent, 0, 0);
+            nested.x = click.x;
+            nested.y = click.y;
+            menu.visualParent = nested;
+        }
+        dockMenuAnchor.prepareContextMenu(menu.visualParent, dockOptions.edge);
         menu.openRelative();
     }
     function addWindowActions(menu) {

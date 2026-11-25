@@ -106,6 +106,28 @@ private Q_SLOTS:
         QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(50,70,1,1));
     }
 
+    void pointerMenuWithMultipleDocks() {
+        QQuickWindow dock, otherDock;
+        dock.resize(300, 400);
+        QQuickItem click(dock.contentItem());
+        click.setPosition({40, 50});
+        PopupAnchor owner, other;
+        owner.prepareContextMenu(&click, DockGeometry::Top);
+        other.prepareContextMenu(otherDock.contentItem(), DockGeometry::Bottom);
+        QWindow popup;
+        popup.setFlags(Qt::Popup);
+        popup.resize(50, 60);
+        popup.create();
+        popup.setTransientParent(&dock);
+        QCOMPARE(popup.property("_q_waylandPopupAnchorRect").toRect(), QRect(40, 50, 1, 1));
+        QCOMPARE(popup.property("_q_waylandPopupGravity").value<Qt::Edges>(), Qt::RightEdge | Qt::BottomEdge);
+        QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 0u);
+        // Permit flipping/sliding along the overflowing axis only.
+        popup.resize(50, 2000);
+        owner.prepareContextMenu(&click, DockGeometry::Top);
+        QCOMPARE(popup.property("_q_waylandPopupConstraintAdjustment").toUInt(), 10u);
+    }
+
     void popupShadowPassesPointerInput() {
         QQuickWindow dock;
         dock.resize(450, 300);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls as Controls
 import QtQuick.Effects
 
@@ -19,10 +20,35 @@ Controls.Popup {
     popupType: Controls.Popup.Window
     focus: true
     padding: 0
+    property alias contextAnchor: nestedAnchor
     property size dragSize: Qt.size(0,0)
-    // Qt 6.8 propagates the implicit size to an already open popup window.
-    implicitWidth: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? preferredWidth)) + inset * 2)
-    implicitHeight: Math.min(outputSize.height, (dragSize.height || Number(options.height ?? 490)) + inset * 2)
+    readonly property bool verticalDock: dockOptions.edge >= 2
+    property point trigger
+    readonly property int panelWidth: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? preferredWidth)) + inset * 2)
+    readonly property int panelHeight: Math.min(outputSize.height, (dragSize.height || Number(options.height ?? 490)) + inset * 2)
+    readonly property real along: verticalDock ? trigger.y : trigger.x
+    readonly property int panelLength: verticalDock ? panelHeight : panelWidth
+    readonly property int panelDepth: verticalDock ? panelWidth : panelHeight
+    readonly property int dockGap: Math.max(0, host.modulePopupDepth - inset)
+
+    // The grabbed popup must also be a valid parent for a context menu on the
+    // farthest dock icon. Only the visible panel gets an input/blur region.
+    readonly property int frameLength: Math.min(verticalDock ? outputSize.height : outputSize.width,
+        Math.max(panelLength, Math.ceil(2 * Math.max(along, (verticalDock ? host.height : host.width) - along))))
+    readonly property int frameDepth: Math.min(verticalDock ? outputSize.width : outputSize.height,
+        Math.max(dockGap + panelDepth, verticalDock ? host.width : host.height))
+    implicitWidth: verticalDock ? frameDepth : frameLength
+    implicitHeight: verticalDock ? frameLength : frameDepth
+
+    // KWin may slide the native window near a corner. Align the visible panel
+    // with its button in the final window, clamping it to the available space.
+    readonly property real buttonInFrame: along + (verticalDock
+        ? (host.Window.window?.y ?? 0) - (canvas.Window.window?.y ?? 0)
+        : (host.Window.window?.x ?? 0) - (canvas.Window.window?.x ?? 0))
+    readonly property int panelStart: Math.round(Math.max(0, Math.min(frameLength - panelLength, buttonInFrame - panelLength / 2)))
+    readonly property int panelInset: Math.min(dockGap, frameDepth - panelDepth)
+    readonly property int panelX: !verticalDock ? panelStart : dockOptions.edge === 2 ? panelInset : frameDepth - panelDepth - panelInset
+    readonly property int panelY: verticalDock ? panelStart : dockOptions.edge === 1 ? panelInset : frameDepth - panelDepth - panelInset
     closePolicy: Controls.Popup.CloseOnEscape | Controls.Popup.CloseOnPressOutside
     function showEntry(entry, icon) {
         if (visible) { close(); return; }
@@ -31,16 +57,11 @@ Controls.Popup {
         preferredWidth = entry.preferredPopupWidth || 640;
         moduleId = entry.moduleId;
         contentUrl = url;
-        const center = icon.mapToItem(host, icon.width/2, icon.height/2);
+        trigger = icon.mapToItem(host, icon.width/2, icon.height/2);
         const edge = dockOptions.edge;
-        // Measure the gap between the resting dock and the menu surface.
-        // Its transparent shadow inset may overlap the gap.
-        const offset = host.modulePopupDepth - inset;
-        const ax = edge === 2 ? offset : edge === 3 ? host.width - offset : center.x;
-        const ay = edge === 1 ? offset : edge === 0 ? host.height - offset : center.y;
-        const availableDepth = (host.vertical ? outputSize.width : outputSize.height) - host.modulePopupDepth;
-        const needsCrossSlide = (host.vertical ? width : height) - inset > availableDepth;
-        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, needsCrossSlide, true);
+        const ax = edge === 2 ? 0 : edge === 3 ? host.width - 1 : trigger.x;
+        const ay = edge === 1 ? 0 : edge === 0 ? host.height - 1 : trigger.y;
+        dockMenuAnchor.prepare(host, Qt.point(ax, ay), edge, false, true);
         x = edge === 2 ? ax : edge === 3 ? ax-width : ax-width/2;
         y = edge === 0 ? ay-height : edge === 1 ? ay : ay-height/2;
         open();
@@ -59,41 +80,51 @@ Controls.Popup {
         }
     }
     background: Item {
-        layer.enabled: popup.host.dockShadowEnabled
-        layer.effect: MultiEffect {
-            autoPaddingEnabled: false
-            shadowEnabled: true
-            blurMax: Math.max(1, dockOptions.dockShadowSize ?? 0)
-            shadowBlur: dockOptions.dockShadowSize > 0 ? 1 : 0
-            shadowHorizontalOffset: dockOptions.dockShadowX ?? 0
-            shadowVerticalOffset: dockOptions.dockShadowY ?? 2
-            shadowOpacity: (dockOptions.dockShadowStrength ?? 0)/100
-            shadowColor: popup.paletteSource.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor, popup.paletteSource.shadowColor)
-        }
-        CapsuleBackground {
-            id: surface
-            anchors.fill: parent
-            anchors.margins: popup.inset
-            corners: popup.radii
-            edge: dockOptions.edge
-            backgroundType: popup.capsule.backgroundType === 5 ? 0 : popup.capsule.backgroundType
-            customBackgroundColor: popup.capsule.customBackgroundColor
-            tintOpacity: popup.capsule.backgroundType === 5 ? popup.capsule.topOpacity : popup.capsule.tintOpacity
-            customBorderColor: popup.capsule.customBorderColor
-            customBorderWidth: popup.capsule.customBorderWidth
-            borderOpacity: popup.capsule.borderOpacity
-            onDrawingChanged: Qt.callLater(popup.refreshSurface)
+        Item {
+            x: popup.panelX; y: popup.panelY
+            width: popup.panelWidth; height: popup.panelHeight
             onXChanged: Qt.callLater(popup.refreshSurface)
             onYChanged: Qt.callLater(popup.refreshSurface)
+            layer.enabled: popup.host.dockShadowEnabled
+            layer.effect: MultiEffect {
+                autoPaddingEnabled: false
+                shadowEnabled: true
+                blurMax: Math.max(1, dockOptions.dockShadowSize ?? 0)
+                shadowBlur: dockOptions.dockShadowSize > 0 ? 1 : 0
+                shadowHorizontalOffset: dockOptions.dockShadowX ?? 0
+                shadowVerticalOffset: dockOptions.dockShadowY ?? 2
+                shadowOpacity: (dockOptions.dockShadowStrength ?? 0)/100
+                shadowColor: popup.paletteSource.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor, popup.paletteSource.shadowColor)
+            }
+            CapsuleBackground {
+                id: surface
+                anchors.fill: parent
+                anchors.margins: popup.inset
+                corners: popup.radii
+                edge: dockOptions.edge
+                backgroundType: popup.capsule.backgroundType === 5 ? 0 : popup.capsule.backgroundType
+                customBackgroundColor: popup.capsule.customBackgroundColor
+                tintOpacity: popup.capsule.backgroundType === 5 ? popup.capsule.topOpacity : popup.capsule.tintOpacity
+                customBorderColor: popup.capsule.customBorderColor
+                customBorderWidth: popup.capsule.customBorderWidth
+                borderOpacity: popup.capsule.borderOpacity
+                onDrawingChanged: Qt.callLater(popup.refreshSurface)
+                onXChanged: Qt.callLater(popup.refreshSurface)
+                onYChanged: Qt.callLater(popup.refreshSurface)
+            }
         }
     }
     // Put the handles in the input layer above the module content. The
     // background layer may be rendered into a texture for its shadow.
     contentItem: Item {
+        id: canvas
+        Item { id: nestedAnchor; width: 1; height: 1 }
         Loader {
             id: loader
-            anchors.fill: parent
-            anchors.margins: popup.inset + 8
+            x: popup.panelX + popup.inset + 8
+            y: popup.panelY + popup.inset + 8
+            width: Math.max(0, popup.panelWidth - 2 * (popup.inset + 8))
+            height: Math.max(0, popup.panelHeight - 2 * (popup.inset + 8))
             active: popup.visible
             source: popup.contentUrl
             onLoaded: {
@@ -115,8 +146,8 @@ Controls.Popup {
                 readonly property real band: 8
                 width: horizontal ? band : surface.width - 2*band
                 height: vertical ? band : surface.height - 2*band
-                x: surface.x + (horizontal === 1 ? surface.width-band : horizontal === 0 ? band : 0)
-                y: surface.y + (vertical === 1 ? surface.height-band : vertical === 0 ? band : 0)
+                x: popup.panelX + surface.x + (horizontal === 1 ? surface.width-band : horizontal === 0 ? band : 0)
+                y: popup.panelY + surface.y + (vertical === 1 ? surface.height-band : vertical === 0 ? band : 0)
             }
         }
     }
@@ -139,7 +170,7 @@ Controls.Popup {
         cursorShape: !dx ? Qt.SizeVerCursor : !dy ? Qt.SizeHorCursor : dx === dy ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
         onPressed: mouse => {
             popup.resizeAxes = Qt.point(dx, dy);
-            popup.resizeStart = Qt.size(popup.width - 2*popup.inset, popup.height - 2*popup.inset);
+            popup.resizeStart = Qt.size(popup.panelWidth - 2*popup.inset, popup.panelHeight - 2*popup.inset);
             dockController.beginPopupResize(this, Qt.point(mouse.x, mouse.y));
         }
     }

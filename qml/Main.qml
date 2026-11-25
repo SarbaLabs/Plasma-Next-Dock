@@ -6,7 +6,6 @@ import QtQuick.Effects
 import org.kde.plasma.private.mpris as Mpris
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
-import "code/InteractionGeometry.js" as Interaction
 import "code/AdaptiveLayout.js" as Adaptive
 import "code/TaskBehavior.js" as Behavior
 
@@ -865,18 +864,7 @@ Item {
     }
     function showContextMenu(row, position) {
         previewPanel.dismiss();
-        // Include magnified icons so the menu does not cover their inner edge.
-        let left = bar.x, top = bar.y, right = bar.x + bar.width, bottom = bar.y + bar.height;
-        for (let i = 0; i < repeater.count; ++i) {
-            const icon = repeater.itemAt(i).iconItem;
-            const p = icon.mapToItem(root, 0, 0);
-            if (p.x + icon.width <= 0 || p.y + icon.height <= 0 || p.x >= root.width || p.y >= root.height) continue;
-            left = Math.min(left, Math.max(0, p.x)); top = Math.min(top, Math.max(0, p.y));
-            right = Math.max(right, Math.min(root.width, p.x + icon.width)); bottom = Math.max(bottom, Math.min(root.height, p.y + icon.height));
-        }
-        const anchor = Interaction.menuAnchor(dockOptions.edge,
-            Qt.rect(left, top, right - left, bottom - top), position, 6);
-        contextMenu.showAt(Qt.point(anchor.x, anchor.y), dockOptions.demo ? null : taskSource.item, root.nativeRow(row),
+        contextMenu.showAt(position, dockOptions.demo ? null : taskSource.item, root.nativeRow(row),
                            row >= 0 && root.nativeRow(row) >= 0 ? repeater.itemAt(row)?.menuStatus : null,
                            root.taskRows?.settingsForRow(row) || {}, row >= 0 ? repeater.itemAt(row)?.entry : null);
     }
@@ -948,6 +936,7 @@ Item {
     }
     ModuleSettingsHost { id: moduleSettingsWindow; profile: dockSettings }
     ContextMenu {
+        launcherPopup: modulePopup.item
         onConfigureModuleRequested: module => moduleSettingsWindow.open(module)
         id: contextMenu
         objectName: "dockMenu"

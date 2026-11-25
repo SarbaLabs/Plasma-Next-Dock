@@ -51,13 +51,17 @@ this menu-only translation stage. No system language is hardcoded.
 
 ## Positioning and lifecycle
 
-The click coordinate along the dock and visible capsule/icon envelope across it
-produce a one-pixel visual parent. PlasmaExtras.openRelative places the native
-menu inward using its actual size; the existing PopupAnchor supplies native
-Wayland anchor/gravity. Qt Widgets creates the window before assigning its
-transient parent, so the adapter handles that late assignment too. Submenus keep
-their own parent positioning. The menu inhibits dodge while open. No canvas,
-collision or magnification geometry is changed.
+The right-click position supplies the native menu's one-pixel anchor. Keyboard
+invocation uses the selected icon's center. KWin can flip or slide the menu
+on an axis if the preferred corner would extend beyond the physical output.
+This lets the menu overlap the dock's reserved area at the point clicked.
+
+An open applications menu remains behind the context menu and supplies its
+Wayland parent. Its transparent native window covers the dock icons as well as
+the visible launcher. Only the visible panel and its border accept input or
+receive blur. Mapping the click into this window supplies a valid parent-local
+anchor even when the icon is beyond the far edge of the panel on Qt 6.8.
+Each dock observes late QMenu transient-parent assignment independently.
 
 MenuTarget stores QPersistentModelIndex. Row removals/moves cannot redirect a
 window action to a different task; disappearance invalidates and closes the menu.

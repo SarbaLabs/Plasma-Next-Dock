@@ -1404,3 +1404,14 @@ angle delta of −120 and a pixel delta of −15, a touchpad device type and no
 scroll phase. At 10×, the old menu jumped straight to 150 px. The corrected
 menu reached the same position over approximately 100 ms with intermediate
 positions. A regression test sends both that event and a phased touchpad update.
+
+### Dock context menus at the pointer
+
+On CachyOS Wayland, a right-click at (101, 34) on Firefox in a top dock placed
+the native menu corner at (101, 34), with the launcher closed and with it open.
+On Debian 13 (Qt 6.8), a long dock was tested with the launcher at its left
+end, at both the top and bottom of the output. A right-click beyond the
+visible launcher's right edge opened the native menu at the clicked icon
+while the launcher remained visible. QML tests
+exercise off-center mouse anchors on all four edges. Native tests cover late
+window parenting with multiple docks and output-boundary constraints.
