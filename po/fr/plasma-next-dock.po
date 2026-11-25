@@ -920,3 +920,18 @@ msgstr "Ouvrir la corbeille"
 
 msgid "Empty Trash…"
 msgstr "Vider la corbeille…"
+
+msgid "Open volume"
+msgstr "Ouvrir le volume"
+
+msgid "Mount"
+msgstr "Monter"
+
+msgid "Unmount"
+msgstr "Démonter"
+
+msgid "Safely remove drive"
+msgstr "Retirer le périphérique en toute sécurité"
+
+msgid "Eject"
+msgstr "Éjecter"

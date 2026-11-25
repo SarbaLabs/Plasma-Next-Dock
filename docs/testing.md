@@ -1289,3 +1289,19 @@ events can enter over an unavailable slot, reject a move there and then accept
 one over the adjoining application. On CachyOS Wayland, a test provider held
 in its busy state showed Dolphin's forbidden cursor over Trash and the accepted
 cursor over the application in the same gesture.
+
+### USB storage module
+
+The `usb-module` test runs against a private session bus and Solid fake
+hardware. Two USB volumes appear and an internal volume is filtered out.
+It exercises mount/unmount, absence of an unsupported removal action,
+hot-unplug, rejection of a stale action, the empty module and reattachment.
+
+On the CachyOS Wayland desktop, a kernel-emulated USB mass-storage gadget
+backed by a disposable ext4 image exercised the system UDisks2 service.
+Clicking its dock icon mounted the volume and opened it in Dolphin. With
+a process holding the mount busy, unmount reported the process name and kept
+the volume available. After releasing it, unmount succeeded. Reattaching
+the image as a USB disk and selecting **Safely remove drive** removed the
+entry from both the dock and Dolphin. The full suite passed on CachyOS and
+Debian 13. A physical USB device was not part of this run.

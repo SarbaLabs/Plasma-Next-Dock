@@ -17,6 +17,9 @@ rmdir -- "$folder/native" "$folder" 2>/dev/null || true
 trash="$prefix/share/plasma-next-dock/modules/org.sarbalabs.trash"
 rm -f -- "$trash/metadata.json" "$trash/Main.qml" "$trash/native/qmldir" "$trash/native/libtrashtools.so"
 rmdir -- "$trash/native" "$trash" 2>/dev/null || true
+usb="$prefix/share/plasma-next-dock/modules/org.sarbalabs.usb"
+rm -f -- "$usb/metadata.json" "$usb/Main.qml" "$usb/native/qmldir" "$usb/native/libusbtools.so"
+rmdir -- "$usb/native" "$usb" 2>/dev/null || true
 for catalog in "$prefix"/share/locale/*/LC_MESSAGES/plasma-next-dock.mo; do
     rm -f -- "$catalog"
 done

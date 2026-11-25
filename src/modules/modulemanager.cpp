@@ -162,6 +162,7 @@ bool ModuleManager::dropDirectories(const QList<QUrl> &urls)
 {
     auto *module = directoryReceiver();
     if (!module || urls.isEmpty()) return false;
+    // Acceptance means delivery. A provider may already contain every shortcut.
     Q_EMIT module->directoriesDropped(urls);
     return true;
 }
