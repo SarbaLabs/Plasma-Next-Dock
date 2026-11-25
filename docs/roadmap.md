@@ -211,6 +211,8 @@ plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
 Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
 
+The applications menu supports directional keyboard navigation and the Plasma launcher shortcut on outputs without a native launcher.
+
 ### Validation before packaging
 
 Run build, CTest, QML checks, isolated install and migration tests per PR. Cover

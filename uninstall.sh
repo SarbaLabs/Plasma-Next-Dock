@@ -9,6 +9,9 @@ if [[ -L "$entry" && "$(readlink -m -- "$entry")" == "$(realpath -m -- "$templat
 fi
 rm -f -- "$template" "$prefix/bin/plasma-next-dock" "$prefix/share/applications/org.sarbalabs.PlasmaNextDock.desktop"
 rm -f -- "$prefix/share/icons/hicolor/scalable/apps/org.sarbalabs.PlasmaNextDock.svg"
+relay="$prefix/share/plasma/plasmoids/org.sarbalabs.nextdock.launcherrelay"
+rm -f -- "$relay/metadata.json" "$relay/contents/ui/main.qml"
+rmdir -- "$relay/contents/ui" "$relay/contents" "$relay" 2>/dev/null || true
 module="$prefix/share/plasma-next-dock/modules/org.sarbalabs.unpinned"
 rm -f -- "$module/metadata.json" "$module/Main.qml" "$module/Settings.qml"
 rmdir -- "$module" 2>/dev/null || true
@@ -27,4 +30,4 @@ rmdir -- "$appmenu/native" "$appmenu" 2>/dev/null || true
 for catalog in "$prefix"/share/locale/*/LC_MESSAGES/plasma-next-dock.mo; do
     rm -f -- "$catalog"
 done
-printf 'Removed Plasma Next Dock from %s. No Plasma configuration was changed.\n' "$prefix"
+printf 'Removed Plasma Next Dock from %s. Dock preferences were kept.\n' "$prefix"

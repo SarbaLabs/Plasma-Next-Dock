@@ -1422,3 +1422,18 @@ In a staged installation, the application entry and the autostart template both
 reference `org.sarbalabs.PlasmaNextDock`. The matching SVG in
 `share/icons/hicolor/scalable/apps` matches the source file. Running the
 uninstaller against that prefix removes the installed icon.
+
+### Applications menu keyboard and Meta
+
+The QML arrow-route test traverses search, the category list and applications
+with the sidebar on either side. In an isolated CachyOS KWin session, pressing
+Meta without a previous dock click opened the menu; Down selected categories
+and pressing Meta again dismissed it. With two virtual outputs, the Plasma
+panel retained Kickoff on Virtual-0 and the dock received the shortcut on
+Virtual-1. Restoring Kickoff on a previously dock-only output removed the relay.
+
+On Debian 13, invoking Plasma's launcher action in a disposable Wayland
+session reached the relay and mapped the keyboard layer on Virtual-0. Adding
+Kickoff removed the relay there. Stopping the dock with SIGTERM also removed
+the relay in an isolated CachyOS session. Footer tests move across available
+buttons with a mock session backend and return to the application list.

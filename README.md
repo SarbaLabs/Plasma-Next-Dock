@@ -12,7 +12,7 @@ The foundation, settings, launcher reordering, adaptive sizing and scrolling wer
 validated by the maintainer on CachyOS, including native context menus. Grouping, interactive previews and their corrected placement have also been accepted.
 Advanced indicators, stable magnification anchors and native reveal animation have also been accepted.
 Background modes, blur, spacing and hover controls have also been accepted. Application audio, media controls and status overlays have been accepted. Behavior settings and immediate wheel cycling have been accepted. Icon bounce, hover highlighting and the active indicator palette have been accepted. It does not modify Plasma or KWin, install a
-KWin effect, replace a panel, or touch the existing plasmoid configuration.
+KWin effect, replace a panel, or rebind KDE shortcuts. The applications module manages its own small launcher relay on eligible desktops.
 
 ## What this prototype implements
 
@@ -187,6 +187,19 @@ Its radius can track the magnified icon size (0 = automatic) or use a fixed
 the defaults are 100% intensity and 30% opacity. Each dock saves its own values.
 
 ## Keyboard navigation
+
+**Meta** (or your configured Plasma launcher shortcut) opens the applications
+menu on the active output if that dock has the Applications menu module and
+the desktop and panels there have no Plasma launcher. Kickoff, Kicker and
+other widgets providing the KDE launcher role take priority. The dock installs
+a small Plasma relay and adds/removes its own instance as the layout changes.
+For multiple eligible docks on one output, the first in configuration order wins.
+
+In the menu, Down from an empty search field focuses the categories. Up/Down
+select a category and the arrow pointing into the content focuses its entries.
+Arrows traverse lists and grids, move back toward the sidebar, and reach the
+user profile, search, subfolder Back button and session/power buttons. Enter
+activates the selection. Down from a nonempty search enters its results.
 
 Press **Meta+Alt+Space** to reveal and focus the selected dock (or the first
 available dock). Press the shortcut again during navigation to cycle through

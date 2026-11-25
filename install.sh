@@ -119,7 +119,7 @@ if (( ${#missing[@]} )); then
     } >&2
     exit 1
 fi
-# This project never installs into plasmashell's plasmoid/plugin directories.
+# The standalone dock and its small Plasma launcher relay share the selected prefix.
 prefix="${PLASMA_NEXT_DOCK_PREFIX:-$HOME/.local}"
 if ! cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="$prefix" -DBUILD_TESTING=ON; then
     if (( ${#packages[@]} == 0 )); then

@@ -242,8 +242,10 @@ void DockController::beginPopupResize(QQuickItem *grip, QPointF press)
 
 void DockController::updatePopupSurface(QQuickItem *item, const QList<qreal> &corners, bool vertical, qreal border, bool blur)
 {
-    if (!item || !item->window() || item->window()->type() != Qt::Popup || item->size().isEmpty()) return;
+    if (!item || !item->window() || item->size().isEmpty()) return;
     auto *window = item->window();
+    const bool keyboardMenu = window->property("dockKeyboardMenu").toBool();
+    if (!keyboardMenu && window->type() != Qt::Popup) return;
     if (m_modulePopup != window) {
         if (m_modulePopup) m_modulePopup->removeEventFilter(this);
         m_resizingPopup = false;
@@ -260,6 +262,11 @@ void DockController::updatePopupSurface(QQuickItem *item, const QList<qreal> &co
         stroke.setWidth(2 * border);
         stroke.setJoinStyle(Qt::RoundJoin);
         input |= QRegion(stroke.createStroke(fill).toFillPolygon().toPolygon(), Qt::WindingFill);
+    }
+    if (keyboardMenu && m_pointerWindow) {
+        // Outside clicks dismiss the menu; dock icons remain directly reachable.
+        const QPoint offset = window->mapFromGlobal(m_pointerWindow->mapToGlobal(QPoint()));
+        input |= QRegion(QRect(QPoint(), window->size())) - m_lastInput.translated(offset);
     }
     if (window->mask() != input) window->setMask(input);
     auto *effects = window->findChild<BackgroundEffects *>(QString(), Qt::FindDirectChildrenOnly);

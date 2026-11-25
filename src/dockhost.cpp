@@ -66,6 +66,7 @@ DockHost::DockHost(DockSettings *settings, QScreen *screen, bool demo, bool wayl
     m_view.rootContext()->setContextProperty("dockMenuAnchor", new PopupAnchor(this));
     m_view.rootContext()->setContextProperty("dockController", &m_controller);
     m_view.rootContext()->setContextProperty("dockSettings", settings);
+    m_view.rootContext()->setContextProperty("dockHost", this);
     m_view.rootContext()->setContextProperty("outputSize", screen->size());
     m_view.rootContext()->setContextProperty("outputGeometry", screen->geometry());
     m_view.rootContext()->setContextProperty("dockModules", &m_modules);
@@ -98,6 +99,34 @@ DockHost::~DockHost()
 {
     m_view.hide();
     m_view.setSource(QUrl()); // QML must die before the model/controller.
+}
+// Keyboard activation has no pointer serial for an xdg_popup grab. Give the
+// same Quick menu a temporary keyboard-capable layer on its own output.
+QQuickItem *DockHost::keyboardMenuSurface()
+{
+    if (!m_menuSurface) {
+        m_menuSurface = std::make_unique<QQuickWindow>();
+        m_menuSurface->setColor(Qt::transparent);
+        m_menuSurface->setFlags(Qt::FramelessWindowHint);
+        m_menuSurface->setScreen(m_screen);
+        m_menuSurface->setProperty("dockKeyboardMenu", true);
+        auto *layer = LayerShellQt::Window::get(m_menuSurface.get());
+        selectOutput(layer, m_screen);
+        layer->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorTop) | LayerShellQt::Window::AnchorLeft);
+        layer->setLayer(LayerShellQt::Window::LayerOverlay);
+        layer->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
+        layer->setExclusiveZone(-1);
+        layer->setScope(QStringLiteral("plasma-next-dock-menu"));
+        auto *origin = new LayerSurfacePosition(m_menuSurface.get());
+        auto resize = [this, origin] {
+            m_menuSurface->resize(m_screen->size());
+            origin->setOrigin(m_screen->geometry().topLeft());
+        };
+        connect(m_screen, &QScreen::geometryChanged, m_menuSurface.get(), resize);
+        resize();
+    }
+    m_menuSurface->show();
+    return m_menuSurface->contentItem();
 }
 void DockHost::update(bool settingsOpen)
 {
