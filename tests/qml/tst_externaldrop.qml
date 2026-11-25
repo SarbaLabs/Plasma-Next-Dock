@@ -84,7 +84,8 @@ TestCase {
     function test_localMoveTarget() {
         const drop = createTemporaryObject(dropComponent, test);
         drop.hasLocalMoveTarget = true;
-        drop.localMoveTargetAt = point => point.x > 200;
+        let busy = false;
+        drop.moduleEntryAt = point => point.x > 200 ? {localFileMove: true, acceptsDocuments: !busy} : null;
         let moves = 0;
         drop.moduleDrop = () => { ++moves; return true; };
         const trash = Qt.point(240, 40), app = Qt.point(40, 40);
@@ -97,6 +98,22 @@ TestCase {
             verify(drop.commit(urls, trash, Qt.MoveAction));
         }
         compare(moves, 3);
+        const urls = ["file:///tmp/report.txt"];
+        verify(drop.begin(urls, trash));
+        busy = true;
+        compare(drop.actionAt(trash, Qt.MoveAction | Qt.CopyAction), Qt.IgnoreAction);
+        compare(drop.actionAt(app, Qt.MoveAction | Qt.CopyAction), Qt.CopyAction);
+        verify(!drop.commit(urls, trash));
+        verify(drop.begin(urls, trash));
+        drop.clear();
+        verify(testEnvironment.externalDrag(drop, trash, urls, 0));
+        verify(!testEnvironment.externalDrag(drop, Qt.point(242, 40), urls, 1));
+        verify(testEnvironment.externalDrag(drop, app, urls, 1));
+        testEnvironment.externalDrag(drop, app, urls, 3);
+        verify(drop.begin(urls, trash));
+        busy = false;
+        compare(drop.actionAt(trash, Qt.MoveAction | Qt.CopyAction), Qt.MoveAction);
+        drop.clear();
         verify(drop.begin(["https://example.org/file"], trash));
         verify(!drop.commit(["https://example.org/file"], trash));
         verify(drop.begin(["file:///tmp/local.desktop"], app));

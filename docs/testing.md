@@ -1283,3 +1283,9 @@ Trash, and clicking the module opened that location in Dolphin. In an isolated
 home and private session bus, the native empty action opened KDE’s confirmation.
 Cancel kept the contents and full icon. Confirming removed the test contents
 and restored the empty icon.
+
+The drop regression also toggles Trash availability during a drag. Native drag
+events can enter over an unavailable slot, reject a move there and then accept
+one over the adjoining application. On CachyOS Wayland, a test provider held
+in its busy state showed Dolphin's forbidden cursor over Trash and the accepted
+cursor over the application in the same gesture.

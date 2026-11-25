@@ -12,7 +12,7 @@ DropArea {
     required property var resolver
     required property var target
     property bool hasLocalMoveTarget: false
-    property var localMoveTargetAt: null
+    property var moduleEntryAt: null
     property bool localFiles: false
     property var moduleDrop: null
     property var directoryReceiver: null
@@ -69,8 +69,11 @@ DropArea {
         return true;
     }
     function actionAt(point, supported) {
-        if (localMoveTargetAt && localMoveTargetAt(point))
+        const entry = moduleEntryAt?.(point);
+        if (entry?.localFileMove) {
+            if (!entry.acceptsDocuments || entry.enabled === false) return Qt.IgnoreAction;
             return localFiles && (supported & Qt.MoveAction) ? Qt.MoveAction : Qt.IgnoreAction;
+        }
         return kind !== "localFiles" && (supported & Qt.CopyAction) ? Qt.CopyAction : Qt.IgnoreAction;
     }
     function commit(urls, point, supported = Qt.CopyAction | Qt.MoveAction) {
@@ -106,12 +109,16 @@ DropArea {
         const point = Qt.point(event.x, event.y);
         event.accepted = event.hasUrls && begin(event.urls, point)
             && ((event.supportedActions & Qt.CopyAction) || (localFiles && hasLocalMoveTarget && (event.supportedActions & Qt.MoveAction)));
+        // Keep tracking across the single dock surface, even when the first slot is busy.
         if (event.accepted) event.action = actionAt(point, event.supportedActions);
     }
     onPositionChanged: event => {
         const point = Qt.point(event.x, event.y);
         locate(point);
-        event.action = actionAt(point, event.supportedActions);
+        // Qt Wayland also needs the move event rejected to display the forbidden cursor.
+        const action = actionAt(point, event.supportedActions);
+        event.action = action;
+        event.accepted = action !== Qt.IgnoreAction;
     }
     onExited: clear()
     onScrollDirectionChanged: updateDwell()
