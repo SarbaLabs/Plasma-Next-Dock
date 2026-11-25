@@ -8,7 +8,7 @@ DropArea {
     objectName: "externalDrop"
     required property var tasksSource
     required property var hitTest
-    required property var insertionAnchor
+    required property var insertionAt
     required property var resolver
     required property var target
     property bool hasLocalMoveTarget: false
@@ -29,12 +29,15 @@ DropArea {
     }
     property string kind: ""
     property var launchers: []
+    property var preview: null
+    property var pendingFolder: null
     property bool located: false
     property point dragPoint: Qt.point(0, 0)
     signal groupHovered(int row)
     signal targetChangedDuringDrag(int row)
     signal openedFiles(int row)
     function clear() {
+        folderDwell.stop(); pendingFolder = null; preview = null;
         located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
         target.bind(null, -1);
     }
@@ -42,6 +45,20 @@ DropArea {
         if (!afterScroll && located && point.x === dragPoint.x && point.y === dragPoint.y) return;
         dragPoint = point;
         located = true;
+        if (kind === "applications" || kind === "directories") {
+            const place = moduleEntryAt?.(point)?.localFileMove ? null : insertionAt(point, kind);
+            if (kind === "applications") {
+                preview = place;
+            } else if (!place || place.before !== pendingFolder?.before || place.moduleId !== pendingFolder?.moduleId) {
+                folderDwell.stop();
+                preview = null;
+                pendingFolder = place;
+                if (place) folderDwell.start();
+            } else if (preview) {
+                preview = place;
+            }
+            return;
+        }
         if (kind !== "documents" || !tasksSource) return;
         const row = hitTest(point);
         if (target.valid && target.index.row === row) return;
@@ -88,11 +105,14 @@ DropArea {
         if (action === Qt.MoveAction) {
             accepted = plan.localFiles && moduleDrop && moduleDrop(point, urls);
         } else if (kind === "applications") {
-            accepted = tasksSource.insertLaunchers(plan.launchers, insertionAnchor(point));
+            accepted = tasksSource.insertLaunchers(plan.launchers, preview?.before ?? "");
         } else if (kind === "directories") {
-            // An explicit folder target gets the copy, even on an otherwise empty dock.
-            const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
-            accepted = handled ?? directoryReceiver.dropDirectories(urls);
+            if (preview) {
+                accepted = directoryReceiver.insertDirectories(preview.moduleId, preview.before, urls);
+            } else {
+                const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
+                accepted = handled ?? directoryReceiver.dropDirectories(urls);
+            }
         } else if (moduleDrop && moduleDrop(point, urls)) {
             accepted = true;
         } else if (target.valid) {
@@ -122,6 +142,16 @@ DropArea {
     }
     onExited: clear()
     onScrollDirectionChanged: updateDwell()
+    Timer {
+        id: folderDwell
+        interval: 1000
+        onTriggered: {
+            // Recheck geometry, including scrolling or a removed module, before opening the gap.
+            const current = root.insertionAt(root.dragPoint, root.kind);
+            if (current && current.moduleId === root.pendingFolder?.moduleId && current.before === root.pendingFolder.before)
+                root.preview = current;
+        }
+    }
     Timer {
         interval: 50
         repeat: true

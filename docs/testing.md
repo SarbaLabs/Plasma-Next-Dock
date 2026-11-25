@@ -1375,3 +1375,15 @@ grid exchanged their positions. In Applications and sorting, dragging the first
 row by its handle to the third row saved the order shown on release. These
 checks used a disposable dock profile. The dock gesture test also checks that
 crossing a slot updates the destination before changing the task model.
+
+### External insertion previews
+
+On CachyOS Wayland, dragging Kate from Dolphin into a disposable dock opened
+a space between Firefox and Konsole before release and saved Kate between them.
+Holding a directory between two manual Folders entries opened a space after
+one second. Dropping it there created a shortcut. Dropping the same directory
+directly on a folder icon copied it into the destination on disk.
+
+The QML tests exercise the launcher gap on all four edges, folder dwell,
+cancellation and copy routing. The module test checks ordered insertion,
+deduplication, stale destinations and automatic sorting.

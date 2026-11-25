@@ -122,7 +122,10 @@ dock-wide drops containing only local directories. An explicit document target
 takes precedence. Otherwise the first enabled receiver in dock order handles
 the drop, even if its entry list is empty. A provider may set `reorderable` on
 its entries and handle `onMoveRequested(entryId, destinationId)`. Both IDs
-belong to that provider. Folders uses the same saved manual order as its editor.
+belong to that provider. On manual, reorderable directory receivers, a one-second
+hover between adjacent entries opens an insertion slot. The second argument to
+`onDirectoriesDropped(urls, beforeId)` identifies the entry following that slot.
+Ordinary dock-wide drops pass an empty ID. Folders uses the same saved manual order as its editor.
 
 ## Trash and local file moves
 

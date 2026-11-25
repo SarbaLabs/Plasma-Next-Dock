@@ -21,7 +21,7 @@ Q_SIGNALS:
     void preferencesEdited(const QVariantMap &changes);
     void acceptsDirectoryDropsChanged();
     void moveRequested(const QString &entryId, const QString &destinationId);
-    void directoriesDropped(const QList<QUrl> &urls);
+    void directoriesDropped(const QList<QUrl> &urls, const QString &beforeId);
     void documentsDropped(const QString &entryId, const QList<QUrl> &urls);
     void activated(const QString &entryId);
     void actionTriggered(const QString &entryId, const QString &actionId);
@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE bool moveEntry(const QString &moduleId, const QString &entryId, const QString &destinationId);
     Q_INVOKABLE bool acceptsDirectories() const { return directoryReceiver() != nullptr; }
     Q_INVOKABLE bool dropDirectories(const QList<QUrl> &urls);
+    Q_INVOKABLE bool insertDirectories(const QString &moduleId, const QString &beforeId, const QList<QUrl> &urls);
     Q_INVOKABLE bool dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls);
     Q_INVOKABLE bool activate(const QString &moduleId, const QString &entryId);
     Q_INVOKABLE bool trigger(const QString &moduleId, const QString &entryId, const QString &actionId);

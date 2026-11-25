@@ -18,7 +18,7 @@ Item {
     function middle(index) { middleClicks++; launchRequested(index); }
     ListModel {
         id: entries
-        ListElement { display: "One"; decoration: "folder"; LauncherUrl: "applications:One.desktop"; IsWindow: false }
+        ListElement { display: "One"; decoration: "folder"; LauncherUrl: "applications:One.desktop"; IsWindow: false; IsLauncher: false }
         ListElement { display: "Two"; decoration: "folder"; LauncherUrl: "applications:Two.desktop"; IsWindow: false }
         ListElement { display: "Three"; decoration: "folder"; LauncherUrl: "applications:Three.desktop"; IsWindow: false }
     }

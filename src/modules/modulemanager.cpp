@@ -89,6 +89,7 @@ void ModuleManager::refresh()
             seen.insert(key);
             if (!qobject_cast<const TaskModule *>(instance)) entry.remove("taskRef");
             entry.insert("moduleId", id);
+            entry.insert("directoryInsertion", instance->acceptsDirectoryDrops && entry.value("reorderable").toBool());
             next.append(entry);
         }
     }
@@ -163,8 +164,23 @@ bool ModuleManager::dropDirectories(const QList<QUrl> &urls)
     auto *module = directoryReceiver();
     if (!module || urls.isEmpty()) return false;
     // Acceptance means delivery. A provider may already contain every shortcut.
-    Q_EMIT module->directoriesDropped(urls);
+    Q_EMIT module->directoriesDropped(urls, {});
     return true;
+}
+
+// Resolve the saved boundary again: a module or shortcut can disappear during a drag.
+bool ModuleManager::insertDirectories(const QString &moduleId, const QString &beforeId, const QList<QUrl> &urls)
+{
+    auto *module = m_instances.value(moduleId);
+    if (!module || !module->acceptsDirectoryDrops || urls.isEmpty()) return false;
+    for (const auto &value : module->entries) {
+        const auto entry = value.toMap();
+        if (entry.value("id") == beforeId && entry.value("reorderable").toBool()) {
+            Q_EMIT module->directoriesDropped(urls, beforeId);
+            return true;
+        }
+    }
+    return false;
 }
 
 bool ModuleManager::dropDocuments(const QString &moduleId, const QString &entryId, const QList<QUrl> &urls)
