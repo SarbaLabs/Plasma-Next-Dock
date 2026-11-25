@@ -87,11 +87,27 @@ Item {
     readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,
         vertical ? startPad : (dockOptions.edge === 0 ? inwardPad : 0), vertical ? canvasDepth : canvasLength, vertical ? canvasLength : canvasDepth)
     property int dragDestination: -1
-    property int shortcutTrashRow: -1
+    property int trashDropRow: -1
     property string draggedLauncher: ""
     property int dragIndex: -1
     property var draggedModuleEntry: null
     readonly property bool dragging: dragIndex >= 0
+    // Use the live row for capabilities: a volume can become busy or disappear
+    // between the initial grab and release. Never retarget a replacement row.
+    readonly property string trashAction: {
+        if (!dragging || !externalDrop.hasTrash) return "";
+        const slot = repeater.itemAt(dragIndex);
+        if (!draggedModuleEntry)
+            return slot?.pinned && slot.launchKey === draggedLauncher ? "unpin" : "";
+        const entry = slot?.entry;
+        return entry?.id === draggedModuleEntry.id && entry.moduleId === draggedModuleEntry.moduleId
+            ? moduleTrashAction(entry) : "";
+    }
+    function moduleTrashAction(entry) {
+        if (!entry || entry.enabled === false) return "";
+        const action = entry.trashDropAction;
+        return action && entry.actions?.some(item => item.id === action && item.enabled !== false) ? action : "";
+    }
     readonly property int tooltipLocation: [PlasmaCore.Types.BottomEdge, PlasmaCore.Types.TopEdge,
         PlasmaCore.Types.LeftEdge, PlasmaCore.Types.RightEdge][dockOptions.edge]
     property Item keyboardItem: null
@@ -197,15 +213,13 @@ Item {
         const from = dragIndex, to = dragDestination, source = draggedModuleEntry;
         const target = repeater.itemAt(to);
         const moving = repeater.itemAt(from);
-        const removeShortcut = commit && position && trashAt(position) >= 0;
-        shortcutTrashRow = -1;
+        const action = commit && position && trashAt(position) >= 0 ? trashAction : "";
+        trashDropRow = -1;
         dragIndex = -1;
         dragDestination = -1;
-        if (removeShortcut) {
-            if (source?.moduleId === "org.sarbalabs.folders" && moving?.entry?.id === source.id
-                && moving.entry.moduleId === source.moduleId)
-                dockModules.trigger(source.moduleId, source.id, "remove");
-            else if (!source && moving?.pinned && moving.launchKey === draggedLauncher && taskSource.item.pinned(draggedLauncher))
+        if (action) {
+            if (source) dockModules.trigger(source.moduleId, source.id, action);
+            else if (taskSource.item.pinned(draggedLauncher))
                 taskSource.item.togglePinned(draggedLauncher);
         } else if (commit && from !== to && target && moving) {
             if (source && moving.entry?.id === source.id && moving.entry.moduleId === source.moduleId
@@ -724,8 +738,12 @@ Item {
                             paintedSize: icon.width
                             shadowPadding: root.iconShadowPad
                             shadowEnabled: root.iconShadowEnabled
-                            highlighted: icon.active || root.shortcutTrashRow === slot.index
-                            iconSource: slot.entry?.icon || slot.model.decoration
+                            highlighted: icon.active || (!!root.trashAction && root.trashDropRow === slot.index)
+                            iconSource: {
+                                if (slot.entry?.moduleId === "org.sarbalabs.trash" && root.trashAction)
+                                    return root.trashAction === "unmount" ? "media-eject" : "window-unpin";
+                                return slot.entry?.icon || slot.model.decoration;
+                            }
                             paletteSource: dockPalette
                         }
                         PlasmaCore.ToolTipArea {
@@ -843,8 +861,8 @@ Item {
                     launcherResolver.dragTaskLauncher(root.Window.window, slot.launchKey);
                     return;
                 }
-                const hasTrash = externalDrop.hasShortcutTrash;
-                root.draggedModuleEntry = slot?.entry?.reorderable || (hasTrash && slot?.entry?.moduleId === "org.sarbalabs.folders")
+                const hasTrash = externalDrop.hasTrash;
+                root.draggedModuleEntry = slot?.entry?.reorderable || (hasTrash && root.moduleTrashAction(slot?.entry))
                     ? slot.entry : null;
                 root.dragIndex = root.draggedModuleEntry || (slot?.pinned && (!dockOptions.taskSort || hasTrash)) ? row : -1;
                 root.draggedLauncher = slot?.launchKey ?? "";
@@ -859,9 +877,8 @@ Item {
         onActiveTranslationChanged: {
             if (!active || !root.dragging) return;
             const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
-            root.shortcutTrashRow = externalDrop.hasShortcutTrash && (!root.draggedModuleEntry || root.draggedModuleEntry.moduleId === "org.sarbalabs.folders")
-                ? root.trashAt(p) : -1;
-            if (root.shortcutTrashRow >= 0 || (root.draggedModuleEntry ? !root.draggedModuleEntry.reorderable : dockOptions.taskSort)) {
+            root.trashDropRow = root.trashAction ? root.trashAt(p) : -1;
+            if (root.trashDropRow >= 0 || (root.draggedModuleEntry ? !root.draggedModuleEntry.reorderable : dockOptions.taskSort)) {
                 root.dragDestination = root.dragIndex;
                 return;
             }
@@ -917,7 +934,7 @@ Item {
         target: dropTarget
         hitTest: point => root.nativeRow(root.taskAt(point, false))
         directoryReceiver: typeof dockModules === "undefined" ? null : dockModules
-        readonly property bool hasShortcutTrash: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.moduleId === "org.sarbalabs.trash")
+        readonly property bool hasTrash: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.moduleId === "org.sarbalabs.trash")
         hasLocalMoveTarget: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.localFileMove)
         moduleEntryAt: point => repeater.itemAt(root.taskAt(point, false))?.entry
         moduleDrop: (point, urls) => {

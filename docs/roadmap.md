@@ -209,7 +209,7 @@ The shadow passes pointer input through to the dock. Free edges and corners supp
 The menu also searches installed Plasma Search providers through KF6 KRunner. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
-Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. Running applications can also be dragged to the pinned section. Dropping a pinned application or folder shortcut on the Trash module removes its shortcut. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
+Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. Running applications can also be dragged to the pinned section. Dropping a pinned application or folder shortcut on the Trash module removes its shortcut. The same target unmounts eligible USB volumes and changes its icon to indicate the action during the drag. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
 
 The applications menu supports directional keyboard navigation and the Plasma launcher shortcut on outputs without a native launcher.
 

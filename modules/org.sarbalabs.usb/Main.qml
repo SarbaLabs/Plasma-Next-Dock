@@ -12,7 +12,7 @@ DockModule {
             actions.push({id: "unmount", text: i18n("Unmount")});
         if (volume.removal)
             actions.push({id: "remove", text: volume.removal === "PowerOff" ? i18n("Safely remove drive") : i18n("Eject"), enabled: volume.canRemove});
-        return {id: volume.id, name: volume.name, icon: volume.icon, enabled: !volume.busy, actions: actions};
+        return {id: volume.id, name: volume.name, icon: volume.icon, enabled: !volume.busy, trashDropAction: "unmount", actions: actions};
     })
     onActivated: entryId => usb.run(entryId, "open")
     onActionTriggered: (entryId, actionId) => usb.run(entryId, actionId)

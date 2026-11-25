@@ -10,6 +10,7 @@ DockModule {
     }
     entries: folders.rows.map(row => ({
         id: row.url, name: row.name, icon: row.icon, acceptsDocuments: row.available, reorderable: folders.manual,
+        trashDropAction: "remove",
         actions: [
             {id: "open", text: i18n("Open folder"), enabled: row.available},
             {id: "icon", text: i18n("Choose an icon…")},

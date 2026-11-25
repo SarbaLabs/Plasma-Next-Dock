@@ -1397,6 +1397,11 @@ shortcut on Trash removed the shortcut and preserved the directory and its
 sentinel file. The QML drop test also covers returning to the source module
 before release without saving a pin.
 
+On CachyOS Wayland the USB provider was exercised with a simulated mounted
+volume. The Trash icon changed to eject during the drag and reverted on
+release. After unmount, dragging the same volume no longer offered eject.
+Dragging a pinned application showed the unpin icon instead.
+
 ### Applications menu scrolling and subcategories
 
 On CachyOS Wayland a disposable menu contained Internet → Navigateurs.

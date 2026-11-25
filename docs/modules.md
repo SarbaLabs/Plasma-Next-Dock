@@ -138,6 +138,12 @@ entry. KIO lists the shared `trash:/` location and reports additions and removal
 including hidden items. The package selects a theme icon and delegates opening,
 trashing, emptying, confirmations and errors to KDE.
 
+For internal drags, an entry may set `trashDropAction` to the ID of its
+shortcut-removal or volume-unmount action. The host offers the gesture while
+the entry and its matching action are enabled. The Trash icon switches to
+`media-eject` for `unmount` or `window-unpin` for shortcut removal. On drop
+the source module handles its own action.
+
 A module entry can declare `localFileMove: true` alongside `acceptsDocuments`.
 The dock negotiates a move for that entry only when the source offers a move and
 supplies exclusively local file URLs. This also lets the module receive a local
