@@ -1380,10 +1380,12 @@ crossing a slot updates the destination before changing the task model.
 
 On CachyOS Wayland, dragging Kate from Dolphin into a disposable dock opened
 a space between Firefox and Konsole before release and saved Kate between them.
-Holding a directory between two manual Folders entries opened a space after
-one second. Dropping it there created a shortcut. Dropping the same directory
-directly on a folder icon copied it into the destination on disk.
+Holding a directory over Firefox for two seconds opened a space in Folders.
+Moving across the folder icons shifted the space and dropping there saved the
+shortcut between the two indicated neighbours. A quick drop on a folder icon
+copied the directory into the destination on disk.
 
-The QML tests exercise the launcher gap on all four edges, folder dwell,
-cancellation and copy routing. The module test checks ordered insertion,
-deduplication, stale destinations and automatic sorting.
+The QML tests exercise the launcher gap on all four edges, the two-second
+folder dwell across moving targets, insertion at the end, exit/re-entry and
+direct copy routing. The module test checks ordered insertion, deduplication,
+stale destinations and automatic sorting.

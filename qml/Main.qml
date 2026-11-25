@@ -592,9 +592,11 @@ Item {
                         objectName: "moduleSeparator" + slot.index
                         width: Math.max(1, root.fitScale)
                         height: root.base * 0.65
-                        // The separator stays beyond the last pinned launcher, including its preview.
-                        property real previewOffset: externalDrop.kind === "applications" && slot.pinned
-                            && root.insertionRow === slot.index + 1 ? root.insertionStride : 0
+                        // Keep an appended shortcut on its own side of the separator.
+                        property real previewOffset: root.insertionRow === slot.index + 1
+                            && (externalDrop.kind === "applications" ? slot.pinned
+                                : externalDrop.preview?.moduleId && externalDrop.preview.moduleId === slot.entry?.moduleId)
+                            ? root.insertionStride : 0
                         Behavior on previewOffset {
                             enabled: externalDrop.located
                             NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
@@ -883,23 +885,6 @@ Item {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
         onTapped: eventPoint => root.showContextMenu(dockOptions.demo ? -1 : root.taskAt(eventPoint.position, false), eventPoint.position)
     }
-    // Test the visible seam in row coordinates on every edge. A small tolerance
-    // keeps it reachable with zero icon spacing; the icon body remains a copy target.
-    function folderBoundary(point) {
-        for (let row = 1; row < repeater.count; ++row) {
-            const right = repeater.itemAt(row);
-            if (!right?.entry?.directoryInsertion) continue;
-            const left = repeater.itemAt(row - 1);
-            if (!left?.entry?.directoryInsertion || left.entry.moduleId !== right.entry.moduleId) continue;
-            const a = left.inputItem.mapFromItem(root, point.x, point.y);
-            const b = right.inputItem.mapFromItem(root, point.x, point.y);
-            if (a.y < 0 || b.y < 0 || a.y >= left.inputItem.height || b.y >= right.inputItem.height) continue;
-            const tolerance = Math.max(0, (8 - taskRow.spacing) / 2);
-            if (a.x >= left.inputItem.width - tolerance && b.x <= tolerance)
-                return {row: row, moduleId: right.entry.moduleId, before: right.entry.id};
-        }
-        return null;
-    }
     ExternalDrop {
         id: externalDrop
         scrollView: viewport
@@ -922,14 +907,16 @@ Item {
             ? dockSettings.values.launchers.map(url => String(url).startsWith("applications:") ? String(url) : launcherResolver.launcher(url)) : []
         readonly property bool addingLauncher: launchers.some(id => !pinnedIds.includes(id))
         insertionAt: (point, payloadKind) => {
-            if (payloadKind === "directories") return root.folderBoundary(point);
-            if (dockOptions.taskSort || !addingLauncher) return null;
+            const folders = payloadKind === "directories";
+            if (!folders && (dockOptions.taskSort || !addingLauncher)) return null;
             let last = null, firstTrailing = repeater.count;
             const leading = dockOptions.moduleZones?.left ?? [];
             for (let row = 0; row < repeater.count; ++row) {
                 const slot = repeater.itemAt(row);
                 if (!slot) continue;
-                if (!slot.pinned || slot.entry) {
+                if (folders) {
+                    if (!slot.entry?.directoryInsertion) continue;
+                } else if (!slot.pinned || slot.entry) {
                     if (!last && firstTrailing === repeater.count) {
                         const owner = slot.entry?.moduleId || root.taskRows?.settingsForRow(row)?.id;
                         if (!leading.includes(owner)) firstTrailing = row;
@@ -938,9 +925,10 @@ Item {
                 }
                 last = slot;
                 if (slot.mapFromItem(root, point.x, point.y).x < slot.size / 2)
-                    return {row: row, before: slot.launchKey};
+                    return {row: row, before: folders ? slot.entry.id : slot.launchKey, moduleId: slot.entry?.moduleId};
             }
-            return {row: last ? last.index + 1 : firstTrailing, before: ""};
+            if (folders && !last) return null; // Empty or automatically sorted provider.
+            return {row: last ? last.index + 1 : firstTrailing, before: "", moduleId: last?.entry?.moduleId};
         }
         onGroupHovered: row => {
             const slot = root.nativeSlot(row);

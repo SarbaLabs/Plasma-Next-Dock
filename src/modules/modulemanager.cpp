@@ -175,7 +175,7 @@ bool ModuleManager::insertDirectories(const QString &moduleId, const QString &be
     if (!module || !module->acceptsDirectoryDrops || urls.isEmpty()) return false;
     for (const auto &value : module->entries) {
         const auto entry = value.toMap();
-        if (entry.value("id") == beforeId && entry.value("reorderable").toBool()) {
+        if ((beforeId.isEmpty() || entry.value("id") == beforeId) && entry.value("reorderable").toBool()) {
             Q_EMIT module->directoriesDropped(urls, beforeId);
             return true;
         }

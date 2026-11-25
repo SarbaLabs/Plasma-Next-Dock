@@ -30,14 +30,14 @@ DropArea {
     property string kind: ""
     property var launchers: []
     property var preview: null
-    property var pendingFolder: null
+    property bool folderInsertion: false
     property bool located: false
     property point dragPoint: Qt.point(0, 0)
     signal groupHovered(int row)
     signal targetChangedDuringDrag(int row)
     signal openedFiles(int row)
     function clear() {
-        folderDwell.stop(); pendingFolder = null; preview = null;
+        folderDwell.stop(); folderInsertion = false; preview = null;
         located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
         target.bind(null, -1);
     }
@@ -46,17 +46,10 @@ DropArea {
         dragPoint = point;
         located = true;
         if (kind === "applications" || kind === "directories") {
-            const place = moduleEntryAt?.(point)?.localFileMove ? null : insertionAt(point, kind);
-            if (kind === "applications") {
-                preview = place;
-            } else if (!place || place.before !== pendingFolder?.before || place.moduleId !== pendingFolder?.moduleId) {
-                folderDwell.stop();
+            if (folderInsertion || (kind === "applications" && !moduleEntryAt?.(point)?.localFileMove))
+                preview = insertionAt(point, kind);
+            else
                 preview = null;
-                pendingFolder = place;
-                if (place) folderDwell.start();
-            } else if (preview) {
-                preview = place;
-            }
             return;
         }
         if (kind !== "documents" || !tasksSource) return;
@@ -83,11 +76,12 @@ DropArea {
         localFiles = !!plan.localFiles;
         launchers = plan.launchers || [];
         locate(point);
+        if (kind === "directories") folderDwell.start();
         return true;
     }
     function actionAt(point, supported) {
         const entry = moduleEntryAt?.(point);
-        if (entry?.localFileMove) {
+        if (!folderInsertion && entry?.localFileMove) {
             if (!entry.acceptsDocuments || entry.enabled === false) return Qt.IgnoreAction;
             return localFiles && (supported & Qt.MoveAction) ? Qt.MoveAction : Qt.IgnoreAction;
         }
@@ -107,8 +101,9 @@ DropArea {
         } else if (kind === "applications") {
             accepted = tasksSource.insertLaunchers(plan.launchers, preview?.before ?? "");
         } else if (kind === "directories") {
-            if (preview) {
-                accepted = directoryReceiver.insertDirectories(preview.moduleId, preview.before, urls);
+            if (folderInsertion) {
+                accepted = preview ? directoryReceiver.insertDirectories(preview.moduleId, preview.before, urls)
+                                   : directoryReceiver.dropDirectories(urls);
             } else {
                 const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
                 accepted = handled ?? directoryReceiver.dropDirectories(urls);
@@ -131,6 +126,7 @@ DropArea {
             && ((event.supportedActions & Qt.CopyAction) || (localFiles && hasLocalMoveTarget && (event.supportedActions & Qt.MoveAction)));
         // Keep tracking across the single dock surface, even when the first slot is busy.
         if (event.accepted) event.action = actionAt(point, event.supportedActions);
+        else clear();
     }
     onPositionChanged: event => {
         const point = Qt.point(event.x, event.y);
@@ -144,12 +140,10 @@ DropArea {
     onScrollDirectionChanged: updateDwell()
     Timer {
         id: folderDwell
-        interval: 1000
+        interval: 2000
         onTriggered: {
-            // Recheck geometry, including scrolling or a removed module, before opening the gap.
-            const current = root.insertionAt(root.dragPoint, root.kind);
-            if (current && current.moduleId === root.pendingFolder?.moduleId && current.before === root.pendingFolder.before)
-                root.preview = current;
+            root.folderInsertion = true;
+            root.locate(root.dragPoint, true);
         }
     }
     Timer {

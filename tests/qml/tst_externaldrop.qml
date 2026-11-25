@@ -154,24 +154,35 @@ TestCase {
     }
     function test_folderInsertionDwell() {
         const drop = createTemporaryObject(dropComponent, test);
-        let inserted = "", copies = 0;
+        let inserted = null, copies = 0;
         drop.directoryReceiver = {acceptsDirectories: () => true,
             insertDirectories: (module, before, urls) => { inserted = before; return true; }};
-        drop.insertionAt = point => point.x === 50 ? {row: 1, moduleId: "folders", before: "B"} : null;
+        drop.insertionAt = point => ({row: point.x < 150 ? 1 : 2, moduleId: "folders",
+                                      before: point.x < 150 ? "B" : ""});
         drop.moduleDrop = () => { ++copies; return true; };
-        const urls = ["file:///tmp"], seam = Qt.point(50, 40), body = Qt.point(70, 40);
-        verify(drop.begin(urls, seam));
-        wait(450);
+        const urls = ["file:///tmp"], app = Qt.point(20, 40), folder = Qt.point(100, 40), end = Qt.point(220, 40);
+        function drag(point, type) { return testEnvironment.externalDrag(drop, point, urls, type); }
+
+        verify(drag(app, 0));
+        wait(1300);
+        verify(drag(folder, 1));
         compare(drop.preview, null);
-        drop.locate(body);
-        wait(650);
-        compare(drop.preview, null);
-        verify(drop.commit(urls, body));
-        compare(copies, 1);
-        verify(drop.begin(urls, seam));
-        tryVerify(() => drop.preview?.before === "B", 2000);
-        verify(drop.commit(urls, seam));
-        compare(inserted, "B");
+        // Moving to a different icon does not restart the dock-wide timer.
+        tryCompare(drop, "folderInsertion", true, 1400);
+        compare(drop.preview.before, "B");
+        verify(drag(end, 1));
+        compare(drop.preview.before, "");
+        verify(drag(end, 2));
+        compare(inserted, "");
+        compare(copies, 0);
+        verify(!drop.folderInsertion);
+
+        verify(drag(folder, 0));
+        tryCompare(drop, "folderInsertion", true, 3000);
+        drag(folder, 3);
+        verify(!drop.folderInsertion);
+        verify(drag(folder, 0));
+        verify(drag(folder, 2));
         compare(copies, 1);
         compare(drop.preview, null);
     }
