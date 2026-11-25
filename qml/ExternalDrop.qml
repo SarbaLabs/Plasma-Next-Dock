@@ -8,7 +8,7 @@ DropArea {
     objectName: "externalDrop"
     required property var tasksSource
     required property var hitTest
-    required property var insertionAnchor
+    required property var insertionAt
     required property var resolver
     required property var target
     property bool hasLocalMoveTarget: false
@@ -29,12 +29,15 @@ DropArea {
     }
     property string kind: ""
     property var launchers: []
+    property var preview: null
+    property bool folderInsertion: false
     property bool located: false
     property point dragPoint: Qt.point(0, 0)
     signal groupHovered(int row)
     signal targetChangedDuringDrag(int row)
     signal openedFiles(int row)
     function clear() {
+        folderDwell.stop(); folderInsertion = false; preview = null;
         located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
         target.bind(null, -1);
     }
@@ -42,6 +45,13 @@ DropArea {
         if (!afterScroll && located && point.x === dragPoint.x && point.y === dragPoint.y) return;
         dragPoint = point;
         located = true;
+        if (kind === "applications" || kind === "directories") {
+            if (folderInsertion || (kind === "applications" && !moduleEntryAt?.(point)?.localFileMove))
+                preview = insertionAt(point, kind);
+            else
+                preview = null;
+            return;
+        }
         if (kind !== "documents" || !tasksSource) return;
         const row = hitTest(point);
         if (target.valid && target.index.row === row) return;
@@ -66,11 +76,12 @@ DropArea {
         localFiles = !!plan.localFiles;
         launchers = plan.launchers || [];
         locate(point);
+        if (kind === "directories") folderDwell.start();
         return true;
     }
     function actionAt(point, supported) {
         const entry = moduleEntryAt?.(point);
-        if (entry?.localFileMove) {
+        if (!folderInsertion && entry?.localFileMove) {
             if (!entry.acceptsDocuments || entry.enabled === false) return Qt.IgnoreAction;
             return localFiles && (supported & Qt.MoveAction) ? Qt.MoveAction : Qt.IgnoreAction;
         }
@@ -88,11 +99,15 @@ DropArea {
         if (action === Qt.MoveAction) {
             accepted = plan.localFiles && moduleDrop && moduleDrop(point, urls);
         } else if (kind === "applications") {
-            accepted = tasksSource.insertLaunchers(plan.launchers, insertionAnchor(point));
+            accepted = tasksSource.insertLaunchers(plan.launchers, preview?.before ?? "");
         } else if (kind === "directories") {
-            // An explicit folder target gets the copy, even on an otherwise empty dock.
-            const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
-            accepted = handled ?? directoryReceiver.dropDirectories(urls);
+            if (folderInsertion) {
+                accepted = preview ? directoryReceiver.insertDirectories(preview.moduleId, preview.before, urls)
+                                   : directoryReceiver.dropDirectories(urls);
+            } else {
+                const handled = moduleDrop ? moduleDrop(point, urls) : undefined;
+                accepted = handled ?? directoryReceiver.dropDirectories(urls);
+            }
         } else if (moduleDrop && moduleDrop(point, urls)) {
             accepted = true;
         } else if (target.valid) {
@@ -111,6 +126,7 @@ DropArea {
             && ((event.supportedActions & Qt.CopyAction) || (localFiles && hasLocalMoveTarget && (event.supportedActions & Qt.MoveAction)));
         // Keep tracking across the single dock surface, even when the first slot is busy.
         if (event.accepted) event.action = actionAt(point, event.supportedActions);
+        else clear();
     }
     onPositionChanged: event => {
         const point = Qt.point(event.x, event.y);
@@ -122,6 +138,14 @@ DropArea {
     }
     onExited: clear()
     onScrollDirectionChanged: updateDwell()
+    Timer {
+        id: folderDwell
+        interval: 2000
+        onTriggered: {
+            root.folderInsertion = true;
+            root.locate(root.dragPoint, true);
+        }
+    }
     Timer {
         interval: 50
         repeat: true

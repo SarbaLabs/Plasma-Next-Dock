@@ -40,7 +40,7 @@ TestCase {
             resolver: launcherResolver
             target: fakeTarget
             hitTest: point => point.x < 200 ? 0 : -1
-            insertionAnchor: point => "applications:Second.desktop"
+            insertionAt: (point, kind) => kind === "applications" ? {row: 1, before: "applications:Second.desktop"} : null
         }
     }
     function init() { failOnWarning(/.*(TypeError|ReferenceError).*/); fakeTarget.group = false; fakeTasks.opens = 0; fakeTasks.activations = 0; fakeSource.pins = []; fakeTarget.bind(null, -1); }
@@ -53,7 +53,7 @@ TestCase {
         const view = createTemporaryObject(viewportFixture, test);
         const drop = createTemporaryObject(dropComponent, test, {scrollView: view});
         drop.hitTest = point => Math.floor((point.x + view.contentX) / 40);
-        drop.insertionAnchor = point => String(drop.hitTest(point));
+        drop.insertionAt = point => ({row: drop.hitTest(point), before: String(drop.hitTest(point))});
         const end = Qt.point(295, 150), start = Qt.point(5, 150), middle = Qt.point(150, 150);
         verify(drop.begin(data.urls, end));
         tryVerify(() => view.contentX >= 210);
@@ -152,6 +152,40 @@ TestCase {
         compare(fakeTasks.opens, 3);
         compare(added, 1);
     }
+    function test_folderInsertionDwell() {
+        const drop = createTemporaryObject(dropComponent, test);
+        let inserted = null, copies = 0;
+        drop.directoryReceiver = {acceptsDirectories: () => true,
+            insertDirectories: (module, before, urls) => { inserted = before; return true; }};
+        drop.insertionAt = point => ({row: point.x < 150 ? 1 : 2, moduleId: "folders",
+                                      before: point.x < 150 ? "B" : ""});
+        drop.moduleDrop = () => { ++copies; return true; };
+        const urls = ["file:///tmp"], app = Qt.point(20, 40), folder = Qt.point(100, 40), end = Qt.point(220, 40);
+        function drag(point, type) { return testEnvironment.externalDrag(drop, point, urls, type); }
+
+        verify(drag(app, 0));
+        wait(1300);
+        verify(drag(folder, 1));
+        compare(drop.preview, null);
+        // Moving to a different icon does not restart the dock-wide timer.
+        tryCompare(drop, "folderInsertion", true, 1400);
+        compare(drop.preview.before, "B");
+        verify(drag(end, 1));
+        compare(drop.preview.before, "");
+        verify(drag(end, 2));
+        compare(inserted, "");
+        compare(copies, 0);
+        verify(!drop.folderInsertion);
+
+        verify(drag(folder, 0));
+        tryCompare(drop, "folderInsertion", true, 3000);
+        drag(folder, 3);
+        verify(!drop.folderInsertion);
+        verify(drag(folder, 0));
+        verify(drag(folder, 2));
+        compare(copies, 1);
+        compare(drop.preview, null);
+    }
     function test_nativeDragEventDelivery() {
         const drop = createTemporaryObject(dropComponent, test);
         const urls = ["file:///tmp/document.txt"];
@@ -181,6 +215,10 @@ TestCase {
             source.item.tasks.setProperty(0, "LauncherUrl", "applications:First.desktop");
             source.item.tasks.setProperty(1, "LauncherUrl", "applications:Second.desktop");
             const area = findChild(dock, "externalDrop");
+            area.kind = "applications";
+            area.launchers = ["applications:Third.desktop"];
+            source.item.tasks.setProperty(0, "IsLauncher", true);
+            source.item.tasks.setProperty(1, "IsLauncher", true);
             for (let edge = 0; edge < 4; ++edge) {
                 testEnvironment.setEdge(edge);
                 wait(30);
@@ -188,8 +226,17 @@ TestCase {
                 const center = icon.mapToItem(dock, icon.width / 2, icon.height / 2);
                 const before = Qt.point(center.x - (edge < 2 ? 2 : 0), center.y - (edge >= 2 ? 2 : 0));
                 const after = Qt.point(center.x + (edge < 2 ? 2 : 0), center.y + (edge >= 2 ? 2 : 0));
-                compare(area.insertionAnchor(before), "applications:First.desktop");
-                compare(area.insertionAnchor(after), "applications:Second.desktop");
+                compare(area.insertionAt(before, "applications").before, "applications:First.desktop");
+                compare(area.insertionAt(after, "applications").before, "applications:Second.desktop");
+                area.locate(after);
+                compare(dock.insertionRow, 1);
+                tryVerify(() => dock.insertionSpace >= dock.base);
+                const left = findChild(dock, "task0"), right = findChild(dock, "task1");
+                tryVerify(() => right.mapToItem(left, 0, 0).x - left.width >= dock.base);
+                area.clear();
+                compare(dock.insertionRow, -1);
+                area.kind = "applications";
+                area.launchers = ["applications:Third.desktop"];
             }
         } finally { dockSettings.apply(saved); }
     }

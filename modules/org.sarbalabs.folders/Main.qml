@@ -19,7 +19,7 @@ DockModule {
     }))
     acceptsDirectoryDrops: true
     onMoveRequested: (entryId, destinationId) => folders.move(entryId, folders.shortcuts.findIndex(item => item.url === destinationId))
-    onDirectoriesDropped: urls => folders.add(urls)
+    onDirectoriesDropped: (urls, beforeId) => folders.add(urls, beforeId)
     onActivated: entryId => folders.open(entryId)
     onDocumentsDropped: (entryId, urls) => folders.copy(urls, entryId)
     onActionTriggered: (entryId, actionId) => {

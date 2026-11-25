@@ -24,11 +24,13 @@ Native.FolderTools {
     onMetadataChanged: { updateWatch(); ++revision; }
     onIconChosen: (id, name) => setIcon(id, name)
     onFolderChosen: url => add([url])
-    function add(urls) {
+    function add(urls, beforeId = "") {
         const list = shortcuts.slice();
+        let position = beforeId && manual ? list.findIndex(item => item.url === beforeId) : list.length;
+        if (position < 0) return false;
         for (const url of urls) {
             const id = directory(url);
-            if (id && !list.some(item => item.url === id)) list.push({url: id});
+            if (id && !list.some(item => item.url === id)) list.splice(position++, 0, {url: id});
         }
         if (list.length === shortcuts.length) return false;
         edited({folders: list});

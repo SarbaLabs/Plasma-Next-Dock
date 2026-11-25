@@ -268,6 +268,16 @@ private Q_SLOTS:
         QVERIFY(manager.dropDirectories({QUrl(first), QUrl(second), QUrl(first)}));
         QCOMPARE(manager.entries().size(), 2);
         QCOMPARE(manager.entries().first().toMap()["id"], first);
+        QVERIFY(manager.trigger(module, second, "remove"));
+        QVERIFY(manager.insertDirectories(module, {}, {QUrl(second)}));
+        QCOMPARE(manager.entries().last().toMap()["id"], second);
+        QVERIFY(manager.trigger(module, second, "remove"));
+        QVERIFY(!manager.insertDirectories(module, second, {QUrl(second)}));
+        QVERIFY(manager.insertDirectories(module, first, {QUrl(second), QUrl(first), QUrl(second)}));
+        QCOMPARE(manager.entries().size(), 2);
+        QCOMPARE(manager.entries().first().toMap()["id"], second);
+        QVERIFY(profile.updateModuleSettings(module, {{"sort", "name"}}));
+        QVERIFY(!manager.insertDirectories(module, first, {QUrl(second)}));
         manager.configure({}, {});
         QVERIFY(!manager.acceptsDirectories());
         QVERIFY(!manager.dropDirectories({QUrl(first)}));

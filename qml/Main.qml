@@ -58,7 +58,8 @@ Item {
         ? Math.max(layoutMetrics.depth, Math.min((vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
             edgeSpacing + (dockOptions.indicatorEdgeDistance ?? 2) + 24))
         : layoutMetrics.depth
-    readonly property real length: layoutMetrics.length
+    readonly property real length: Math.min(Math.max(1, availableLength - effectiveAlignmentMargin),
+        Math.max(layoutMetrics.length, occupiedLength))
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
     readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
     readonly property bool dockShadowEnabled: dockOptions.dockShadowStrength > 0 && GraphicsInfo.api !== GraphicsInfo.Software
@@ -247,7 +248,14 @@ Item {
     readonly property real barStart: startPad + endClearance + (length - barLength) * alignmentFactor
     // Row updates its implicit width during polish. Size the painted path from
     // the same slot metrics before polish so an idle frame has the final shape.
-    readonly property real occupiedLength: layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
+    readonly property int insertionRow: externalDrop.preview?.row ?? -1
+    readonly property real insertionStride: base + taskRow.spacing
+    property real insertionSpace: insertionRow >= 0 ? insertionStride : 0
+    Behavior on insertionSpace {
+        enabled: externalDrop.located
+        NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+    }
+    readonly property real occupiedLength: insertionSpace + layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
     readonly property real barLength: Math.min(length, Math.max(1, occupiedLength))
 
     // Match the exclusive depth, but only along the aligned dock at rest.
@@ -288,7 +296,7 @@ Item {
     onHoverDepthChanged: queueGeometry()
     function syncGeometry() {
         const start = Math.max(0, taskRow.x - viewport.contentX);
-        const end = Math.min(viewport.width, taskRow.x + taskRow.width - viewport.contentX);
+        const end = Math.min(viewport.width, taskRow.x + taskRow.width + insertionSpace - viewport.contentX);
         const y = dockOptions.edge === 1 || dockOptions.edge === 3 ? 0 : viewport.height - hoverDepth;
         const band = end > start && repeater.count
             ? [viewport.mapToItem(root, Qt.rect(start, y, end - start, hoverDepth))] : [];
@@ -474,7 +482,7 @@ Item {
             id: taskRow
             layoutDirection: Qt.LeftToRight
             LayoutMirroring.enabled: false
-            x: root.endPadding + Math.max(0, viewport.width - 2 * root.endPadding - width) * root.alignmentFactor
+            x: root.endPadding + Math.max(0, viewport.width - 2 * root.endPadding - width - root.insertionSpace) * root.alignmentFactor
             height: viewport.height
             spacing: (dockOptions.iconSpacing === undefined ? 10 : dockOptions.iconSpacing) * root.fitScale
             onXChanged: root.queueGeometry()
@@ -495,7 +503,7 @@ Item {
                     z: root.dragIndex === index ? 1 : 0
                     transform: Translate {
                         x: {
-                            if (!root.dragging) return 0;
+                            if (!root.dragging) return root.insertionRow >= 0 && slot.index >= root.insertionRow ? root.insertionStride : 0;
                             if (slot.index === root.dragIndex) {
                                 const p = taskRow.mapFromItem(null, reorder.centroid.scenePosition.x, reorder.centroid.scenePosition.y);
                                 return p.x - slot.x - slot.size / 2;
@@ -506,7 +514,7 @@ Item {
                             return 0;
                         }
                         Behavior on x {
-                            enabled: root.dragging && root.dragIndex !== slot.index
+                            enabled: externalDrop.located || (root.dragging && root.dragIndex !== slot.index)
                             NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
                         }
                     }
@@ -584,7 +592,16 @@ Item {
                         objectName: "moduleSeparator" + slot.index
                         width: Math.max(1, root.fitScale)
                         height: root.base * 0.65
-                        x: slot.size + (slot.width - slot.size + taskRow.spacing - width) / 2
+                        // Keep an appended shortcut on its own side of the separator.
+                        property real previewOffset: root.insertionRow === slot.index + 1
+                            && (externalDrop.kind === "applications" ? slot.pinned
+                                : externalDrop.preview?.moduleId && externalDrop.preview.moduleId === slot.entry?.moduleId)
+                            ? root.insertionStride : 0
+                        Behavior on previewOffset {
+                            enabled: externalDrop.located
+                            NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
+                        }
+                        x: previewOffset + slot.size + (slot.width - slot.size + taskRow.spacing - width) / 2
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3)
                             ? root.iconEdge + (root.base - height) / 2
                             : slot.height - root.iconEdge - (root.base + height) / 2
@@ -885,27 +902,33 @@ Item {
             if (entry?.acceptsDocuments === undefined) return undefined;
             return entry.acceptsDocuments && dockModules.dropDocuments(entry.moduleId, entry.id, urls);
         }
-        insertionAnchor: point => {
-            const list = dockSettings.values.launchers;
-            const canonical = list.map(url => launcherResolver.launcher(url));
-            const coordinate = root.vertical ? point.y : point.x;
-            let nearest = -1, distance = Infinity, centerCoordinate = 0;
-            // Select a pinned boundary even when dropping over the unpinned group.
+        // Resolve launcher aliases once per drag, outside the pointer-motion path.
+        readonly property var pinnedIds: kind === "applications"
+            ? dockSettings.values.launchers.map(url => String(url).startsWith("applications:") ? String(url) : launcherResolver.launcher(url)) : []
+        readonly property bool addingLauncher: launchers.some(id => !pinnedIds.includes(id))
+        insertionAt: (point, payloadKind) => {
+            const folders = payloadKind === "directories";
+            if (!folders && (dockOptions.taskSort || !addingLauncher)) return null;
+            let last = null, firstTrailing = repeater.count;
+            const leading = dockOptions.moduleZones?.left ?? [];
             for (let row = 0; row < repeater.count; ++row) {
                 const slot = repeater.itemAt(row);
-                const url = slot.model.LauncherUrlWithoutIcon || slot.model.LauncherUrl || "";
-                const id = launcherResolver.launcher(url);
-                const index = id ? canonical.indexOf(id) : -1;
-                if (index < 0) continue;
-                const center = slot.iconItem.mapToItem(root, slot.iconItem.width / 2, slot.iconItem.height / 2);
-                const axis = root.vertical ? center.y : center.x;
-                if (Math.abs(axis - coordinate) < distance) {
-                    distance = Math.abs(axis - coordinate); nearest = index; centerCoordinate = axis;
+                if (!slot) continue;
+                if (folders) {
+                    if (!slot.entry?.directoryInsertion) continue;
+                } else if (!slot.pinned || slot.entry) {
+                    if (!last && firstTrailing === repeater.count) {
+                        const owner = slot.entry?.moduleId || root.taskRows?.settingsForRow(row)?.id;
+                        if (!leading.includes(owner)) firstTrailing = row;
+                    }
+                    continue;
                 }
+                last = slot;
+                if (slot.mapFromItem(root, point.x, point.y).x < slot.size / 2)
+                    return {row: row, before: folders ? slot.entry.id : slot.launchKey, moduleId: slot.entry?.moduleId};
             }
-            if (nearest < 0) return "";
-            const before = coordinate < centerCoordinate;
-            return before ? list[nearest] : (list[nearest + 1] || "");
+            if (folders && !last) return null; // Empty or automatically sorted provider.
+            return {row: last ? last.index + 1 : firstTrailing, before: "", moduleId: last?.entry?.moduleId};
         }
         onGroupHovered: row => {
             const slot = root.nativeSlot(row);
