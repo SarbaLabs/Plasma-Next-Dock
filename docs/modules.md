@@ -137,6 +137,20 @@ supplies exclusively local file URLs. This also lets the module receive a local
 desktop file as data. Document opening, folder copying and launcher pinning on
 other targets retain their existing actions.
 
+## USB storage
+
+The [USB package](../modules/org.sarbalabs.usb) observes the KDE Places model.
+It resolves each volume's Solid drive ancestor to filter by USB bus. Each
+module instance presents the shared observer's volumes in its own dock.
+Operations resolve a current volume identifier at dispatch. A pending open
+after mount belongs to a persistent model index and runs only on success.
+The last disabled instance releases the observer.
+
+KDE handles filesystem operations and reports busy-device errors. On Linux
+the package also reads the UDisks2 drive's power-off and eject capabilities
+asynchronously. Physical removal requires all its volumes to be unmounted.
+UDisks performs its own in-use and authorization checks.
+
 ## Native task entries
 
 The [unpinned applications package](../modules/org.sarbalabs.unpinned) uses

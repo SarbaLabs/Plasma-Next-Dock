@@ -1,0 +1,2 @@
+module org.sarbalabs.usb.native
+plugin usbtools

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+set(package_dir ${CMAKE_CURRENT_BINARY_DIR}/package)
+set(destination ${CMAKE_INSTALL_DATADIR}/plasma-next-dock/modules/org.sarbalabs.usb)
+foreach(file metadata.json Main.qml native/qmldir)
+    configure_file(${file} ${package_dir}/${file} COPYONLY)
+endforeach()
+add_library(usbtools MODULE native/usbtools.cpp)
+target_link_libraries(usbtools PRIVATE Qt6::Qml KF6::KIOFileWidgets KF6::Solid Qt6::DBus)
+set_target_properties(usbtools PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${package_dir}/native)
+install(FILES metadata.json Main.qml DESTINATION ${destination})
+install(FILES native/qmldir DESTINATION ${destination}/native)
+install(TARGETS usbtools LIBRARY DESTINATION ${destination}/native)

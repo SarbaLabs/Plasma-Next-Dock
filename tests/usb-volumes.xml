@@ -1,0 +1,51 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<machine>
+    <device udi="/org/kde/solid/fakehw/stickA">
+        <property key="interfaces">StorageDrive,Block</property>
+        <property key="bus">usb</property>
+        <property key="driveType">disk</property>
+        <property key="isHotpluggable">true</property>
+    </device>
+    <device udi="/org/kde/solid/fakehw/stickA1">
+        <property key="interfaces">Block,StorageVolume,StorageAccess</property>
+        <property key="parent">/org/kde/solid/fakehw/stickA</property>
+        <property key="usage">filesystem</property>
+        <property key="label">stickA</property>
+        <property key="fsType">ext4</property>
+        <property key="size">1048576</property>
+        <property key="isMounted">false</property>
+        <property key="mountPoint">/tmp/stickA</property>
+    </device>
+    <device udi="/org/kde/solid/fakehw/stickB">
+        <property key="interfaces">StorageDrive,Block</property>
+        <property key="bus">usb</property>
+        <property key="driveType">disk</property>
+        <property key="isHotpluggable">true</property>
+    </device>
+    <device udi="/org/kde/solid/fakehw/stickB1">
+        <property key="interfaces">Block,StorageVolume,StorageAccess</property>
+        <property key="parent">/org/kde/solid/fakehw/stickB</property>
+        <property key="usage">filesystem</property>
+        <property key="label">stickB</property>
+        <property key="fsType">ext4</property>
+        <property key="size">1048576</property>
+        <property key="isMounted">false</property>
+        <property key="mountPoint">/tmp/stickB</property>
+    </device>
+    <device udi="/org/kde/solid/fakehw/internal">
+        <property key="interfaces">StorageDrive,Block</property>
+        <property key="bus">sata</property>
+        <property key="driveType">disk</property>
+        <property key="isHotpluggable">true</property>
+    </device>
+    <device udi="/org/kde/solid/fakehw/internal1">
+        <property key="interfaces">Block,StorageVolume,StorageAccess</property>
+        <property key="parent">/org/kde/solid/fakehw/internal</property>
+        <property key="usage">filesystem</property>
+        <property key="label">internal</property>
+        <property key="fsType">ext4</property>
+        <property key="size">1048576</property>
+        <property key="isMounted">false</property>
+        <property key="mountPoint">/tmp/internal</property>
+    </device>
+</machine>

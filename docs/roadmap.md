@@ -194,8 +194,8 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
   respecting KDE confirmations and errors. Its KIO directory lister tracks content changes for
   `user-trash` and `user-trash-full`.
 - **USB storage** uses Solid events for insertion, state changes and removal.
-  Show each USB storage device with its themed icon and offer open, mount,
-  unmount and safe eject as applicable. Reflect errors and busy state.
+  Each visible volume offers open, mount, unmount and hardware-supported safe
+  removal. See the [USB module checks](testing.md#usb-storage-module).
 - **KDE launcher, optional** investigates real Kickoff (default), Kicker and
   Application Dashboard. Seek native open, edit applications, configure launcher
   and show alternatives actions. Omit the feature if it requires fragile shell

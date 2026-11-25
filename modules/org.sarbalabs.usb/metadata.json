@@ -1,0 +1,9 @@
+{
+    "id": "org.sarbalabs.usb",
+    "apiVersion": 1,
+    "version": "1.0",
+    "name": "USB storage",
+    "nameTranslations": {"fr": "Périphériques USB"},
+    "description": "Open, mount and safely remove USB storage volumes.",
+    "descriptionTranslations": {"fr": "Ouvrez, montez et retirez vos supports de stockage USB en toute sécurité."}
+}

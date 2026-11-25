@@ -122,6 +122,13 @@ them, or right-click and choose **Empty Trash…**. The icon follows changes
 made in Dolphin or on other docks. All docks share the system Trash and KDE’s
 confirmation preferences.
 
+Enable **USB storage** in **Modules** to show the volumes of connected USB
+drives. Click a volume to mount and open it in your file manager. Right-click
+for mount and unmount actions. After unmounting all volumes on a drive, choose
+**Safely remove drive** or **Eject** if the hardware supports it. KDE may
+already eject removable media when unmounting. The module takes up no space
+when its last volume disappears.
+
 ## Capsule backgrounds
 
 In **Appearance → Mode**, **Centered** keeps icons centered in the padded

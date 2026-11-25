@@ -14,6 +14,7 @@ kirigami
 breeze-icons
 ki18n
 kio
+solid
 kiconthemes
 kservice
 knotifications
