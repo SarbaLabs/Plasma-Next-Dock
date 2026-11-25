@@ -22,7 +22,8 @@ public:
     void setModel(QAbstractItemModel *model);
     bool pointerHovered() const { return m_pointerHovered; }
     QPointF pointerPosition() const { return m_pointerPosition; }
-    Q_INVOKABLE void popupBlur(QQuickItem *item, const QList<qreal> &corners, bool vertical, bool enabled);
+    Q_INVOKABLE void beginPopupResize(QQuickItem *grip, QPointF press);
+    Q_INVOKABLE void updatePopupSurface(QQuickItem *item, const QList<qreal> &corners, bool vertical, qreal border, bool blur);
     Q_INVOKABLE void setPointerTarget(QQuickItem *target);
     bool overlapping() const { return m_overlapping; }
     bool hideRequested() const { return m_hideRequested; }
@@ -35,6 +36,8 @@ public:
     Q_INVOKABLE void setHovered(bool hovered);
     Q_INVOKABLE void setAttention(bool attention);
 Q_SIGNALS:
+    void popupResizeMoved(QPointF delta);
+    void popupResizeFinished(bool commit);
     void pointerHoveredChanged();
     void pointerPositionChanged();
     void capsuleChanged(const QPainterPath &path);
@@ -42,6 +45,7 @@ Q_SIGNALS:
     void stateChanged();
 private:
     bool eventFilter(QObject *watched, QEvent *event) override;
+    bool filterPopupEvent(QObject *watched, QEvent *event);
     void attachPointerWindow(QQuickWindow *window);
     void updatePointerHover();
     bool overlapsVisibleWindow() const;
@@ -49,6 +53,9 @@ private:
     void evaluate();
     QPointer<QQuickItem> m_pointerTarget;
     QPointer<QQuickWindow> m_pointerWindow;
+    QPointer<QQuickWindow> m_modulePopup;
+    QPointF m_resizePress;
+    bool m_resizingPopup = false;
     QList<QMetaObject::Connection> m_pointerConnections;
     QPointF m_pointerPosition;
     bool m_pointerPresent = false;

@@ -1353,3 +1353,15 @@ The search test uses a disposable krunnerrc and service catalog. It finds the
 fixture application when its provider is enabled, returns to Favorites when
 cleared, then checks an empty result set with the provider disabled. The live
 settings button opened the Plasma Search KCM.
+
+With a 28 px shadow on CachyOS Wayland, the pointer moved laterally across
+several dock icons inside the menu's shadow and their zoom followed it.
+Clicking the launcher through the shadow closed the menu. The menu body is
+still a native popup above the dock when the painted surfaces overlap.
+
+On Debian 13.7 with Qt 6.8.2, a virtual USB mouse reproduced the original
+lost grab on the first move. Dragging the corrected right edge by 120 px
+changed the menu from 960 to 1080 px wide. A top-right corner drag then
+produced a 1008 × 550 menu. Closing and reopening it yielded the same
+1056 × 598 native surface including its shadow. The core tests cover the
+input outline, the shadow on resize and a button release outside the popup.

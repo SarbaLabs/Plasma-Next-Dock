@@ -18,10 +18,11 @@ Controls.Popup {
     parent: host
     popupType: Controls.Popup.Window
     focus: true
-    padding: inset + 8
+    padding: 0
     property size dragSize: Qt.size(0,0)
-    width: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? preferredWidth)) + inset * 2)
-    height: Math.min(outputSize.height, (dragSize.height || Number(options.height ?? 490)) + inset * 2)
+    // Qt 6.8 propagates the implicit size to an already open popup window.
+    implicitWidth: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? preferredWidth)) + inset * 2)
+    implicitHeight: Math.min(outputSize.height, (dragSize.height || Number(options.height ?? 490)) + inset * 2)
     closePolicy: Controls.Popup.CloseOnEscape | Controls.Popup.CloseOnPressOutside
     function showEntry(entry, icon) {
         if (visible) { close(); return; }
@@ -44,14 +45,12 @@ Controls.Popup {
         y = edge === 0 ? ay-height : edge === 1 ? ay : ay-height/2;
         open();
     }
-    function refreshBlur() {
-        if (opened) dockController.popupBlur(surface, radii, dockOptions.edge >= 2, !!dockOptions.systemBlur);
+    function refreshSurface() {
+        if (opened) dockController.updatePopupSurface(surface, radii, dockOptions.edge >= 2, surface.customBorderWidth, !!dockOptions.systemBlur);
     }
-    onWidthChanged: Qt.callLater(refreshBlur)
-    onHeightChanged: Qt.callLater(refreshBlur)
     onOpened: {
         if (loader.item) loader.item.forceActiveFocus();
-        refreshBlur();
+        refreshSurface();
     }
     Connections {
         target: typeof dockModules === "undefined" ? null : dockModules
@@ -83,6 +82,29 @@ Controls.Popup {
             customBorderColor: popup.capsule.customBorderColor
             customBorderWidth: popup.capsule.customBorderWidth
             borderOpacity: popup.capsule.borderOpacity
+            onDrawingChanged: Qt.callLater(popup.refreshSurface)
+            onXChanged: Qt.callLater(popup.refreshSurface)
+            onYChanged: Qt.callLater(popup.refreshSurface)
+        }
+    }
+    // Put the handles in the input layer above the module content. The
+    // background layer may be rendered into a texture for its shadow.
+    contentItem: Item {
+        Loader {
+            id: loader
+            anchors.fill: parent
+            anchors.margins: popup.inset + 8
+            active: popup.visible
+            source: popup.contentUrl
+            onLoaded: {
+                item.configuration = Qt.binding(() => popup.options);
+                if ("launcherActions" in item) item.launcherActions = Qt.binding(() => popup.launcherActions);
+            }
+            Connections {
+                target: loader.item
+                function onEdited(changes) { dockSettings.updateModuleSettings(popup.moduleId, changes); }
+                function onDismiss() { popup.close(); }
+            }
         }
         Repeater {
             model: [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]]
@@ -100,6 +122,14 @@ Controls.Popup {
     }
     // Resize only along free axes. A corner on the dock-facing edge can
     // still resize parallel to that edge. Store logical pixels on release.
+    property point resizeAxes
+    property size resizeStart
+    // Profile changes reach this window through a queued host update. Keep
+    // the released size until it arrives to avoid a one-frame snap back.
+    onOptionsChanged: {
+        if (dragSize.width > 0 && options.width === dragSize.width && options.height === dragSize.height)
+            dragSize = Qt.size(0, 0);
+    }
     component ResizeGrip: MouseArea {
         required property int horizontal
         required property int vertical
@@ -107,37 +137,23 @@ Controls.Popup {
         readonly property int dy: (dockOptions.edge === 1 && vertical < 0) || (dockOptions.edge === 0 && vertical > 0) ? 0 : vertical
         enabled: dx !== 0 || dy !== 0
         cursorShape: !dx ? Qt.SizeVerCursor : !dy ? Qt.SizeHorCursor : dx === dy ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
-        property point start
-        property size initial
-        preventStealing: true
         onPressed: mouse => {
-            start = mapToGlobal(mouse.x, mouse.y);
-            initial = Qt.size(popup.width - 2*popup.inset, popup.height - 2*popup.inset);
+            popup.resizeAxes = Qt.point(dx, dy);
+            popup.resizeStart = Qt.size(popup.width - 2*popup.inset, popup.height - 2*popup.inset);
+            dockController.beginPopupResize(this, Qt.point(mouse.x, mouse.y));
         }
-        onPositionChanged: mouse => {
-            if (!pressed) return;
-            const pt = mapToGlobal(mouse.x, mouse.y);
-            popup.dragSize = Qt.size(Math.max(420, Math.min(outputSize.width - popup.inset*2, initial.width + dx*(pt.x-start.x))),
-                                     Math.max(300, Math.min(outputSize.height - popup.inset*2, initial.height + dy*(pt.y-start.y))));
-        }
-        onReleased: {
-            if (popup.dragSize.width > 0) dockSettings.updateModuleSettings(popup.moduleId, {width: Math.round(popup.dragSize.width), height: Math.round(popup.dragSize.height)});
-            popup.dragSize = Qt.size(0,0);
-        }
-        onCanceled: popup.dragSize = Qt.size(0,0)
     }
-    contentItem: Loader {
-        id: loader
-        active: popup.visible
-        source: popup.contentUrl
-        onLoaded: {
-            item.configuration = Qt.binding(() => popup.options);
-            if ("launcherActions" in item) item.launcherActions = Qt.binding(() => popup.launcherActions);
+    Connections {
+        target: dockController
+        function onPopupResizeMoved(delta) {
+            popup.dragSize = Qt.size(
+                Math.max(420, Math.min(outputSize.width - 2*popup.inset, Math.round(popup.resizeStart.width + popup.resizeAxes.x*delta.x))),
+                Math.max(300, Math.min(outputSize.height - 2*popup.inset, Math.round(popup.resizeStart.height + popup.resizeAxes.y*delta.y))));
         }
-        Connections {
-            target: loader.item
-            function onEdited(changes) { dockSettings.updateModuleSettings(popup.moduleId, changes); }
-            function onDismiss() { popup.close(); }
+        function onPopupResizeFinished(commit) {
+            if (!commit || popup.dragSize.width <= 0 || popup.dragSize === popup.resizeStart
+                || !dockSettings.updateModuleSettings(popup.moduleId, {width: popup.dragSize.width, height: popup.dragSize.height}))
+                popup.dragSize = Qt.size(0, 0);
         }
     }
 }

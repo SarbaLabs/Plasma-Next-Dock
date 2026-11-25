@@ -205,6 +205,7 @@ The separately designed **Applications menu** uses KDE's application hierarchy
 and per-dock favorites with a dock-styled popup. Favorites can be reordered,
 applications pinned from the menu, and session actions grouped to fit the available width.
 The gap between the popup and the resting dock follows that dock's screen-edge spacing.
+The shadow passes pointer input through to the dock. Free edges and corners support mouse resizing on both Qt baselines.
 The menu also searches installed Plasma Search providers through KF6 KRunner. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
