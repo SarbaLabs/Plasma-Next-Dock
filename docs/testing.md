@@ -1305,3 +1305,36 @@ the volume available. After releasing it, unmount succeeded. Reattaching
 the image as a USB disk and selecting **Safely remove drive** removed the
 entry from both the dock and Dolphin. The full suite passed on CachyOS and
 Debian 13. A physical USB device was not part of this run.
+
+### Native KDE launcher feasibility
+
+On CachyOS with Plasma 6.8.3 and KWin Wayland, a temporary module in a
+separate Plasma Next Dock instance on the right edge activated each installed
+KDE applet by ID via `plasmawindowed`. Both the test dock and the standalone
+applet host used temporary settings. The regular Plasma panel was at the top.
+
+| Action from the test dock | Observed result |
+| --- | --- |
+| Open Kickoff | The real Application Launcher appeared in a decorated window in the center of the screen. |
+| Open Kicker | The real Application Menu also appeared in a separate decorated window. |
+| Open Application Dashboard | Its host window first showed the launcher icon. Clicking that icon opened the dashboard. |
+| Call PlasmaShell's `activateLauncherMenu()` | Kickoff opened at the top-left Plasma panel, across the screen from the clicked entry. |
+
+The installed D-Bus interface on both CachyOS and Debian 13 (Plasma 6.3.6)
+exposes a parameterless activation call. Plasma selects an existing launcher
+from its own containments. The caller cannot supply an applet type, dock
+instance or anchor. Debian verification covered the interface and installed
+applet packages. The graphical observations above were made on CachyOS.
+[KDE shell implementation](https://invent.kde.org/plasma/plasma-workspace/-/blob/v6.3.6/shell/shellcorona.cpp)
+
+Embedding an applet is a different operation from activating it. On Debian's
+libplasma 6.3.5, the host creates an applet QML context and obtains its visual
+item via `PlasmaQuick::AppletQuickItem::itemForApplet()`. Loading the QML
+entry point in the dock's own engine does not create that context. KDE marks
+the hosting header private in both 6.3.5 and the installed 6.8.3 headers.
+The native alternatives dialog also expects an applet and a helper supplied
+by the shell. Three separately selectable dock modules would solve selection
+only; each would still need the same graphical hosting facility.
+[KDE widget model](https://develop.kde.org/docs/plasma/widget/porting_kf6/) ·
+[Applet host implementation](https://invent.kde.org/plasma/libplasma/-/blob/v6.3.5/src/plasmaquick/appletquickitem.cpp) ·
+[Hosting API status](https://invent.kde.org/plasma/libplasma/-/blob/v6.3.5/src/plasmaquick/appletquickitem.h)

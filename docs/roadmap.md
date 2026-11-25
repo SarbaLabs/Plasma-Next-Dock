@@ -107,7 +107,7 @@ dependencies. Record automated results separately from real KWin observations.
 | 5 | Folders module | Add, open, reorder and remove shortcuts. Removing a shortcut preserves the directory. |
 | 6 | Trash module | Open, drop, empty and verify automatic theme icon updates, cancellation and error handling. |
 | 7 | USB storage module | Hotplug multiple devices and exercise supported actions, including a busy-device failure and last-device removal. |
-| 8, optional | Study native KDE launchers, then integrate only if feasible | Record feasibility evidence for the standalone host. A documented decision to omit this module is acceptable. |
+| 8, optional | Native KDE launcher feasibility study completed | Omit the module for v1.0. See the [Wayland observations and hosting constraints](testing.md#native-kde-launcher-feasibility). |
 | Final, if needed | Consolidation across modules | Verify migration, stability, animation performance and supported desktops before packaging. |
 
 ### Module contract and installation (PR 1)
@@ -196,10 +196,9 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
 - **USB storage** uses Solid events for insertion, state changes and removal.
   Each visible volume offers open, mount, unmount and hardware-supported safe
   removal. See the [USB module checks](testing.md#usb-storage-module).
-- **KDE launcher, optional** investigates real Kickoff (default), Kicker and
-  Application Dashboard. Seek native open, edit applications, configure launcher
-  and show alternatives actions. Omit the feature if it requires fragile shell
-  modifications, extensive KDE code duplication or unstable dependencies.
+- **KDE launcher, optional** was investigated on the supported Plasma range.
+  Revisit if KDE exposes a supported way for an external dock to host a chosen
+  applet and open its menu relative to the clicked dock entry.
 
 ### Validation before packaging
 
