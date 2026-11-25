@@ -119,23 +119,67 @@ TestCase {
         compare(personal.compact, false);
     }
 
+    function test_menuWheel_data() {
+        return [{tag:"default", speed:4}, {tag:"original", speed:1}, {tag:"maximum", speed:10}];
+    }
+    function test_menuWheel(data) {
+        const page = loader.item;
+        page.configuration = data.tag === "default" ? {favoritesGrid:false} : {favoritesGrid:false, wheelSpeed:data.speed};
+        const view = page.currentView;
+        view.model.model = Array.from({length:64}, (_, i) => ({name:"Application " + i, id:String(i)}));
+        tryCompare(view, "count", 64);
+        wait(30);
+        const start = view.contentY;
+        const distance = view.cellHeight * data.speed;
+        function wheel(delta) { testEnvironment.wheel(view, Qt.point(12, 12), Qt.point(0, delta), false, false); }
+        wheel(-120);
+        wheel(-120);
+        tryCompare(view, "contentY", start + 2 * distance);
+        wheel(120);
+        tryCompare(view, "contentY", start + distance);
+        testEnvironment.wheel(view, Qt.point(12, 12), Qt.point(0, -8), false, true);
+        tryCompare(view, "contentY", start + distance + 8 * data.speed);
+    }
+
+    function test_waylandWheelPhases() {
+        const page = loader.item;
+        page.configuration = {favoritesGrid:false};
+        const view = page.currentView;
+        view.model.model = Array.from({length:64}, (_, i) => ({name:"Application " + i, id:String(i)}));
+        tryCompare(view, "count", 64);
+        wait(30);
+        const start = view.contentY;
+        testEnvironment.waylandWheel(view, Qt.NoScrollPhase);
+        compare(view.contentY, start); // The wheel animation advances on subsequent frames.
+        tryCompare(view, "contentY", start + 60);
+        testEnvironment.waylandWheel(view, Qt.ScrollUpdate);
+        compare(view.contentY, start + 120); // Track the continuous gesture immediately.
+    }
+
     function test_nestedNavigation() {
         const page = loader.item;
         const view = findChild(page, "menuContents");
         page.configuration = {favorites:["Second.desktop"], favoritesGrid:true, categoryGrid:false, format:3};
         verify(page.favoritesPage);
         compare(view.model.model[0].name, "Second");
-        verify(page.grid);
+        verify(view.grid);
         const internet = page.group("", false).find(row => row.name === "Internet");
         verify(!!internet);
         page.enter(internet);
-        verify(!page.grid);
+        verify(!view.grid);
         const browsers = view.model.model.find(row => row.name === "Browsers");
         verify(!!browsers, JSON.stringify({internet:internet,rows:view.model.model}));
         page.enter(browsers);
-        compare(view.model.model[0].name, "First");
+        const nested = page.currentView;
+        compare(nested.model.model[0].name, "First");
+        verify(nested !== view);
         compare(page.history.length, 2);
+        compare(findChild(page, "subcategoryName").text, "Browsers");
+        tryCompare(nested, "x", 0);
+        verify(nested.visible);
         page.back();
-        compare(view.model.model[0].id, browsers.id);
+        compare(page.currentView.model.model[0].id, browsers.id);
+        tryCompare(page.currentView, "x", 0);
+        verify(!findChild(page, "subcategoryName").visible);
     }
 }

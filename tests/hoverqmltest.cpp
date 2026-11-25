@@ -35,6 +35,7 @@
 #include <QFile>
 #include <QUrl>
 #include <QWheelEvent>
+#include <QPointingDevice>
 #include <QQuickItem>
 class PreviewFixture : public QStandardItemModel
 {
@@ -175,6 +176,17 @@ public:
         QWheelEvent event(scene, item->window()->mapToGlobal(scene), pixels ? delta : QPoint(),
                           pixels ? QPoint() : delta, Qt::NoButton, Qt::NoModifier,
                           Qt::NoScrollPhase, false, synthesized ? Qt::MouseEventSynthesizedBySystem : Qt::MouseEventNotSynthesized);
+        QCoreApplication::sendEvent(item->window(), &event);
+    }
+    // Qt Wayland can label a discrete wheel tick as a touchpad event and
+    // supply both deltas. The phase distinguishes it from a continuous gesture.
+    Q_INVOKABLE void waylandWheel(QQuickItem *item, Qt::ScrollPhase phase) {
+        static const QPointingDevice device(QStringLiteral("Wayland scroll"), 917,
+            QInputDevice::DeviceType::TouchPad, QPointingDevice::PointerType::Finger,
+            QInputDevice::Capability::Position, 5, 0);
+        const auto scene = item->mapToScene(QPointF(12, 12));
+        QWheelEvent event(scene, item->window()->mapToGlobal(scene), QPoint(0, -15), QPoint(0, -120),
+                          Qt::NoButton, Qt::NoModifier, phase, false, Qt::MouseEventNotSynthesized, &device);
         QCoreApplication::sendEvent(item->window(), &event);
     }
     Q_INVOKABLE void behaviorOptions(const QVariantMap &changes) {
