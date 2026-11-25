@@ -48,10 +48,13 @@ Item {
 
     Loader {
         id: exteriorShadow
+        objectName: "exteriorShadow"
+        // Inverted corners extend only as far as the capsule path permits.
+        readonly property real cornerExtension: Math.max(0, Math.min(root.width / 2, root.height / 2, -Math.min(...root.corners)))
         active: root.shadowEnabled && root.shadowStrength > 0
         readonly property int padding: active ? Math.ceil(root.shadowRadius
             + Math.max(Math.abs(root.shadowX), Math.abs(root.shadowY))
-            + root.customBorderWidth + Math.max(0, -Math.min(...root.corners)) + 2) : 0
+            + root.customBorderWidth + cornerExtension + 2) : 0
         anchors.fill: parent
         anchors.margins: -padding
         sourceComponent: CapsuleShadow {

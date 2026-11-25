@@ -37,6 +37,25 @@ TestCase {
         capsule.shadowStrength = 0;
         tryVerify(() => sample(100, 15) === 255);
     }
+    function test_thinCapsuleShadowPadding() {
+        const component = Qt.createComponent("qrc:/qml/CapsuleBackground.qml");
+        const capsule = createTemporaryObject(component, this, {width: 140, height: 8,
+            corners: [-96, 0, 0, 0], shadowEnabled: true, shadowStrength: 1,
+            shadowRadius: 8, shadowX: -5, shadowY: 2, customBorderWidth: 1});
+        verify(capsule);
+        const shadow = findChild(capsule, "exteriorShadow");
+        verify(shadow);
+        // Blur, offset, border and antialiasing account for 16 pixels.
+        compare(shadow.padding, 16 + 4);
+        capsule.edge = 2;
+        capsule.width = 8;
+        capsule.height = 140;
+        compare(shadow.padding, 16 + 4);
+        capsule.corners = [12, -2, 0, 0];
+        compare(shadow.padding, 16 + 2);
+        capsule.corners = [12, 0, 0, 0];
+        compare(shadow.padding, 16);
+    }
     function test_uniformGradient_data() {
         return [0, 0.4, 1].map(opacity => ({tag: "opacity" + opacity, opacity: opacity}));
     }

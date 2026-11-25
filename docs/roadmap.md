@@ -214,6 +214,7 @@ Manual reorder previews and the compositor-driven menu transition landed in PR #
 The applications menu supports directional keyboard navigation and the Plasma launcher shortcut on outputs without a native launcher.
 
 Dock and applications-menu shadows follow the exterior capsule outline independently of background opacity.
+Shadow texture margins use the effective inverted corner radius on thin capsules.
 
 ### Validation before packaging
 
