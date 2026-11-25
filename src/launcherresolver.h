@@ -2,6 +2,7 @@
 #pragma once
 #include <QObject>
 #include <QUrl>
+#include <QQuickWindow>
 #include <QVariantList>
 
 // Installed desktop-entry identities only; never execute or import dropped files.
@@ -13,6 +14,7 @@ public:
     Q_INVOKABLE QVariantList applications() const;
     Q_INVOKABLE QVariantMap describe(const QUrl &url) const;
     Q_INVOKABLE QString launcher(const QUrl &url) const;
+    Q_INVOKABLE void dragTaskLauncher(QQuickWindow *window, const QUrl &url) const;
     Q_INVOKABLE QVariantMap classify(const QList<QUrl> &urls) const;
     Q_INVOKABLE QStringList insert(const QStringList &existing, const QStringList &added, const QString &before) const;
 };

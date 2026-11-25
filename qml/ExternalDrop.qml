@@ -13,6 +13,8 @@ DropArea {
     required property var target
     property bool hasLocalMoveTarget: false
     property var moduleEntryAt: null
+    property bool runningTask: false
+    property var pinZoneContains: null
     property bool localFiles: false
     property var moduleDrop: null
     property var directoryReceiver: null
@@ -38,7 +40,7 @@ DropArea {
     signal openedFiles(int row)
     function clear() {
         folderDwell.stop(); folderInsertion = false; preview = null;
-        located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
+        runningTask = false; located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
         target.bind(null, -1);
     }
     function locate(point, afterScroll = false) {
@@ -46,7 +48,7 @@ DropArea {
         dragPoint = point;
         located = true;
         if (kind === "applications" || kind === "directories") {
-            if (folderInsertion || (kind === "applications" && !moduleEntryAt?.(point)?.localFileMove))
+            if (folderInsertion || (kind === "applications" && (!runningTask || pinZoneContains(point)) && !moduleEntryAt?.(point)?.localFileMove))
                 preview = insertionAt(point, kind);
             else
                 preview = null;
@@ -68,11 +70,12 @@ DropArea {
         if (plan.directoriesOnly && directoryReceiver?.acceptsDirectories()) return "directories";
         return plan.kind || (plan.localFiles && hasLocalMoveTarget ? "localFiles" : "");
     }
-    function begin(urls, point) {
+    function begin(urls, point, fromRunningTask = false) {
         clear();
         const plan = resolver.classify(urls);
         kind = dropKind(plan);
         if (!kind) return false;
+        runningTask = fromRunningTask;
         localFiles = !!plan.localFiles;
         launchers = plan.launchers || [];
         locate(point);
@@ -80,6 +83,7 @@ DropArea {
         return true;
     }
     function actionAt(point, supported) {
+        if (runningTask && (kind !== "applications" || !pinZoneContains(point))) return Qt.IgnoreAction;
         const entry = moduleEntryAt?.(point);
         if (!folderInsertion && entry?.localFileMove) {
             if (!entry.acceptsDocuments || entry.enabled === false) return Qt.IgnoreAction;
@@ -122,7 +126,7 @@ DropArea {
     }
     onEntered: event => {
         const point = Qt.point(event.x, event.y);
-        event.accepted = event.hasUrls && begin(event.urls, point)
+        event.accepted = event.hasUrls && begin(event.urls, point, event.formats.includes("application/x-pnd-running-task"))
             && ((event.supportedActions & Qt.CopyAction) || (localFiles && hasLocalMoveTarget && (event.supportedActions & Qt.MoveAction)));
         // Keep tracking across the single dock surface, even when the first slot is busy.
         if (event.accepted) event.action = actionAt(point, event.supportedActions);

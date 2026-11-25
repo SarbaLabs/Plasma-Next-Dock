@@ -1390,6 +1390,13 @@ folder dwell across moving targets, insertion at the end, exit/re-entry and
 direct copy routing. The module test checks ordered insertion, deduplication,
 stale destinations and automatic sorting.
 
+On CachyOS Wayland a disposable dock accepted KCalc from the unpinned module
+between Dolphin and Konsole. Dropping the newly pinned KCalc on Trash restored
+its running task in the module. Dropping an alphabetically sorted folder
+shortcut on Trash removed the shortcut and preserved the directory and its
+sentinel file. The QML drop test also covers returning to the source module
+before release without saving a pin.
+
 ### Applications menu scrolling and subcategories
 
 On CachyOS Wayland a disposable menu contained Internet → Navigateurs.

@@ -87,6 +87,7 @@ Item {
     readonly property rect interactionBounds: Qt.rect(vertical ? (dockOptions.edge === 3 ? inwardPad : 0) : startPad,
         vertical ? startPad : (dockOptions.edge === 0 ? inwardPad : 0), vertical ? canvasDepth : canvasLength, vertical ? canvasLength : canvasDepth)
     property int dragDestination: -1
+    property int shortcutTrashRow: -1
     property string draggedLauncher: ""
     property int dragIndex: -1
     property var draggedModuleEntry: null
@@ -181,14 +182,32 @@ Item {
         }
         return result;
     }
-    function finishDrag(commit = false) {
+    // Only the Trash input lane is a removal target. The dragged icon can
+    // cover it visually, so a generic first-hit lookup would select the source.
+    function trashAt(position) {
+        for (let row = 0; row < repeater.count; ++row) {
+            const slot = repeater.itemAt(row);
+            if (slot?.entry?.moduleId !== "org.sarbalabs.trash") continue;
+            if (slot.inputItem.contains(slot.inputItem.mapFromItem(root, position))) return row;
+        }
+        return -1;
+    }
+    function finishDrag(commit = false, position = null) {
         if (!dragging) return;
         const from = dragIndex, to = dragDestination, source = draggedModuleEntry;
         const target = repeater.itemAt(to);
         const moving = repeater.itemAt(from);
+        const removeShortcut = commit && position && trashAt(position) >= 0;
+        shortcutTrashRow = -1;
         dragIndex = -1;
         dragDestination = -1;
-        if (commit && from !== to && target && moving) {
+        if (removeShortcut) {
+            if (source?.moduleId === "org.sarbalabs.folders" && moving?.entry?.id === source.id
+                && moving.entry.moduleId === source.moduleId)
+                dockModules.trigger(source.moduleId, source.id, "remove");
+            else if (!source && moving?.pinned && moving.launchKey === draggedLauncher && taskSource.item.pinned(draggedLauncher))
+                taskSource.item.togglePinned(draggedLauncher);
+        } else if (commit && from !== to && target && moving) {
             if (source && moving.entry?.id === source.id && moving.entry.moduleId === source.moduleId
                 && target.entry?.moduleId === source.moduleId && target.entry.reorderable)
                 dockModules.moveEntry(source.moduleId, source.id, target.entry.id);
@@ -705,7 +724,7 @@ Item {
                             paintedSize: icon.width
                             shadowPadding: root.iconShadowPad
                             shadowEnabled: root.iconShadowEnabled
-                            highlighted: icon.active
+                            highlighted: icon.active || root.shortcutTrashRow === slot.index
                             iconSource: slot.entry?.icon || slot.model.decoration
                             paletteSource: dockPalette
                         }
@@ -819,20 +838,33 @@ Item {
                 const p = root.mapFromItem(null, centroid.scenePressPosition.x, centroid.scenePressPosition.y);
                 const row = root.taskAt(p, false);
                 const slot = repeater.itemAt(row);
-                root.draggedModuleEntry = slot?.entry?.reorderable ? slot.entry : null;
-                root.dragIndex = root.draggedModuleEntry || (slot?.pinned && !dockOptions.taskSort) ? row : -1;
+                if (slot && !slot.entry && !slot.pinned && slot.nativeIndex >= 0 && slot.launchKey) {
+                    previewPanel.dismiss();
+                    launcherResolver.dragTaskLauncher(root.Window.window, slot.launchKey);
+                    return;
+                }
+                const hasTrash = externalDrop.hasShortcutTrash;
+                root.draggedModuleEntry = slot?.entry?.reorderable || (hasTrash && slot?.entry?.moduleId === "org.sarbalabs.folders")
+                    ? slot.entry : null;
+                root.dragIndex = root.draggedModuleEntry || (slot?.pinned && (!dockOptions.taskSort || hasTrash)) ? row : -1;
                 root.draggedLauncher = slot?.launchKey ?? "";
                 root.dragDestination = root.dragIndex;
                 if (root.dragging) dockController.setHovered(true);
             }
         }
         onGrabChanged: (transition, point) => {
-            if (transition === PointerDevice.UngrabExclusive) root.finishDrag(true);
+            if (transition === PointerDevice.UngrabExclusive) root.finishDrag(true, root.mapFromItem(null, point.scenePosition));
             else if (transition === PointerDevice.CancelGrabExclusive) root.finishDrag();
         }
         onActiveTranslationChanged: {
             if (!active || !root.dragging) return;
             const p = root.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y);
+            root.shortcutTrashRow = externalDrop.hasShortcutTrash && (!root.draggedModuleEntry || root.draggedModuleEntry.moduleId === "org.sarbalabs.folders")
+                ? root.trashAt(p) : -1;
+            if (root.shortcutTrashRow >= 0 || (root.draggedModuleEntry ? !root.draggedModuleEntry.reorderable : dockOptions.taskSort)) {
+                root.dragDestination = root.dragIndex;
+                return;
+            }
             const axis = taskRow.mapFromItem(root, p.x, p.y).x;
             // Hit-test layout positions, independent of animated translations.
             let nearest = root.dragIndex, distance = Infinity;
@@ -885,6 +917,7 @@ Item {
         target: dropTarget
         hitTest: point => root.nativeRow(root.taskAt(point, false))
         directoryReceiver: typeof dockModules === "undefined" ? null : dockModules
+        readonly property bool hasShortcutTrash: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.moduleId === "org.sarbalabs.trash")
         hasLocalMoveTarget: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.localFileMove)
         moduleEntryAt: point => repeater.itemAt(root.taskAt(point, false))?.entry
         moduleDrop: (point, urls) => {
@@ -896,6 +929,23 @@ Item {
         readonly property var pinnedIds: kind === "applications"
             ? dockSettings.values.launchers.map(url => String(url).startsWith("applications:") ? String(url) : launcherResolver.launcher(url)) : []
         readonly property bool addingLauncher: launchers.some(id => !pinnedIds.includes(id))
+        // A running task may be pinned only in the launcher section. Use layout
+        // coordinates plus the visible gap so animated icons never fight hit testing.
+        pinZoneContains: point => {
+            const axis = taskRow.mapFromItem(root, point.x, point.y).x;
+            const leading = dockOptions.moduleZones?.left ?? [];
+            let start = 0, end = taskRow.width;
+            for (let row = 0; row < repeater.count; ++row) {
+                const slot = repeater.itemAt(row);
+                if (!slot || slot.pinned) continue;
+                const owner = slot.entry?.moduleId || root.taskRows?.settingsForRow(row)?.id;
+                if (leading.includes(owner)) start = slot.x + slot.width;
+                else { end = slot.x; break; }
+            }
+            // Also expose an empty launcher section next to its module boundary.
+            const margin = Math.max(taskRow.spacing / 2, root.base / 4);
+            return axis >= start - margin && axis <= end + root.insertionSpace + margin;
+        }
         insertionAt: (point, payloadKind) => {
             const folders = payloadKind === "directories";
             if (!folders && (dockOptions.taskSort || !addingLauncher)) return null;

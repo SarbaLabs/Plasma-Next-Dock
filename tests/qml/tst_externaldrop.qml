@@ -81,6 +81,25 @@ TestCase {
         compare(drop.scrollDirection, 0);
         drop.clear();
     }
+    function test_runningTaskPinsOnlyInLauncherSection() {
+        const drop = createTemporaryObject(dropComponent, test);
+        const urls = [testLauncherUrls[0]];
+        const modulePoint = Qt.point(250, 40), pins = Qt.point(45, 40);
+        drop.pinZoneContains = point => point.x < 100;
+        verify(drop.begin(urls, modulePoint, true));
+        compare(drop.actionAt(modulePoint, Qt.CopyAction), Qt.IgnoreAction);
+        compare(drop.preview, null);
+        drop.locate(pins);
+        compare(drop.preview.before, "applications:Second.desktop");
+        compare(fakeSource.pins.length, 0);
+        verify(!drop.commit(urls, modulePoint));
+        compare(fakeSource.pins.length, 0);
+        verify(drop.begin(urls, modulePoint, true));
+        verify(drop.commit(urls, pins));
+        compare(fakeSource.pins, ["applications:First.desktop"]);
+        compare(fakeSource.before, "applications:Second.desktop");
+        verify(!drop.runningTask);
+    }
     function test_localMoveTarget() {
         const drop = createTemporaryObject(dropComponent, test);
         drop.hasLocalMoveTarget = true;

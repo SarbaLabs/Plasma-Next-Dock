@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
+#include "launcherdrag.h"
 #include <KApplicationTrader>
 #include <KService>
 #include <QFileInfo>
@@ -46,6 +47,14 @@ QString LauncherResolver::launcher(const QUrl &url) const
 {
     return resolveLauncher(url, KApplicationTrader::query([](const KService::Ptr &s) { return s->isApplication(); }));
 }
+void LauncherResolver::dragTaskLauncher(QQuickWindow *window, const QUrl &url) const
+{
+    const QUrl installed(launcher(url));
+    if (!window || installed.isEmpty()) return;
+    const auto service = KService::serviceByStorageId(installed.path());
+    if (service) startLauncherDrag(window, installed, service->icon(), QStringLiteral("application/x-pnd-running-task"));
+}
+
 QVariantMap LauncherResolver::classify(const QList<QUrl> &urls) const
 {
     if (urls.isEmpty() || urls.size() > 128) return {};
