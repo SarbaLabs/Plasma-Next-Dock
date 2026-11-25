@@ -53,6 +53,7 @@ set(DOCK_QML_FILES
 qt_add_resources(plasma-next-dock dockqml PREFIX / BASE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${DOCK_QML_FILES})
 install(DIRECTORY modules/org.sarbalabs.unpinned DESTINATION ${CMAKE_INSTALL_DATADIR}/plasma-next-dock/modules)
 add_subdirectory(modules/org.sarbalabs.folders)
+add_subdirectory(modules/org.sarbalabs.trash)
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.
@@ -108,6 +109,13 @@ if(BUILD_TESTING)
     add_test(NAME hover-and-render COMMAND hoverqmltest -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml)
     set_tests_properties(hover-and-render PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
     find_program(DOCK_DBUS_RUN_SESSION dbus-run-session REQUIRED)
+    add_executable(trashmoduletest tests/trashmoduletest.cpp)
+    target_link_libraries(trashmoduletest PRIVATE dockcore Qt6::Test)
+    target_compile_definitions(trashmoduletest PRIVATE TRASH_PACKAGE="${CMAKE_CURRENT_BINARY_DIR}/modules/org.sarbalabs.trash/package")
+    add_dependencies(trashmoduletest trashtools)
+    add_test(NAME trash-module COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/trash-module.sh
+        ${DOCK_DBUS_RUN_SESSION} ${CMAKE_CURRENT_SOURCE_DIR}/tests/status/session.conf $<TARGET_FILE:trashmoduletest>)
+    set_tests_properties(trash-module PROPERTIES TIMEOUT 45)
     add_test(NAME native-application-status COMMAND ${DOCK_DBUS_RUN_SESSION} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/tests/status/session.conf -- $<TARGET_FILE:hoverqmltest> -input ${CMAKE_CURRENT_SOURCE_DIR}/tests/status)
     set_tests_properties(native-application-status PROPERTIES TIMEOUT 60 ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
     add_executable(layerpositiontest tests/layerpositiontest.cpp)

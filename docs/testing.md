@@ -1268,3 +1268,18 @@ only loss of a previously valid task should send the dismissal signal. On
 CachyOS Wayland the name stayed visible under a stationary pointer. On Debian
 Wayland, moving from System Settings to Pictures to Downloads and back showed
 each title while the same dock process remained alive.
+
+### Trash module
+
+The isolated KIO test trashes a uniquely named hidden file, checks the full
+icon and enabled empty action, restores that file through KIO and verifies
+both its contents and the original icon. It runs on a private bus with temporary
+XDG directories on the home filesystem. It never empties the aggregate trash.
+QML drop tests cover local files, folders, desktop files, copy-only offers and
+remote links.
+
+On CachyOS Wayland, a Dolphin drag moved a disposable document into the test
+Trash, and clicking the module opened that location in Dolphin. In an isolated
+home and private session bus, the native empty action opened KDE’s confirmation.
+Cancel kept the contents and full icon. Confirming removed the test contents
+and restored the empty icon.

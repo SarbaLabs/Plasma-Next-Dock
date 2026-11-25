@@ -1,0 +1,9 @@
+{
+    "id": "org.sarbalabs.trash",
+    "apiVersion": 1,
+    "version": "1.0",
+    "name": "Trash",
+    "nameTranslations": {"fr": "Corbeille"},
+    "description": "Open and empty the Trash, or drag files here to move them to Trash.",
+    "descriptionTranslations": {"fr": "Ouvrez et videz la corbeille ou glissez-y vos fichiers."}
+}

@@ -11,6 +11,9 @@ DropArea {
     required property var insertionAnchor
     required property var resolver
     required property var target
+    property bool hasLocalMoveTarget: false
+    property var localMoveTargetAt: null
+    property bool localFiles: false
     property var moduleDrop: null
     property var directoryReceiver: null
     property Flickable scrollView: null
@@ -32,7 +35,7 @@ DropArea {
     signal targetChangedDuringDrag(int row)
     signal openedFiles(int row)
     function clear() {
-        located = false; kind = ""; launchers = []; dwell.stop();
+        located = false; localFiles = false; kind = ""; launchers = []; dwell.stop();
         target.bind(null, -1);
     }
     function locate(point, afterScroll = false) {
@@ -52,24 +55,36 @@ DropArea {
             && (target.data("IsWindow") || target.data("IsGroupParent"))) dwell.start();
     }
     function dropKind(plan) {
-        return plan.directoriesOnly && directoryReceiver?.acceptsDirectories() ? "directories" : plan.kind;
+        if (plan.directoriesOnly && directoryReceiver?.acceptsDirectories()) return "directories";
+        return plan.kind || (plan.localFiles && hasLocalMoveTarget ? "localFiles" : "");
     }
     function begin(urls, point) {
         clear();
         const plan = resolver.classify(urls);
-        if (!plan.kind) return false;
-        kind = dropKind(plan); launchers = plan.launchers;
+        kind = dropKind(plan);
+        if (!kind) return false;
+        localFiles = !!plan.localFiles;
+        launchers = plan.launchers || [];
         locate(point);
         return true;
     }
-    function commit(urls, point) {
+    function actionAt(point, supported) {
+        if (localMoveTargetAt && localMoveTargetAt(point))
+            return localFiles && (supported & Qt.MoveAction) ? Qt.MoveAction : Qt.IgnoreAction;
+        return kind !== "localFiles" && (supported & Qt.CopyAction) ? Qt.CopyAction : Qt.IgnoreAction;
+    }
+    function commit(urls, point, supported = Qt.CopyAction | Qt.MoveAction) {
         if (!tasksSource) { clear(); return false; }
         if (point.x !== dragPoint.x || point.y !== dragPoint.y) locate(point);
         // Validate the actual payload again at drop time, not just the offer.
         const plan = resolver.classify(urls);
-        if (!plan.kind || dropKind(plan) !== kind) { clear(); return false; }
+        if (!kind || dropKind(plan) !== kind) { clear(); return false; }
         let accepted = false;
-        if (kind === "applications") {
+        const action = actionAt(point, supported);
+        if (action === Qt.IgnoreAction) { clear(); return false; }
+        if (action === Qt.MoveAction) {
+            accepted = plan.localFiles && moduleDrop && moduleDrop(point, urls);
+        } else if (kind === "applications") {
             accepted = tasksSource.insertLaunchers(plan.launchers, insertionAnchor(point));
         } else if (kind === "directories") {
             // An explicit folder target gets the copy, even on an otherwise empty dock.
@@ -87,8 +102,17 @@ DropArea {
         clear();
         return accepted;
     }
-    onEntered: event => { event.accepted = event.hasUrls && (event.supportedActions & Qt.CopyAction) && begin(event.urls, Qt.point(event.x, event.y)); }
-    onPositionChanged: event => locate(Qt.point(event.x, event.y))
+    onEntered: event => {
+        const point = Qt.point(event.x, event.y);
+        event.accepted = event.hasUrls && begin(event.urls, point)
+            && ((event.supportedActions & Qt.CopyAction) || (localFiles && hasLocalMoveTarget && (event.supportedActions & Qt.MoveAction)));
+        if (event.accepted) event.action = actionAt(point, event.supportedActions);
+    }
+    onPositionChanged: event => {
+        const point = Qt.point(event.x, event.y);
+        locate(point);
+        event.action = actionAt(point, event.supportedActions);
+    }
     onExited: clear()
     onScrollDirectionChanged: updateDwell()
     Timer {
@@ -103,7 +127,9 @@ DropArea {
         }
     }
     onDropped: event => {
-        if ((event.supportedActions & Qt.CopyAction) && commit(event.urls, Qt.point(event.x, event.y))) event.accept(Qt.CopyAction);
+        const point = Qt.point(event.x, event.y);
+        const action = actionAt(point, event.supportedActions);
+        if (commit(event.urls, point, event.supportedActions)) event.accept(action);
         else { clear(); event.accepted = false; }
     }
     Timer {

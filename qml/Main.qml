@@ -812,6 +812,8 @@ Item {
         target: dropTarget
         hitTest: point => root.nativeRow(root.taskAt(point, false))
         directoryReceiver: typeof dockModules === "undefined" ? null : dockModules
+        hasLocalMoveTarget: typeof dockModules !== "undefined" && dockModules.entries.some(entry => entry.localFileMove)
+        localMoveTargetAt: point => repeater.itemAt(root.taskAt(point, false))?.entry?.localFileMove === true
         moduleDrop: (point, urls) => {
             const entry = repeater.itemAt(root.taskAt(point, false))?.entry;
             if (entry?.acceptsDocuments === undefined) return undefined;

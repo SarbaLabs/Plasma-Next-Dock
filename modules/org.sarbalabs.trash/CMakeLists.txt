@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+set(package_dir ${CMAKE_CURRENT_BINARY_DIR}/package)
+set(destination ${CMAKE_INSTALL_DATADIR}/plasma-next-dock/modules/org.sarbalabs.trash)
+foreach(file metadata.json Main.qml native/qmldir)
+    configure_file(${file} ${package_dir}/${file} COPYONLY)
+endforeach()
+add_library(trashtools MODULE native/trashtools.cpp)
+target_link_libraries(trashtools PRIVATE Qt6::Qml KF6::KIOWidgets)
+set_target_properties(trashtools PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${package_dir}/native)
+install(FILES metadata.json Main.qml DESTINATION ${destination})
+install(FILES native/qmldir DESTINATION ${destination}/native)
+install(TARGETS trashtools LIBRARY DESTINATION ${destination}/native)

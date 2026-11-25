@@ -191,7 +191,7 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
   opens the folder and dropping documents copies them with KIO. See
   [module details](modules.md#folder-shortcuts-and-provider-actions).
 - **Trash** opens `trash:/` and uses KIO for asynchronous drops and emptying,
-  respecting confirmations and errors. Track content and theme changes for
+  respecting KDE confirmations and errors. Its KIO directory lister tracks content changes for
   `user-trash` and `user-trash-full`.
 - **USB storage** uses Solid events for insertion, state changes and removal.
   Show each USB storage device with its themed icon and offer open, mount,

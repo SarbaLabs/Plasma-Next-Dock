@@ -116,6 +116,12 @@ your file manager, or drop documents on it to copy them there. Its context
 menu also opens the module settings and lets you choose or restore an icon.
 Overrides belong to this dock. Removing a shortcut leaves the folder on disk.
 
+Enable **Trash** in **Modules** to show the KDE trash icon on that dock. Click
+to open the system Trash, drag local files or directories onto it to trash
+them, or right-click and choose **Empty Trash…**. The icon follows changes
+made in Dolphin or on other docks. All docks share the system Trash and KDE’s
+confirmation preferences.
+
 ## Capsule backgrounds
 
 In **Appearance → Mode**, **Centered** keeps icons centered in the padded
