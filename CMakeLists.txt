@@ -58,6 +58,8 @@ add_subdirectory(modules/org.sarbalabs.folders)
 add_subdirectory(modules/org.sarbalabs.trash)
 add_subdirectory(modules/org.sarbalabs.usb)
 add_subdirectory(modules/org.sarbalabs.appmenu)
+qt_add_resources(plasma-next-dock appicon PREFIX "/icons" BASE data FILES data/org.sarbalabs.PlasmaNextDock.svg)
+install(FILES data/org.sarbalabs.PlasmaNextDock.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 install(TARGETS plasma-next-dock RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 # Generate Exec at install time so --prefix overrides work too. The portal's
 # PATH need not contain a user's ~/.local/bin.

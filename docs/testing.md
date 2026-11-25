@@ -1415,3 +1415,10 @@ visible launcher's right edge opened the native menu at the clicked icon
 while the launcher remained visible. QML tests
 exercise off-center mouse anchors on all four edges. Native tests cover late
 window parenting with multiple docks and output-boundary constraints.
+
+### Capsule application icon
+
+In a staged installation, the application entry and the autostart template both
+reference `org.sarbalabs.PlasmaNextDock`. The matching SVG in
+`share/icons/hicolor/scalable/apps` matches the source file. Running the
+uninstaller against that prefix removes the installed icon.

@@ -209,7 +209,7 @@ The shadow passes pointer input through to the dock. Free edges and corners supp
 The menu also searches installed Plasma Search providers through KF6 KRunner. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
-Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. The next polish pass places dock context menus at the pointer, including over the applications menu.
+Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
 
 ### Validation before packaging
 

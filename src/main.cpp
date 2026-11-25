@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
 #include "dockhost.h"
+#include <QIcon>
 #include <QJsonDocument>
 #include <QTextStream>
 #include "dockprofiles.h"
@@ -35,6 +36,7 @@ int main(int argc, char **argv)
     app.setApplicationName(QStringLiteral("plasma-next-dock"));
     app.setOrganizationName(QStringLiteral("SarbaLabs"));
     app.setDesktopFileName(QStringLiteral("org.sarbalabs.PlasmaNextDock"));
+    app.setWindowIcon(QIcon::fromTheme(app.desktopFileName(), QIcon(QStringLiteral(":/icons/org.sarbalabs.PlasmaNextDock.svg"))));
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Plasma Next Dock — standalone Wayland dock"));
     parser.addHelpOption();
