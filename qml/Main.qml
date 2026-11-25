@@ -362,6 +362,10 @@ Item {
             item.showEntry(entry, icon);
         }
         sourceComponent: ModulePopup {
+            launcherActions: dockOptions.demo || !taskSource.item ? null : ({
+                pinned: url => taskSource.item.pinned(url),
+                togglePinned: url => taskSource.item.togglePinned(url)
+            })
             host: root
             capsule: bar
             paletteSource: dockPalette

@@ -157,7 +157,10 @@ An entry with `popup: true` opens its installed package’s `Popup.qml`.
 The dock anchors the popup at the selected entry, loads its content on demand
 and owns the background and transient window. The content is a Qt Quick Item
 with a `configuration` property and `edited(var changes)` and `dismiss()`
-signals. Preferences are merged into the selected profile.
+signals. Preferences are merged into the selected profile. An entry can set
+`preferredPopupWidth` in logical pixels for the initial size. An optional
+`launcherActions` property on the popup receives the current dock's
+`pinned(url)` and `togglePinned(url)` methods.
 The [Applications menu](../modules/org.sarbalabs.appmenu) browses KService
 groups lazily and launches applications via KIO. Session actions use the
 Plasma Workspace sessions QML plugin available on both supported Plasma

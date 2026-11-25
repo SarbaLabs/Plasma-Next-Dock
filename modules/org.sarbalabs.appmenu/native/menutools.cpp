@@ -6,8 +6,13 @@
 #include <KServiceGroup>
 #include <KSycoca>
 #include <QCollator>
+#include <QDrag>
+#include <QIcon>
+#include <QMimeData>
 #include <QProcess>
 #include <QQmlExtensionPlugin>
+#include <QQuickWindow>
+#include <QUuid>
 #include <QStandardPaths>
 #include <qqml.h>
 #include <algorithm>
@@ -37,8 +42,33 @@ Q_SIGNALS:
 class Catalog : public QObject
 {
     Q_OBJECT
+    // Only this open menu accepts its favorite drags. Every dock accepts the
+    // standard applications: URL through its usual validated launcher drop path.
+    Q_PROPERTY(QString favoriteFormat MEMBER m_favoriteFormat CONSTANT)
 public:
     Catalog() { connect(KSycoca::self(), &KSycoca::databaseChanged, this, &Catalog::changed, Qt::QueuedConnection); }
+    Q_INVOKABLE QUrl launcherUrl(const QString &id) const
+    {
+        QUrl url;
+        url.setScheme(QStringLiteral("applications"));
+        url.setPath(id);
+        return url;
+    }
+    Q_INVOKABLE void dragApplication(QQuickWindow *window, const QString &id, bool favorite)
+    {
+        const auto service = KService::serviceByStorageId(id);
+        if (!window || !service || !service->isApplication()) return;
+        auto *mime = new QMimeData;
+        mime->setUrls({launcherUrl(service->storageId())});
+        if (favorite) mime->setData(m_favoriteFormat, id.toUtf8());
+        auto *drag = new QDrag(window);
+        drag->setMimeData(mime);
+        const auto image = QIcon::fromTheme(service->icon(), QIcon::fromTheme(QStringLiteral("application-x-executable")))
+                               .pixmap(QSize(32, 32), window->devicePixelRatio());
+        drag->setPixmap(image);
+        drag->setHotSpot(QPoint(16, 16));
+        drag->exec(Qt::CopyAction);
+    }
     Q_INVOKABLE QVariantList group(const QString &path, bool alphabetical) const
     {
         const auto group = path.isEmpty() ? KServiceGroup::root() : KServiceGroup::group(path);
@@ -97,6 +127,7 @@ public:
 Q_SIGNALS:
     void changed();
 private:
+    const QString m_favoriteFormat = QStringLiteral("application/x-pnd-favorite-") + QUuid::createUuid().toString(QUuid::WithoutBraces);
     static QVariantMap application(const KService *s)
     {
         return {{"id", s->storageId()}, {"name", s->name()}, {"icon", s->icon()},

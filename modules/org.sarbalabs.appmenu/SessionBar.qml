@@ -1,37 +1,89 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import QtQuick
 import QtQuick.Controls as C
-import QtQuick.Layouts
 import org.kde.plasma.private.sessions as Sessions
 
-RowLayout {
+Item {
     id: bar
+    objectName: "sessionBar"
     signal dismiss()
     Sessions.SessionManagement { id: session }
-    Item { Layout.fillWidth: true }
-    C.ToolButton {
-        text: i18n("Power")
-        icon.name: "system-shutdown"
-        onClicked: power.open()
-        C.Menu {
-            id: power
-            y: -height
-            C.MenuItem { text: i18n("Sleep"); enabled: session.canSuspend; onTriggered: { session.suspend(); bar.dismiss(); } }
-            C.MenuItem { text: i18n("Hibernate"); enabled: session.canHibernate; onTriggered: { session.hibernate(); bar.dismiss(); } }
-            C.MenuItem { text: i18n("Restart…"); enabled: session.canReboot; onTriggered: { session.requestReboot(); bar.dismiss(); } }
-            C.MenuItem { text: i18n("Shut Down…"); enabled: session.canShutdown; onTriggered: { session.requestShutdown(); bar.dismiss(); } }
+    property var backend: session
+    implicitHeight: buttons.implicitHeight
+
+    // Measure the actual translated buttons, including the current theme's
+    // padding. Collapsing a group must not change its measured expanded width.
+    component ActionGroup: Item {
+        id: group
+        required property list<C.Action> actions
+        required property string title
+        required property string iconName
+        required property bool compact
+        readonly property real directWidth: direct.implicitWidth
+        readonly property real groupedWidth: trigger.implicitWidth
+        visible: directWidth > 0
+        implicitWidth: compact ? groupedWidth : directWidth
+        implicitHeight: compact ? trigger.implicitHeight : direct.implicitHeight
+
+        Row {
+            id: direct
+            visible: !group.compact
+            Repeater {
+                model: group.actions
+                C.ToolButton {
+                    required property var modelData
+                    action: modelData
+                    display: C.AbstractButton.TextBesideIcon
+                }
+            }
+        }
+        C.ToolButton {
+            id: trigger
+            visible: group.compact
+            text: group.title
+            icon.name: group.iconName
+            display: C.AbstractButton.TextBesideIcon
+            onClicked: menu.open()
+            C.Menu {
+                id: menu
+                y: -height
+                Repeater {
+                    model: group.actions
+                    C.MenuItem {
+                        required property var modelData
+                        action: modelData
+                    }
+                }
+            }
         }
     }
-    C.ToolButton {
-        text: i18n("Session")
-        icon.name: "system-log-out"
-        onClicked: menu.open()
-        C.Menu {
-            id: menu
-            y: -height
-            C.MenuItem { text: i18n("Lock"); enabled: session.canLock; onTriggered: { session.lock(); bar.dismiss(); } }
-            C.MenuItem { text: i18n("Switch User"); enabled: session.canSwitchUser; onTriggered: { session.switchUser(); bar.dismiss(); } }
-            C.MenuItem { text: i18n("Log Out…"); enabled: session.canLogout; onTriggered: { session.requestLogout(); bar.dismiss(); } }
+    Row {
+        id: buttons
+        anchors.right: parent.right
+        ActionGroup {
+            id: power
+            objectName: "powerActions"
+            title: i18n("Power")
+            iconName: "system-shutdown"
+            compact: personal.compact && directWidth + personal.groupedWidth > bar.width
+            actions: [
+                C.Action { text: i18n("Sleep"); icon.name: "system-suspend"; enabled: bar.backend.canSuspend; onTriggered: { bar.backend.suspend(); bar.dismiss(); } },
+                C.Action { text: i18n("Hibernate"); icon.name: "system-suspend-hibernate"; enabled: bar.backend.canHibernate; onTriggered: { bar.backend.hibernate(); bar.dismiss(); } },
+                C.Action { text: i18n("Restart…"); icon.name: "system-reboot"; enabled: bar.backend.canReboot; onTriggered: { bar.backend.requestReboot(); bar.dismiss(); } },
+                C.Action { text: i18n("Shut Down…"); icon.name: "system-shutdown"; enabled: bar.backend.canShutdown; onTriggered: { bar.backend.requestShutdown(); bar.dismiss(); } }
+            ]
+        }
+        ActionGroup {
+            id: personal
+            objectName: "sessionActions"
+            title: i18n("Session")
+            iconName: "system-log-out"
+            compact: directWidth > 0 && power.directWidth + directWidth > bar.width
+            actions: [
+                C.Action { text: i18n("Lock"); icon.name: "system-lock-screen"; enabled: bar.backend.canLock; onTriggered: { bar.backend.lock(); bar.dismiss(); } },
+                C.Action { text: i18n("Switch User"); icon.name: "system-switch-user"; enabled: bar.backend.canSwitchUser; onTriggered: { bar.backend.switchUser(); bar.dismiss(); } },
+                C.Action { text: i18n("Log Out…"); icon.name: "system-log-out"; enabled: bar.backend.canLogout; onTriggered: { bar.backend.requestLogout(); bar.dismiss(); } }
+            ]
         }
     }
 }

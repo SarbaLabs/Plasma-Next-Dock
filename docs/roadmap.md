@@ -202,7 +202,8 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
   modifications, extensive KDE code duplication or unstable dependencies.
 
 The separately designed **Applications menu** uses KDE's application hierarchy
-and per-dock favorites with a dock-styled popup. It does not host launcher
+and per-dock favorites with a dock-styled popup. Favorites can be reordered,
+applications pinned from the menu, and session actions grouped to fit the available width. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
 ### Validation before packaging

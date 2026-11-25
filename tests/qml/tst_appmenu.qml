@@ -8,9 +8,76 @@ TestCase {
     height: 480
     visible: true
     Loader { id: loader; anchors.fill: parent; active: false; source: appMenuUrl }
-    function test_nestedNavigation() {
+    SignalSpy { id: updates; signalName: "edited" }
+    function init() {
+        width = 640;
         loader.active = true;
         tryCompare(loader, "status", Loader.Ready);
+        updates.target = loader.item;
+        updates.clear();
+    }
+    function cleanup() { loader.active = false; }
+
+    function test_favoriteOrder_data() { return [{tag:"grid", grid:true}, {tag:"list", grid:false}]; }
+    function test_favoriteOrder(data) {
+        const page = loader.item;
+        const view = findChild(page, "menuContents");
+        page.configuration = {favorites:["Second.desktop", "First.desktop"], favoritesGrid:data.grid};
+        compare(view.interactive, false);
+        page.moveFavorite("First.desktop", "Second.desktop");
+        compare(updates.count, 1);
+        compare(updates.signalArguments[0][0].favorites, ["First.desktop", "Second.desktop"]);
+        page.enter({group:true, id:"@all"});
+        page.moveFavorite("First.desktop", "Second.desktop");
+        compare(updates.count, 1);
+        compare(view.model.map(row => row.id).filter(id => ["First.desktop", "Second.desktop"].includes(id)),
+                ["First.desktop", "Second.desktop"]);
+    }
+
+    function test_pinFromMenu() {
+        const page = loader.item;
+        let pinned = "";
+        page.launcherActions = {
+            pinned: url => pinned === url.toString(),
+            togglePinned: url => { pinned = pinned === url.toString() ? "" : url.toString(); }
+        };
+        page.configuration = {favorites:["First.desktop"]};
+        const view = findChild(page, "menuContents");
+        tryVerify(() => !!view.currentItem);
+        const tile = view.currentItem;
+        const action = findChild(page, "menuPinAction");
+        tile.context();
+        const firstLabel = action.text;
+        action.triggered();
+        compare(pinned, "applications:First.desktop");
+        tile.context();
+        verify(action.text !== firstLabel);
+        action.triggered();
+        compare(pinned, "");
+        compare(updates.count, 0);
+    }
+
+    function test_sessionBreakpoints() {
+        const bar = findChild(loader.item, "sessionBar");
+        const personal = findChild(bar, "sessionActions");
+        const power = findChild(bar, "powerActions");
+        tryVerify(() => power.directWidth > power.groupedWidth && personal.directWidth > personal.groupedWidth);
+        const margin = width - bar.width;
+        const wide = Math.ceil(margin + power.directWidth + personal.directWidth);
+        width = wide + 2;
+        tryCompare(personal, "compact", false);
+        compare(power.compact, false);
+        width = Math.ceil(margin + power.directWidth + personal.groupedWidth);
+        tryCompare(personal, "compact", true);
+        compare(power.compact, false);
+        width -= 5;
+        tryCompare(power, "compact", true);
+        width = wide + 2;
+        tryCompare(power, "compact", false);
+        compare(personal.compact, false);
+    }
+
+    function test_nestedNavigation() {
         const page = loader.item;
         const view = findChild(page, "menuContents");
         page.configuration = {favorites:["Second.desktop"], favoritesGrid:true, categoryGrid:false, format:3};
@@ -28,6 +95,5 @@ TestCase {
         compare(page.history.length, 2);
         page.back();
         compare(view.model[0].id, browsers.id);
-        loader.active = false;
     }
 }

@@ -1031,3 +1031,6 @@ msgstr "Déplacer vers le début"
 
 msgid "Move later"
 msgstr "Déplacer vers la fin"
+
+msgid "Open user settings"
+msgstr "Ouvrir les paramètres des utilisateurs"

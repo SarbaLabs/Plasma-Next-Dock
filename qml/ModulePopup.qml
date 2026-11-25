@@ -5,9 +5,11 @@ import QtQuick.Effects
 
 Controls.Popup {
     id: popup
+    required property var launcherActions
     required property Item host
     required property Item capsule
     required property Item paletteSource
+    property int preferredWidth: 640
     property string moduleId: ""
     property url contentUrl
     readonly property var options: dockOptions.moduleSettings?.[moduleId] ?? ({})
@@ -18,13 +20,14 @@ Controls.Popup {
     focus: true
     padding: inset + 8
     property size dragSize: Qt.size(0,0)
-    width: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? 640)) + inset * 2)
+    width: Math.min(outputSize.width, (dragSize.width || Number(options.width ?? preferredWidth)) + inset * 2)
     height: Math.min(outputSize.height, (dragSize.height || Number(options.height ?? 490)) + inset * 2)
     closePolicy: Controls.Popup.CloseOnEscape | Controls.Popup.CloseOnPressOutside
     function showEntry(entry, icon) {
         if (visible) { close(); return; }
         const url = dockModules.metadata(entry.moduleId).popupUrl;
         if (!url) return;
+        preferredWidth = entry.preferredPopupWidth || 640;
         moduleId = entry.moduleId;
         contentUrl = url;
         const center = icon.mapToItem(host, icon.width/2, icon.height/2);
@@ -122,7 +125,10 @@ Controls.Popup {
         id: loader
         active: popup.visible
         source: popup.contentUrl
-        onLoaded: item.configuration = Qt.binding(() => popup.options)
+        onLoaded: {
+            item.configuration = Qt.binding(() => popup.options);
+            if ("launcherActions" in item) item.launcherActions = Qt.binding(() => popup.launcherActions);
+        }
         Connections {
             target: loader.item
             function onEdited(changes) { dockSettings.updateModuleSettings(popup.moduleId, changes); }

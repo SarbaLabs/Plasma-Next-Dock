@@ -1317,3 +1317,15 @@ and resized from the free left edge; the new width appeared in Settings.
 On Debian 13 a simulated touch opened the French menu at the right-edge icon
 with favorites, real KDE categories and the session controls. Session-ending
 actions and simultaneous mixed-scale screens remain manual test cases.
+
+The menu Quick Tests also cover favorite order in grid and list views, category
+order, per-dock pin/unpin actions and both footer breakpoints in both resize
+directions. All 19 CTest targets passed on CachyOS and Debian 13.
+On the CachyOS Wayland desktop, dragging between favorites changed their order
+in both views while the menu stayed open. Dropping Konsole from favorites and
+Ark from the application list onto a disposable dock pinned each application.
+Pinning and unpinning via the context menu updated that dock. Clicking the KDE
+profile opened Users in System Settings. A fresh menu showed seven direct
+buttons in French. Dragging the free edge inward grouped Session first and
+then Power; both buttons opened their corresponding actions. No session-ending
+operation was invoked.

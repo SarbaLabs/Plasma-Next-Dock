@@ -3,11 +3,16 @@ import QtQuick
 import QtQuick.Controls as C
 import QtQuick.Layouts
 import org.kde.kirigami as K
+import org.kde.kirigamiaddons.components as Components
+import org.kde.coreaddons as Core
+import org.kde.config as Config
+import org.kde.kcmutils as KCM
 import "native" as Native
 
 FocusScope {
     id: page
     property var configuration: ({})
+    property var launcherActions: null
     signal edited(var changes)
     signal dismiss()
     property var history: []
@@ -27,6 +32,10 @@ FocusScope {
         const next = favorites.includes(id) ? favorites.filter(f => f !== id) : favorites.concat([id]);
         edited({favorites: next});
     }
+    function moveFavorite(id, destination) {
+        if (!favoritesPage || id === destination || !favorites.includes(destination)) return;
+        shiftFavorite(id, favorites.indexOf(destination) - favorites.indexOf(id));
+    }
     function shiftFavorite(id, offset) {
         const next = favorites.slice();
         const index = next.indexOf(id);
@@ -38,6 +47,37 @@ FocusScope {
     Shortcut { sequence: "Alt+Left"; enabled: page.history.length > 1; onActivated: page.back() }
     ColumnLayout {
         anchors.fill: parent
+        C.ItemDelegate {
+            id: profile
+            Core.KUser { id: user }
+            readonly property string displayName: user.fullName || user.loginName
+            enabled: Config.KAuthorized.authorizeControlModule("kcm_users")
+            Layout.maximumWidth: page.width
+            Accessible.name: displayName
+            Accessible.description: i18n("Open user settings")
+            contentItem: RowLayout {
+                Components.Avatar {
+                    Layout.preferredWidth: K.Units.iconSizes.medium
+                    Layout.preferredHeight: K.Units.iconSizes.medium
+                    name: profile.displayName
+                    source: user.faceIconUrl
+                    cache: false
+                }
+                C.Label {
+                    Layout.fillWidth: true
+                    text: profile.displayName
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                }
+            }
+            C.ToolTip.visible: hovered
+            C.ToolTip.text: Accessible.description
+            onClicked: {
+                KCM.KCMLauncher.openSystemSettings("kcm_users");
+                page.dismiss();
+            }
+        }
+        K.Separator { Layout.fillWidth: true }
         RowLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -78,6 +118,18 @@ FocusScope {
                     Layout.fillHeight: true
                     clip: true
                     focus: true
+                    interactive: false
+                    function scrollBy(delta) {
+                        contentY = Math.max(originY, Math.min(originY + contentHeight - height, contentY + delta));
+                    }
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                        onWheel: event => {
+                            const step = event.pixelDelta.y || event.angleDelta.y / 120 * view.cellHeight;
+                            view.scrollBy(-step);
+                            event.accepted = true;
+                        }
+                    }
                     model: {
                         page.revision;
                         if (page.favoritesPage) return catalog.favorites(page.favorites);
@@ -101,10 +153,26 @@ FocusScope {
                         readonly property string primary: reversed ? description : modelData.name
                         readonly property string secondary: page.format >= 2 && description.length ? (reversed ? modelData.name : description) : ""
                         Accessible.name: primary
-                        highlighted: hovered || (view.activeFocus && view.currentIndex === index)
-                        onClicked: page.enter(modelData)
+                        highlighted: (favoriteDrop.containsDrag && favoriteDrop.targetIndex === index) || hovered || (view.activeFocus && view.currentIndex === index)
+                        // Qt can send the button a release as the native drag ends.
+                        property bool consumedPress: false
+                        onPressed: consumedPress = false
+                        onClicked: if (!consumedPress) page.enter(modelData)
                         function context() {
-                            if (!modelData.group) { actions.targetId = modelData.id; actions.popup(tile); }
+                            if (modelData.group) return;
+                            actions.targetId = modelData.id;
+                            actions.pinned = page.launcherActions?.pinned(actions.targetUrl) ?? false;
+                            actions.popup(tile);
+                        }
+                        DragHandler {
+                            target: null
+                            enabled: !tile.modelData.group
+                            acceptedButtons: Qt.LeftButton
+                            onActiveChanged: {
+                                if (!active) return;
+                                tile.consumedPress = true;
+                                catalog.dragApplication(tile.Window.window, tile.modelData.id, page.favoritesPage);
+                            }
                         }
                         TapHandler { acceptedButtons: Qt.RightButton; acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus; onTapped: tile.context() }
                         contentItem: GridLayout {
@@ -140,9 +208,49 @@ FocusScope {
                             }
                         }
                     }
+                    DropArea {
+                        id: favoriteDrop
+                        parent: view
+                        anchors.fill: parent
+                        enabled: page.favoritesPage
+                        keys: [catalog.favoriteFormat]
+                        function indexFor(x, y) {
+                            const p = view.contentItem.mapFromItem(favoriteDrop, x, y);
+                            const index = view.indexAt(p.x, p.y);
+                            return index < 0 ? view.count - 1 : index;
+                        }
+                        readonly property int targetIndex: {
+                            view.contentY;
+                            return containsDrag ? indexFor(drag.x, drag.y) : -1;
+                        }
+                        Timer {
+                            interval: 50
+                            repeat: true
+                            running: favoriteDrop.containsDrag && view.contentHeight > view.height &&
+                                ((favoriteDrop.drag.y < 24 && !view.atYBeginning) ||
+                                 (favoriteDrop.drag.y > view.height - 24 && !view.atYEnd))
+                            onTriggered: view.scrollBy(favoriteDrop.drag.y < 24 ? -12 : 12)
+                        }
+                        onDropped: event => {
+                            const id = event.getDataAsString(catalog.favoriteFormat);
+                            const dest = view.model[indexFor(event.x, event.y)];
+                            if (!dest || !page.favorites.includes(id)) return;
+                            event.accept(Qt.CopyAction);
+                            Qt.callLater(page.moveFavorite, id, dest.id);
+                        }
+                    }
                     C.Menu {
                         id: actions
                         property string targetId
+                        readonly property url targetUrl: catalog.launcherUrl(targetId)
+                        property bool pinned
+                        C.MenuItem {
+                            objectName: "menuPinAction"
+                            enabled: !!page.launcherActions
+                            text: actions.pinned ? i18n("Unpin from Dock") : i18n("Pin to Dock")
+                            icon.name: actions.pinned ? "list-remove" : "list-add"
+                            onTriggered: page.launcherActions.togglePinned(actions.targetUrl)
+                        }
                         C.MenuItem {
                             visible: page.favoritesPage
                             enabled: page.favorites.indexOf(actions.targetId) > 0

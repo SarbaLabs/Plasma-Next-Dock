@@ -132,11 +132,15 @@ when its last volume disappears.
 Enable **Applications menu** in **Modules** for a launcher on that dock.
 It opens on Favorites. Select a KDE menu category, enter folders in the
 application pane and use Back to return. Right-click an application to manage
-favorites. The launcher icon’s context menu opens KMenuEdit (when installed)
+favorites or pin and unpin it on the current dock. Drag a favorite onto another
+to change its position in grid or list view. Drag an application from either
+view onto the dock to pin it. Categories retain their configured order.
+Click the profile picture or name to open KDE’s Users settings. The launcher icon’s context menu opens KMenuEdit (when installed)
 and the module settings. Choose separate grid/list modes for favorites and
 categories, application labels, pane order, menu size, corners and icon.
 Resize from a free edge or corner. Power and session actions use KDE's session
-service. Each dock remembers its own preferences and favorites.
+service. A wide menu shows each action directly. Narrowing it groups Session
+first, then Power. Each dock remembers its own preferences and favorites.
 
 ## Capsule backgrounds
 

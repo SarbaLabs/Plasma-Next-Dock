@@ -62,7 +62,7 @@ C.ApplicationWindow {
             component Dimension: C.SpinBox { editable: true; to: 2400 }
             RowLayout {
                 K.FormData.label: i18n("Width × height (px):")
-                Dimension { from: 420; value: page.configuration.width ?? 640; onValueModified: page.edited({width:value}) }
+                Dimension { from: 420; value: page.configuration.width ?? 960; onValueModified: page.edited({width:value}) }
                 Dimension { from: 300; value: page.configuration.height ?? 490; onValueModified: page.edited({height:value}) }
             }
             RowLayout {
