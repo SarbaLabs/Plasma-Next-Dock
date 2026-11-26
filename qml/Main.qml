@@ -33,9 +33,15 @@ Item {
             if (repeater.itemAt(row)?.separatorAfter) ++boundaries;
         separators = boundaries;
     }
-    readonly property real availableLength: (vertical ? outputSize.height : outputSize.width) - 16 - 2 * endClearance
+    readonly property bool extended: dockOptions.extendDock ?? false
+    readonly property real outputLength: vertical ? outputSize.height : outputSize.width
+    // Keep one icon accessible when moving a profile to a much smaller output.
+    readonly property int extendedMargin: Math.min(dockOptions.alignmentMargin ?? 0,
+        Math.max(0, Math.floor((outputLength - dockOptions.iconSize) / 2)))
+    readonly property real availableLength: extended ? Math.max(1, outputLength - 2 * extendedMargin)
+        : outputLength - 16 - 2 * endClearance
     // Retain room for an icon even if a saved margin exceeds the new output.
-    readonly property int effectiveAlignmentMargin: (dockOptions.dockAlignment ?? 1) === 1 ? 0
+    readonly property int effectiveAlignmentMargin: extended || (dockOptions.dockAlignment ?? 1) === 1 ? 0
         : Math.min(dockOptions.alignmentMargin ?? 0, Math.max(0, Math.floor(availableLength - dockOptions.iconSize)))
     readonly property var layoutMetrics: Adaptive.metrics(layoutCount, dockOptions.iconSize,
         dockOptions.zoom, availableLength - effectiveAlignmentMargin,
@@ -56,7 +62,7 @@ Item {
         ? Math.max(layoutMetrics.depth, Math.min((vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
             edgeSpacing + (dockOptions.indicatorEdgeDistance ?? 2) + 24))
         : layoutMetrics.depth
-    readonly property real length: Math.min(Math.max(1, availableLength - effectiveAlignmentMargin),
+    readonly property real length: extended ? availableLength : Math.min(Math.max(1, availableLength - effectiveAlignmentMargin),
         Math.max(layoutMetrics.length, occupiedLength))
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale
     readonly property real endPadding: (dockOptions.horizontalPadding === undefined ? 12 : dockOptions.horizontalPadding) * fitScale
@@ -71,8 +77,8 @@ Item {
     readonly property real freeLength: Math.max(0, (vertical ? outputSize.height : outputSize.width) - canvasLength)
     readonly property int alignedPad: Math.min(shadowExtent, effectiveAlignmentMargin)
     readonly property int freePad: Math.min(shadowExtent, Math.floor(alignmentFactor === 0.5 ? freeLength / 2 : Math.max(0, freeLength - effectiveAlignmentMargin)))
-    readonly property int startPad: alignmentFactor === 0 ? alignedPad : freePad
-    readonly property int endPad: alignmentFactor === 1 ? alignedPad : freePad
+    readonly property int startPad: extended ? extendedMargin : alignmentFactor === 0 ? alignedPad : freePad
+    readonly property int endPad: extended ? extendedMargin : alignmentFactor === 1 ? alignedPad : freePad
     readonly property int surfaceMargin: effectiveAlignmentMargin - alignedPad
     readonly property real modulePopupDepth: reservedThickness + edgeSpacing
     // Wayland requires the popup anchor to lie inside the parent surface.
@@ -289,12 +295,12 @@ Item {
         NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic }
     }
     readonly property real occupiedLength: insertionSpace + layoutMetrics.restingLength + (maximum - base) * animatedWeight * zoomBudgetScale
-    readonly property real barLength: Math.min(length, Math.max(1, occupiedLength))
+    readonly property real barLength: extended ? length : Math.min(length, Math.max(1, occupiedLength))
 
     // Match the exclusive depth, but only along the aligned dock at rest.
     readonly property rect dodgeBounds: {
         if (!dockOptions.freeLayout) return Qt.rect(0, 0, 0, 0);
-        const span = Math.min(length, Math.max(1, layoutMetrics.restingLength));
+        const span = extended ? length : Math.min(length, Math.max(1, layoutMetrics.restingLength));
         const start = startPad + endClearance + (length - span) * alignmentFactor;
         return vertical
             ? Qt.rect(dockOptions.edge === 2 ? 0 : width - reservedThickness, start, reservedThickness, span)
@@ -437,7 +443,7 @@ Item {
     DockPalette { id: dockPalette }
     readonly property var corners: [dockOptions.topLeftRadius, dockOptions.topRightRadius,
         dockOptions.bottomRightRadius, dockOptions.bottomLeftRadius].map(r => r ?? dockOptions.radius ?? 10)
-    readonly property real endClearance: (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.freeLayout ? dockOptions.capsuleThickness / 2 : dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
+    readonly property real endClearance: extended ? 0 : (dockOptions.borderWidth ?? 1) + Math.min(dockOptions.freeLayout ? dockOptions.capsuleThickness / 2 : dockOptions.iconSize / 2 + (dockOptions.verticalPadding ?? 10), Math.max(0, -Math.min(...corners)))
     CapsuleBackground {
         shadowEnabled: root.dockShadowEnabled
         shadowTint: dockPalette.resolve(dockOptions.dockShadowRole, dockOptions.dockShadowColor ?? "black", dockPalette.shadowColor)

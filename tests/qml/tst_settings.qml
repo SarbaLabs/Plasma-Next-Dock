@@ -213,9 +213,16 @@ TestCase {
         findChild(window, "bottomOpacityControl").value = 75;
         findChild(window, "gradientMidpointControl").value = 72;
         findChild(window, "systemBlurControl").checked = true;
+        const extendDock = findChild(window, "extendDockControl");
+        verify(!extendDock.checked);
+        extendDock.checked = true;
         buttons.applied();
         compare(dockSettings.values.gradientMidpoint, 72);
         compare(dockSettings.values.systemBlur, true);
+        compare(dockSettings.values.extendDock, true);
+        extendDock.checked = false;
+        window.openSettings();
+        verify(extendDock.checked);
         compare(dockSettings.values.gradientTopRole, "highlight");
         compare(dockSettings.values.gradientBottomColor, "#123456");
         compare(dockSettings.values.gradientTopOpacity, 0);

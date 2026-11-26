@@ -1058,3 +1058,12 @@ msgstr "%1 — monté"
 
 msgid "%1 — unmounted"
 msgstr "%1 — non monté"
+
+msgid "Extend the dock"
+msgstr "Étendre le Dock"
+
+msgid "Left and right"
+msgstr "Gauche et droite"
+
+msgid "Top and bottom"
+msgstr "Haut et bas"

@@ -904,6 +904,11 @@ A left-edge dock aligned at the top with a 64 px margin began at y=64,
 below the existing Plasma panel, and kept that end fixed when hovering its
 first icon at 2× zoom. A bottom-right dock was also checked with a 96 px margin.
 
+On a 1920 px CachyOS Wayland output, an extended top dock kept 48 px margins
+at both ends while the first left-aligned launcher magnified. The QML layout
+test covers all four edges and all three content alignments, including
+edge-to-edge magnification with zero lateral margin.
+
 ## Hover glow controls
 
 Compared fixed radii of 116 and 24 logical pixels over Firefox on the live KDE

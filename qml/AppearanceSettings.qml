@@ -9,6 +9,8 @@ Controls.ScrollView {
     required property QtObject paletteSource
     readonly property bool freeLayout: layoutMode.currentIndex === 1
 
+    readonly property alias extended: extendDock.checked
+
     function load(v) {
         layoutMode.currentIndex = v.freeLayout ? 1 : 0;
         thickness.value = v.capsuleThickness;
@@ -25,6 +27,7 @@ Controls.ScrollView {
         glowOpacity.value = v.glowOpacity;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
+        extendDock.checked = v.extendDock ?? false;
         midpoint.value = v.gradientMidpoint;
         glassOpacity.value = Math.round(v.glassOpacity * 100);
         backgroundOpacity.value = Math.round(v.backgroundOpacity * 100);
@@ -57,6 +60,7 @@ Controls.ScrollView {
             iconOffset: iconOffset.value,
             backgroundType: backgroundType.mode,
             systemBlur: systemBlur.checked,
+            extendDock: extendDock.checked,
             gradientMidpoint: midpoint.value,
             glassOpacity: glassOpacity.value / 100,
             backgroundOpacity: backgroundOpacity.value / 100,
@@ -173,6 +177,7 @@ Controls.ScrollView {
                 from: 1; to: 99; editable: true
             }
             Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
+            Controls.CheckBox { id: extendDock; objectName: "extendDockControl"; text: i18n("Extend the dock") }
             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
             RowLayout {
                 id: corners
