@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 cmake_minimum_required(VERSION 3.22)
-project(PlasmaNextDock LANGUAGES C CXX)
+project(PlasmaNextDock VERSION 1.00.00 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
@@ -37,7 +37,7 @@ add_executable(plasma-next-dock src/main.cpp src/panelreservation.cpp src/launch
 target_link_libraries(plasma-next-dock PRIVATE dockcore Qt6::DBus KF6::CoreAddons KF6::GlobalAccel KF6::WindowSystem Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
 file(RELATIVE_PATH dock_autostart_entry "${CMAKE_INSTALL_FULL_BINDIR}"
     "${CMAKE_INSTALL_FULL_DATADIR}/plasma-next-dock/org.sarbalabs.PlasmaNextDock.desktop")
-target_compile_definitions(plasma-next-dock PRIVATE DOCK_AUTOSTART_ENTRY="${dock_autostart_entry}")
+target_compile_definitions(plasma-next-dock PRIVATE DOCK_VERSION="${PROJECT_VERSION}" DOCK_AUTOSTART_ENTRY="${dock_autostart_entry}")
 set(wayland_codegen_options)
 if(Qt6_VERSION VERSION_GREATER_EQUAL 6.12)
     # Preserve the public generator API used by the adapter, explicitly (QTP0006).
