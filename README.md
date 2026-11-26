@@ -23,7 +23,9 @@ You can write your own module in QML. Start with the working counter example, ch
 
 ## Install from source
 
-Use a **Plasma 6 Wayland session**. The oldest tested configuration is Debian 13 with Plasma 6.3.6 and Qt 6.8.2. On a conventional Linux installation, run the following as your desktop user:
+Use a **Plasma 6 Wayland session**. The oldest tested configuration is Debian 13 with Plasma 6.3.6 and Qt 6.8.2. See the [compatibility matrix](docs/compatibility.md) for tested distributions and desktop features.
+
+On a conventional Linux installation, run the following as your desktop user:
 
 ```bash
 mkdir -p ~/git
