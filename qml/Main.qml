@@ -38,6 +38,7 @@ Item {
         leadingCount = leading;
         trailingCount = trailing;
         separators = boundaries;
+        syncAnimatedWeight();
     }
     property int leadingCount: 0
     property int trailingCount: 0
@@ -254,13 +255,22 @@ Item {
     }
     // Bound only overlapping zoom animation tails, not preferred icon sizes.
     property real animatedWeight: 0
+    property real leadingWeight: 0
+    property real trailingWeight: 0
     // Multiple neighbors advance in one animation tick. Publish their combined
     // width once, so the capsule path and blur never see intermediate sums.
     function syncAnimatedWeight() {
-        let sum = 0;
-        for (let row = 0; row < repeater.count; ++row)
-            sum += repeater.slotAt(row)?.animatedFactor ?? 0;
+        let sum = 0, leading = 0, trailing = 0;
+        for (let row = 0; row < repeater.count; ++row) {
+            const slot = repeater.slotAt(row);
+            const weight = slot?.animatedFactor ?? 0;
+            sum += weight;
+            if (slot?.zone < 0) leading += weight;
+            if (slot?.zone > 0) trailing += weight;
+        }
         animatedWeight = sum;
+        leadingWeight = leading;
+        trailingWeight = trailing;
     }
     readonly property int blastRadius: dockOptions.blastRadius === undefined ? 2 : dockOptions.blastRadius
     readonly property real zoomBudget: Adaptive.zoomBudget(blastRadius)
@@ -524,11 +534,17 @@ Item {
         // The row measures every delegate in model order. Side delegates paint
         // on this fixed surface while the center uses the clipped Flickable.
         readonly property real gap: taskRow.spacing + 6 * root.fitScale
-        readonly property real leftWidth: root.leadingCount ? (repeater.slotAt(root.leadingCount - 1)?.cellEnd ?? 0) : 0
-        readonly property real rightStart: root.trailingCount ? (repeater.slotAt(root.layoutCount - root.trailingCount)?.cellStart ?? taskRow.width) : taskRow.width
-        readonly property real rightWidth: root.trailingCount ? taskRow.width - rightStart : 0
+        // Pinning can replace or move a delegate without changing the row count.
+        // Compute each zone from its members, independently of Row's polish pass.
+        function zoneWidth(count, weight) {
+            return count * root.base + Math.max(0, count - 1) * taskRow.spacing
+                + weight * (root.maximum - root.base) * root.zoomBudgetScale;
+        }
+        readonly property real leftWidth: zoneWidth(root.leadingCount, root.leadingWeight)
+        readonly property real rightWidth: zoneWidth(root.trailingCount, root.trailingWeight)
         readonly property real centerStart: root.leadingCount ? leftWidth + taskRow.spacing : 0
-        readonly property real centerWidth: Math.max(0, rightStart - (root.trailingCount ? taskRow.spacing : 0) - centerStart)
+        readonly property real centerWidth: zoneWidth(root.layoutCount - root.leadingCount - root.trailingCount,
+            Math.max(0, root.animatedWeight - root.leadingWeight - root.trailingWeight))
         readonly property int previewZone: !externalDrop.preview?.moduleId ? 0
             : (dockOptions.moduleZones?.left ?? []).includes(externalDrop.preview.moduleId) ? -1 : 1
         readonly property real leftInset: root.endPadding + (root.leadingCount ? leftWidth + gap : 0)
@@ -572,7 +588,9 @@ Item {
                     id: repeater
                     function slotAt(row) { return itemAt(row)?.visualSlot ?? null; }
                     model: taskSource.item ? (root.taskRows ? (root.taskRows.taskModel ? root.taskRows : null) : taskSource.item.tasks) : null
-                    onCountChanged: { Qt.callLater(root.syncAnimatedWeight); Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); }
+                    onItemAdded: Qt.callLater(root.syncTaskCount)
+                    onItemRemoved: Qt.callLater(root.syncTaskCount)
+                    onCountChanged: { Qt.callLater(root.remapPointer); Qt.callLater(root.syncTaskCount); previewPanel.dismiss(); root.finishDrag(); root.queueGeometry(); }
                     delegate: Item {
                         id: cell
                         required property int index
@@ -933,10 +951,9 @@ Item {
             Rectangle {
                 required property int index
                 objectName: "zoneSeparator" + index
-                visible: axisFrame.centerWidth > 0 && (root.alignmentFactor === 0.5 || axisFrame.centerSpan >= viewport.width)
-                    && (index === 0
-                    ? root.leadingCount > 0 && axisFrame.centerOffset <= 0
-                    : root.trailingCount > 0 && axisFrame.centerOffset + axisFrame.centerSpan >= viewport.width)
+                visible: axisFrame.centerWidth > 0 && (index === 0
+                    ? root.leadingCount > 0 && (root.alignmentFactor === 0 || axisFrame.centerOffset <= 0)
+                    : root.trailingCount > 0 && (root.alignmentFactor === 1 || axisFrame.centerOffset + axisFrame.centerSpan >= viewport.width))
                 width: Math.max(1, root.fitScale)
                 height: root.base * 0.65
                 x: (index === 0 ? viewport.x - axisFrame.gap / 2 : viewport.x + viewport.width + axisFrame.gap / 2) - width / 2

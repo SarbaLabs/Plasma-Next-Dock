@@ -1512,3 +1512,8 @@ and Trash at the opposite end on both bottom and left docks.
 The Qt Quick regression checks all three alignments on all four edges with 16 px outer margins.
 It inserts 50 more launchers, checks that a separator appears, then scrolls
 50 px and compares the positions of both modules and a central launcher.
+
+The split layout also exercises promoting a running task to a pin while its
+module rows move or are replaced. In a CachyOS KWin session, dragging Info
+Center from the unpinned module between Firefox and Konsole kept all six pins
+visible with center and end alignment. The outer modules remained accessible.

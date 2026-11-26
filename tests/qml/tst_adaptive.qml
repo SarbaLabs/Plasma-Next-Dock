@@ -292,7 +292,8 @@ TestCase {
                     }
                     compare(axis(first), leftModule);
                     compare(axis(last), rightModule);
-                    verify(!divider.visible);
+                    compare(divider.visible, align === 0);
+                    compare(findChild(root, "zoneSeparator1").visible, align === 2);
                 }
 
                 for (let i = 0; i < 50; ++i)
@@ -312,6 +313,51 @@ TestCase {
             tasks.setProperty(original - 1, "dockZone", 0);
             testEnvironment.behaviorOptions(saved);
             testEnvironment.setEdge(0);
+        }
+    }
+    function test_pinAcrossZones_data() {
+        return [{tag: "center", alignment: 1}, {tag: "right", alignment: 2}];
+    }
+    function test_pinAcrossZones(data) {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const view = findChild(root, "taskViewport");
+        const changes = {extendDock: true, splitExtendedDock: true, dockAlignment: data.alignment, zoom: 1, edge: 0};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            tasks.setProperty(0, "dockZone", -1);
+            tasks.setProperty(3, "dockZone", 1);
+            tasks.setProperty(4, "dockZone", 1);
+            tryCompare(root, "trailingCount", 2);
+            tasks.move(3, 4, 1);
+            wait(50);
+            const gap = ((dockOptions.iconSpacing ?? 10) + 6) * root.fitScale;
+            const rightEdge = () => view.mapToItem(root, view.width, 0).x;
+            verify(Math.abs(findChild(root, "task3").mapToItem(root, 0, 0).x - rightEdge() - gap) < 1);
+            // Pin the running application, then replace the boundary delegate as
+            // the task model reconciles launcher order without changing its size.
+            tasks.move(3, 1, 1);
+            tasks.setProperty(1, "dockZone", 0);
+            tryCompare(root, "trailingCount", 1);
+            const replacement = Object.assign({}, tasks.get(4));
+            tasks.remove(4);
+            tasks.append(replacement);
+            wait(50);
+            const firstPin = findChild(root, "task1");
+            const lastPin = findChild(root, "task3");
+            const firstX = firstPin.mapToItem(view, 0, 0).x;
+            const endX = lastPin.mapToItem(view, lastPin.width, 0).x;
+            verify(firstX >= -0.01 && endX <= view.width + 0.01);
+            const lastModule = findChild(root, "task4");
+            verify(Math.abs(lastModule.mapToItem(root, 0, 0).x - view.mapToItem(root, view.width, 0).x
+                - ((dockOptions.iconSpacing ?? 10) + 6) * root.fitScale) < 1);
+        } finally {
+            tasks.move(1, 3, 1);
+            tasks.move(4, 3, 1);
+            for (let i = 0; i < tasks.count; ++i) tasks.setProperty(i, "dockZone", 0);
+            testEnvironment.behaviorOptions(saved);
         }
     }
     function test_synthesizedWheel() {
