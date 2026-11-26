@@ -1,0 +1,5 @@
+plasma-next-dock (0.9~preview1+deb13u1) trixie; urgency=medium
+
+  * Initial packaging preview for Debian 13 with separate module packages.
+
+ -- SarbaLabs <SarbaLabs@users.noreply.github.com>  Thu, 26 Nov 2026 12:00:00 +1100

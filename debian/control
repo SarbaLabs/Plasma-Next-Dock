@@ -1,0 +1,54 @@
+Source: plasma-next-dock
+Section: kde
+Priority: optional
+Maintainer: SarbaLabs <SarbaLabs@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+ cmake, pkg-config, qt6-base-dev, qt6-base-private-dev, qt6-declarative-dev, qt6-shadertools-dev, liblayershellqtinterface-dev, libwayland-dev, libkf6globalaccel-dev, libkf6windowsystem-dev, libkf6i18n-dev, libkf6kio-dev, libkf6solid-dev, libkf6iconthemes-dev, libkf6service-dev, libkf6runner-dev, libkf6notifications-dev, libplasmaactivitiesstats-dev, gettext,
+ qt6-wayland-dev, qt6-wayland-dev-tools
+Rules-Requires-Root: no
+Homepage: https://github.com/SarbaLabs/Plasma-Next-Dock
+
+Package: plasma-next-dock
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ plasma-workspace, plasma-desktop, plasma-desktop-data, plasma-pa,
+ qt6-wayland, qt6-svg-plugins, breeze-icon-theme,
+ qml6-module-org-kde-pipewire, qml6-module-org-kde-kirigami, qml6-module-org-kde-desktop,
+ qml6-module-qtqml-models, qml6-module-qtqml-workerscript, qml6-module-qtquick,
+ qml6-module-qtquick-controls, qml6-module-qtquick-dialogs, qml6-module-qtquick-effects,
+ qml6-module-qtquick-layouts, qml6-module-qtquick-shapes, qml6-module-qtquick-templates,
+ qml6-module-qtquick-window
+Provides: plasma-next-dock-module-api-1
+Recommends: plasma-next-dock-module-unpinned, plasma-next-dock-module-folders, plasma-next-dock-module-trash, plasma-next-dock-module-usb, plasma-next-dock-module-appmenu
+Description: Customizable modular dock for KDE Plasma on Wayland
+ Configure independent docks, pin applications and add optional modules.
+
+Package: plasma-next-dock-module-unpinned
+Architecture: all
+Depends: ${misc:Depends}, plasma-next-dock-module-api-1
+Description: Running applications module for Plasma Next Dock
+ Adds the optional Running applications module to the dock module catalog.
+
+Package: plasma-next-dock-module-folders
+Architecture: any
+Depends: ${misc:Depends}, plasma-next-dock-module-api-1, ${shlibs:Depends}
+Description: Folders module for Plasma Next Dock
+ Adds the optional Folders module to the dock module catalog.
+
+Package: plasma-next-dock-module-trash
+Architecture: any
+Depends: ${misc:Depends}, plasma-next-dock-module-api-1, ${shlibs:Depends}
+Description: Trash module for Plasma Next Dock
+ Adds the optional Trash module to the dock module catalog.
+
+Package: plasma-next-dock-module-usb
+Architecture: any
+Depends: ${misc:Depends}, plasma-next-dock-module-api-1, ${shlibs:Depends}
+Description: USB storage module for Plasma Next Dock
+ Adds the optional USB storage module to the dock module catalog.
+
+Package: plasma-next-dock-module-appmenu
+Architecture: any
+Depends: ${misc:Depends}, plasma-next-dock-module-api-1, ${shlibs:Depends}, qml6-module-org-kde-kirigamiaddons-components, kmenuedit
+Description: Applications menu module for Plasma Next Dock
+ Adds the optional Applications menu module to the dock module catalog.
