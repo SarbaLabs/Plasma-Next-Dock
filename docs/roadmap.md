@@ -1,7 +1,7 @@
 # Development status and roadmap
 
 The original desktop scope and source-install compatibility campaign are validated.
-Version 1.0 also requires independently installable modules. Packaging follows
+Version 1.0 also requires independently installable modules. Release preparation follows
 module development and cross-feature acceptance. Each PR targets manual review
 and merge. Functional work requires the maintainer's authorization after this
 roadmap has been approved and merged.
@@ -12,8 +12,8 @@ roadmap has been approved and merged.
 | 2. Source compatibility | Validated | Keep a common source tree through the Debian baseline |
 | 3. Code consolidation | Accepted and merged | [Cleanup PR #39](https://github.com/SarbaLabs/Plasma-Next-Dock/pull/39) |
 | 4. Modular v1.0 | Planned | Deliver the reviewed sequence below |
-| 5. Packaging | Planned | Validate artifacts and independently updatable modules |
-| 6. First release | Planned | Publish documentation, compatibility and verified artifacts |
+| 5. Source distribution | Planned | Validate tagged source installs and an AUR build recipe |
+| 6. First release | Planned | Publish a source release, installation guide and compatibility matrix |
 
 ## 1. Functional development
 
@@ -229,28 +229,24 @@ and verify pinned applications throughout. Compare hover smoothness against the
 accepted dock; avoid per-frame allocations, polling and repeated layout work
 from an empty module. Record the tested Qt/Plasma versions.
 
-## 5. Packaging
+## 5. Source distribution
 
-Prepare native packages for Arch, Fedora, Debian, Ubuntu and openSUSE from the
-shared sources. Test installation, launch, upgrade and removal for each target.
-The dock uses private Qt GUI headers, so verify each binary against the Qt
-build shipped on its target.
+Build the dock from the tagged GitHub source on each supported distribution
+with `./install.sh`. Document dependencies by distribution family and retain
+the tested Distrobox procedure for Bazzite. Building locally uses the Qt
+private headers shipped by the target distribution. Document how to rebuild
+after a Qt upgrade and check compatibility when a private API changes.
 
-For Bazzite, prototype a lightweight AppImage using the host KDE libraries.
-Validate library compatibility and Wayland integration on Bazzite before
-publishing it. The tested Distrobox procedure remains available. Evaluate
-other immutable distributions individually.
-
-Package official modules into XDG system data directories. Test independent upgrades,
-user-installed modules and compatibility with the shipped Qt/Plasma versions.
+Once the source is public, provide an AUR PKGBUILD for Arch and CachyOS that
+builds the same stable tag. Verify installation, upgrades, removal and
+independent module loading through both installation methods.
 
 ## 6. First release
 
-Finish the user guide and installation, upgrade and uninstallation instructions
-for source builds and published packages. Publish a compatibility matrix with
-tested versions, installation method and the scope of manual and automated
-checks. Prepare the first GitHub release with its tag, release notes and
-verified artifacts.
+Publish the stable source tag and release notes. Include instructions for
+installation, rebuilding, updating and uninstalling. Publish a compatibility
+matrix with the tested versions, installation method and scope of manual
+and automated checks.
 
 The [development history](development-history.md) retains the original PR
 notes, earlier plans and the [indicator parity checklist](development-history.md#final-version-parity-requirement).
