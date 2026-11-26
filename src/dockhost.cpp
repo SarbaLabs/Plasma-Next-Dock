@@ -145,7 +145,7 @@ void DockHost::update(bool settingsOpen)
         m_backgroundEffects.configure(options);
     }
     const auto mode = static_cast<DockGeometry::Visibility>(options["visibilityMode"].toInt());
-    m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::WindowsGoBelow : mode);
+    m_controller.setVisibility(m_demo || settingsOpen ? DockGeometry::AlwaysVisible : mode);
     position();
 }
 bool DockHost::keyboardActive() const

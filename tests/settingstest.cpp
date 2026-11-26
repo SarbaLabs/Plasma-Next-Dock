@@ -210,10 +210,21 @@ private Q_SLOTS:
         }
     }
     void visibilityAndAlignmentPersistence() {
-        QCOMPARE(DockSettings::normalized({{"dodge", false}})["visibilityMode"].toInt(), 3);
+        QCOMPARE(DockSettings::normalized({{"dodge", false}})["visibilityMode"].toInt(), 0);
         QCOMPARE(DockSettings::normalized({{"dodge", true}})["visibilityMode"].toInt(), 2);
         QTemporaryDir dir;
         const auto file = dir.filePath("dock.ini");
+        QSettings legacy(file, QSettings::IniFormat);
+        legacy.setValue("visibilityMode", 3);
+        legacy.sync();
+        DockSettings profile(file);
+        QCOMPARE(profile.values()["visibilityMode"].toInt(), 0);
+        for (int mode : {1, 2}) {
+            QVERIFY(profile.apply({{"visibilityMode", mode}}));
+            QCOMPARE(DockSettings(file).values()["visibilityMode"].toInt(), mode);
+        }
+        QVERIFY(profile.apply({{"dodge", false}}));
+        QCOMPARE(DockSettings(file).values()["visibilityMode"].toInt(), 0);
         QVERIFY(DockSettings(file).apply({{"visibilityMode", 0}, {"dockAlignment", 2}, {"alignmentMargin", 64}}));
         const auto restored = DockSettings(file).values();
         QCOMPARE(restored["visibilityMode"].toInt(), 0);

@@ -306,7 +306,7 @@ private Q_SLOTS:
         QTest::qWait(1); QVERIFY(!dock.overlapping());
         model.window = true; model.changed();
         QTRY_VERIFY(dock.hideRequested());
-        dock.setVisibility(DockGeometry::WindowsGoBelow);
+        dock.setVisibility(DockGeometry::AlwaysVisible);
         QVERIFY(!dock.hideRequested());
     }
     void extendedDockAtOutputBoundary() {

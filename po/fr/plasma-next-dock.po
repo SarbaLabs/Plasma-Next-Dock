@@ -696,9 +696,6 @@ msgstr "Masquer automatiquement"
 msgid "Dodge windows"
 msgstr "Éviter les fenêtres"
 
-msgid "Windows go below"
-msgstr "Les fenêtres se placent en dessous"
-
 msgid "Left margin (px):"
 msgstr "Marge gauche (px) :"
 
