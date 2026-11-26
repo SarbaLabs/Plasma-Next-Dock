@@ -213,9 +213,27 @@ TestCase {
         findChild(window, "bottomOpacityControl").value = 75;
         findChild(window, "gradientMidpointControl").value = 72;
         findChild(window, "systemBlurControl").checked = true;
+        const extendDock = findChild(window, "extendDockControl");
+        verify(!extendDock.checked);
+        const split = findChild(window, "splitExtendedDockControl");
+        verify(!split.visible);
+        extendDock.checked = true;
+        findChild(window, "dockAlignmentControl").currentIndex = 1;
+        verify(split.visible);
+        split.checked = true;
+        for (const alignment of [0, 2]) {
+            findChild(window, "dockAlignmentControl").currentIndex = alignment;
+            verify(split.visible && split.checked);
+        }
+        findChild(window, "dockAlignmentControl").currentIndex = 1;
         buttons.applied();
         compare(dockSettings.values.gradientMidpoint, 72);
         compare(dockSettings.values.systemBlur, true);
+        compare(dockSettings.values.extendDock, true);
+        compare(dockSettings.values.splitExtendedDock, true);
+        extendDock.checked = false;
+        window.openSettings();
+        verify(extendDock.checked);
         compare(dockSettings.values.gradientTopRole, "highlight");
         compare(dockSettings.values.gradientBottomColor, "#123456");
         compare(dockSettings.values.gradientTopOpacity, 0);

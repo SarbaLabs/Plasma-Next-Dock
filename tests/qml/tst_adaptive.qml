@@ -35,6 +35,41 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_fractionalZoomKeepsPhysicalEdge() {
+        const root = dock.item;
+        const capsule = findChild(root, "capsuleBackground");
+        const changes = {zoom: 1.72, iconSize: 40, spacing: 0, edge: 0, extendDock: true, freeLayout: false};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            for (const edge of [0, 3]) {
+                testEnvironment.behaviorOptions(Object.assign({}, changes, {edge: edge}));
+                const extent = root.vertical ? root.width : root.height;
+                compare(extent, Math.floor(extent));
+                compare(root.vertical ? capsule.x + capsule.width : capsule.y + capsule.height, extent);
+            }
+        } finally { testEnvironment.behaviorOptions(saved); }
+    }
+    function test_reservationEndsAtVisibleContent() {
+        const root = dock.item;
+        const changes = {edge: 0, extendDock: true, spacing: 0, freeLayout: false,
+            borderWidth: 1, borderOpacity: 0, borderRole: "custom", borderColor: "#222222",
+            capsuleThickness: 4, iconOffset: 16};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.behaviorOptions({edge: edge, freeLayout: false, borderOpacity: 0});
+                compare(root.reservedThickness, Math.ceil(root.barThickness));
+                testEnvironment.behaviorOptions({borderOpacity: 1});
+                compare(root.reservedThickness, Math.ceil(root.barThickness + 1));
+                testEnvironment.behaviorOptions({freeLayout: true});
+                verify(root.iconEdge + root.base > root.barThickness + 1);
+                compare(root.reservedThickness, Math.ceil(root.iconEdge + root.base));
+            }
+        } finally { testEnvironment.behaviorOptions(saved); }
+    }
     function test_initialCanvasIncludesTasks() {
         // Inspect the component before queued row-count notifications can run.
         dock.active = false;
@@ -212,6 +247,117 @@ TestCase {
             tasks.setProperty(0, "IsWindow", running);
             testEnvironment.behaviorOptions(saved);
             testEnvironment.setEdge(0);
+        }
+    }
+    function test_splitExtendedDock() {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const viewport = findChild(root, "taskViewport");
+        const original = tasks.count;
+        const changes = {extendDock: true, splitExtendedDock: true, dockAlignment: 1, alignmentMargin: 16, zoom: 1};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            tasks.setProperty(0, "dockZone", -1);
+            tasks.setProperty(original - 1, "dockZone", 1);
+            tryCompare(root, "leadingCount", 1);
+            tryCompare(root, "trailingCount", 1);
+            const first = findChild(root, "task0");
+            const center = findChild(root, "task2");
+            const last = findChild(root, "task" + (original - 1));
+            const divider = findChild(root, "zoneSeparator0");
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                const axis = item => {
+                    const point = item.mapToItem(root, item.width / 2, item.height / 2);
+                    return root.vertical ? point.y : point.x;
+                };
+                const length = root.vertical ? root.height : root.width;
+                tryVerify(() => Math.abs(axis(center) - length / 2) < 1);
+                verify(Math.abs(axis(first) - (16 + root.endPadding + root.base / 2)) < 1);
+                verify(Math.abs(length - axis(last) - axis(first)) < 1);
+                verify(!divider.visible);
+                const leftModule = axis(first), rightModule = axis(last);
+                for (const align of [0, 2, 1]) {
+                    testEnvironment.behaviorOptions({dockAlignment: align});
+                    const firstPin = findChild(root, "task1");
+                    const lastPin = findChild(root, "task3");
+                    if (align === 1) tryVerify(() => Math.abs(axis(center) - length / 2) < 1);
+                    else {
+                        const pin = align === 0 ? firstPin : lastPin;
+                        const boundary = viewport.mapToItem(root, align === 0 ? 0 : viewport.width, viewport.height / 2);
+                        const expected = (root.vertical ? boundary.y : boundary.x) + (align === 0 ? 1 : -1) * pin.width / 2;
+                        tryVerify(() => Math.abs(axis(pin) - expected) < 1);
+                    }
+                    compare(axis(first), leftModule);
+                    compare(axis(last), rightModule);
+                    compare(divider.visible, align === 0);
+                    compare(findChild(root, "zoneSeparator1").visible, align === 2);
+                }
+
+                for (let i = 0; i < 50; ++i)
+                    tasks.insert(1, {decoration: "folder", display: "Pinned", dockZone: 0});
+                tryVerify(() => viewport.contentWidth > viewport.width && divider.visible);
+                const left = axis(first), right = axis(last), pin = axis(center);
+                viewport.contentX = 50;
+                compare(axis(first), left);
+                compare(axis(last), right);
+                compare(axis(center), pin - 50);
+                tasks.remove(1, 50);
+                tryCompare(viewport, "contentX", 0);
+            }
+        } finally {
+            if (tasks.count > original) tasks.remove(1, tasks.count - original);
+            tasks.setProperty(0, "dockZone", 0);
+            tasks.setProperty(original - 1, "dockZone", 0);
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
+    function test_pinAcrossZones_data() {
+        return [{tag: "center", alignment: 1}, {tag: "right", alignment: 2}];
+    }
+    function test_pinAcrossZones(data) {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const view = findChild(root, "taskViewport");
+        const changes = {extendDock: true, splitExtendedDock: true, dockAlignment: data.alignment, zoom: 1, edge: 0};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            tasks.setProperty(0, "dockZone", -1);
+            tasks.setProperty(3, "dockZone", 1);
+            tasks.setProperty(4, "dockZone", 1);
+            tryCompare(root, "trailingCount", 2);
+            tasks.move(3, 4, 1);
+            wait(50);
+            const gap = ((dockOptions.iconSpacing ?? 10) + 6) * root.fitScale;
+            const rightEdge = () => view.mapToItem(root, view.width, 0).x;
+            verify(Math.abs(findChild(root, "task3").mapToItem(root, 0, 0).x - rightEdge() - gap) < 1);
+            // Pin the running application, then replace the boundary delegate as
+            // the task model reconciles launcher order without changing its size.
+            tasks.move(3, 1, 1);
+            tasks.setProperty(1, "dockZone", 0);
+            tryCompare(root, "trailingCount", 1);
+            const replacement = Object.assign({}, tasks.get(4));
+            tasks.remove(4);
+            tasks.append(replacement);
+            wait(50);
+            const firstPin = findChild(root, "task1");
+            const lastPin = findChild(root, "task3");
+            const firstX = firstPin.mapToItem(view, 0, 0).x;
+            const endX = lastPin.mapToItem(view, lastPin.width, 0).x;
+            verify(firstX >= -0.01 && endX <= view.width + 0.01);
+            const lastModule = findChild(root, "task4");
+            verify(Math.abs(lastModule.mapToItem(root, 0, 0).x - view.mapToItem(root, view.width, 0).x
+                - ((dockOptions.iconSpacing ?? 10) + 6) * root.fitScale) < 1);
+        } finally {
+            tasks.move(1, 3, 1);
+            tasks.move(4, 3, 1);
+            for (let i = 0; i < tasks.count; ++i) tasks.setProperty(i, "dockZone", 0);
+            testEnvironment.behaviorOptions(saved);
         }
     }
     function test_synthesizedWheel() {

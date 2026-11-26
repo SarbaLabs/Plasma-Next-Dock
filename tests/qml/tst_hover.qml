@@ -70,6 +70,34 @@ TestCase {
         }
         testEnvironment.setEdge(0);
     }
+    function test_extendedDock() {
+        tryCompare(dock, "status", Loader.Ready);
+        const panel = dock.item;
+        const first = findChild(panel, "task0");
+        const row = first.parent.parent;
+        try {
+            for (let edge = 0; edge < 4; ++edge) {
+                const span = edge < 2 ? outputSize.width : outputSize.height;
+                for (let align = 0; align < 3; ++align) {
+                    testEnvironment.behaviorOptions({extendDock: true, edge: edge, dockAlignment: align, alignmentMargin: 27});
+                    compare(panel.barStart, 27);
+                    compare(panel.barLength, span - 54);
+                    compare(edge < 2 ? panel.width : panel.height, span);
+                    tryVerify(() => Math.abs(row.x - (panel.endPadding
+                        + (panel.length - row.width - 2 * panel.endPadding) * align / 2)) < 1);
+                }
+            }
+            testEnvironment.behaviorOptions({edge: 0, dockAlignment: 0, alignmentMargin: 0});
+            const icon = findChild(panel, "icon0");
+            mouseMove(icon, icon.width / 2, icon.height / 2);
+            tryVerify(() => first.size > panel.base + 5);
+            compare(panel.barStart, 0);
+            compare(panel.barLength, outputSize.width);
+        } finally {
+            mouseMove(testCase, 700, 250);
+            testEnvironment.behaviorOptions({extendDock: false, edge: 0, dockAlignment: 1, alignmentMargin: 0});
+        }
+    }
     function test_magnificationContinuesAndResets() {
         tryCompare(dock, "status", Loader.Ready);
         const first = findChild(dock.item, "task0");

@@ -15,7 +15,7 @@ function hoverWeight(distance, radius) {
 // Reserve the same zoom budget in the canvas and in animated delegates.
 // The renderer caps animation tails to this same fixed budget.
 // Sizing depends only on count/settings/output, never on animated row geometry.
-function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0, freeThickness = 0, iconOffset = 0) {
+function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpacing = 10, endPadding = 12, crossPadding = 10, blastRadius = 2, hoverLift = 0, bounceHeight = 0, separatorSpace = 0, freeThickness = 0, iconOffset = 0, fixedEntries = 0) {
     available = Math.max(1, available);
     crossAvailable = Math.max(1, crossAvailable);
     gap = Math.min(Math.max(0, gap), Math.max(0, crossAvailable - 1));
@@ -29,8 +29,11 @@ function metrics(count, preferred, zoom, available, crossAvailable, gap, iconSpa
     const crossDepth = animationDepth + (freeThickness ? 0 : 2 * crossPadding) + 4;
     const origin = freeThickness ? freeEdge : gap;
     const crossScale = Math.min(1, (crossAvailable - origin) / crossDepth);
+    // Fixed modules cannot scroll. On very crowded outputs, keep room for one
+    // central launcher and the gaps between the three zones even at peak zoom.
+    const fixedSpan = (fixedEntries + 1) * (preferred + iconSpacing) + 2 * endPadding + 12 + zoomReserve;
     const minimumScale = Math.min(1, 24 / preferred, crossScale);
-    const scale = Math.min(crossScale, Math.max(minimumScale, Math.min(1, available / natural)));
+    const scale = Math.min(crossScale, fixedEntries ? available / fixedSpan : 1, Math.max(minimumScale, Math.min(1, available / natural)));
     const thickness = freeThickness ? Math.min(crossAvailable - gap, freeThickness * scale)
                                     : (preferred + 2 * crossPadding) * scale;
     return { scale: scale, base: preferred * scale, restingLength: resting * scale,

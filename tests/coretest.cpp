@@ -279,7 +279,7 @@ private Q_SLOTS:
         DockController dock;
         WindowModel model;
         dock.setModel(&model);
-        dock.setSurfaceOrigin(QPoint(-500, 100));
+        dock.setSurfacePlacement(QPoint(-500, 100), QRect(-500, 0, 500, 600));
         dock.setGeometry(QRectF(100,100,300,50), 10, {});
         model.rect = QRectF(-390,110,100,70);
         model.changed();
@@ -309,13 +309,41 @@ private Q_SLOTS:
         dock.setVisibility(DockGeometry::WindowsGoBelow);
         QVERIFY(!dock.hideRequested());
     }
+    void extendedDockAtOutputBoundary() {
+        DockController dock;
+        WindowModel model;
+        dock.setModel(&model);
+        dock.setEdgeAvailable(true);
+        const QRect output(-1280, -100, 1280, 720);
+        dock.setSurfacePlacement(output.topLeft(), output);
+        for (bool vertical : {false, true}) {
+            const QRectF bar = vertical ? QRectF(0, 0, 50, output.height()) : QRectF(0, 0, output.width(), 50);
+            for (int radius : {0, 12, -20}) {
+                for (bool freeLayout : {false, true}) {
+                    dock.setGeometry(bar, 0, {}, vertical ? DockGeometry::Left : DockGeometry::Top,
+                                     {radius, radius, radius, radius}, {}, freeLayout ? bar : QRectF());
+                    for (int side : {-1, 1}) {
+                        const QPoint axis = vertical ? QPoint(0, output.height()) : QPoint(output.width(), 0);
+                        const QPoint pixel = vertical ? QPoint(0, 1) : QPoint(1, 0);
+                        const QRectF adjacent = output.translated(side * axis);
+                        for (int overlap : {1, 0}) {
+                            model.rect = adjacent.translated(-side * overlap * pixel);
+                            model.changed();
+                            QCoreApplication::processEvents();
+                            QCOMPARE(dock.hideRequested(), overlap > 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
     void freeDodgeStopsAtBothDockEnds() {
         DockController dock;
         WindowModel model;
         dock.setModel(&model);
         dock.setEdgeAvailable(true);
         const QPoint origin(-600, 80);
-        dock.setSurfaceOrigin(origin);
+        dock.setSurfacePlacement(origin, QRect(origin, QSize(800, 600)));
         for (bool vertical : {false, true}) {
             const QRectF footprint = vertical ? QRectF(0, 150, 65, 200) : QRectF(150, 0, 200, 65);
             const QRectF capsule = vertical ? QRectF(0, 150, 4, 200) : QRectF(150, 0, 200, 4);

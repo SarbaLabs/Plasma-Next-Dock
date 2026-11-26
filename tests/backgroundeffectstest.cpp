@@ -63,6 +63,17 @@ private Q_SLOTS:
         QTest::qWait(20); QVERIFY(!effects.enabled); // Never accidentally blur the full canvas.
         QVERIFY(effects.guiThread);
     }
+    void blurIncludesVisibleExteriorBorder() {
+        QQuickWindow window; window.resize(140, 100); window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        Recorder effects(&window);
+        effects.setGeometry(DockGeometry::capsule(QRectF(10, 20, 110, 60), 10));
+        effects.configure({{"systemBlur", true}, {"borderWidth", 1}, {"borderOpacity", 0.6}});
+        QTRY_COMPARE(effects.region.boundingRect(), QRect(9, 19, 112, 62));
+        QVERIFY(!effects.region.contains(QPoint(9, 19)));
+        effects.configure({{"systemBlur", true}, {"borderWidth", 1}, {"borderOpacity", 0}});
+        QTRY_COMPARE(effects.region.boundingRect(), QRect(10, 20, 110, 60));
+    }
     void paletteVisibilityAndSurfaceLifecycle() {
         QQuickWindow window; window.resize(300, 100); window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));

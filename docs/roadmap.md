@@ -210,6 +210,7 @@ The menu also searches installed Plasma Search providers through KF6 KRunner. It
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
 Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. Running applications can also be dragged to the pinned section. Dropping a pinned application or folder shortcut on the Trash module removes its shortcut. The same target unmounts mounted USB volumes or requests safe drive removal from an unmounted volume, with a red cross when the operation is unavailable. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
+Appearance includes an optional extended dock with symmetric end margins and independent content alignment. An extended dock can keep modules at both ends and independently align and scroll the pinned applications between them. Start and end alignment show the separator next to the aligned pins when modules occupy that end. Window avoidance is clipped to the owning output.
 
 The applications menu supports directional keyboard navigation and the Plasma launcher shortcut on outputs without a native launcher.
 

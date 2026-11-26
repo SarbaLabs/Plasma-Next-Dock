@@ -246,10 +246,11 @@ Controls.ApplicationWindow {
                                 }
                                 Measure {
                                     id: alignmentMargin; objectName: "alignmentMarginControl"
-                                    caption: edge.currentIndex < 2 ? (alignment.currentIndex === 0 ? i18n("Left") : i18n("Right"))
+                                    caption: appearanceSettings.extended ? (edge.currentIndex < 2 ? i18n("Left and right") : i18n("Top and bottom"))
+                                        : edge.currentIndex < 2 ? (alignment.currentIndex === 0 ? i18n("Left") : i18n("Right"))
                                         : (alignment.currentIndex === 0 ? i18n("Top") : i18n("Bottom"))
                                     from: 0; to: 512
-                                    visible: alignment.currentIndex !== 1
+                                    visible: appearanceSettings.extended || alignment.currentIndex !== 1
                                 }
                             }
                             Controls.ComboBox {

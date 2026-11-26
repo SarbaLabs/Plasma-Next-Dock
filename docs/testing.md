@@ -904,6 +904,23 @@ A left-edge dock aligned at the top with a 64 px margin began at y=64,
 below the existing Plasma panel, and kept that end fixed when hovering its
 first icon at 2× zoom. A bottom-right dock was also checked with a 96 px margin.
 
+On a 1920 px CachyOS Wayland output, an extended top dock kept 48 px margins
+at both ends while the first left-aligned launcher magnified. The QML layout
+test covers all four edges and all three content alignments, including
+edge-to-edge magnification with zero lateral margin. The dodge regression test
+places a fullscreen-sized rectangle on each adjacent side of an output with
+negative global coordinates. Edge contact keeps the dock visible. Moving the
+window one logical pixel onto the dock triggers dodge in both layout modes,
+with square, rounded and inverted corners. In an isolated CachyOS KWin session
+with two adjacent 960 × 640 outputs, a real fullscreen window triggered hiding
+on the dock's output. Moving it fullscreen to the right output disarmed the
+auto-hide edge while the window remained open.
+
+In Always visible mode on a 960 × 640 KWin output with zero gap, a maximized
+window measured 580 px high next to a 60 px capsule with a transparent border,
+and 579 px with a visible 1 px border. With a 4 px free capsule and 40 px
+icons offset by 16 px, KWin reserved 56 px and the window measured 584 px.
+
 ## Hover glow controls
 
 Compared fixed radii of 116 and 24 logical pixels over Firefox on the live KDE
@@ -1473,3 +1490,30 @@ fill changes from transparent to opaque and to a transparent gradient.
 It also checks reduced and zero shadow strength and a sharp negative offset.
 The padding test covers horizontal and vertical 8 px capsules with a −96 px
 corner, which needs only 4 px of extra clearance.
+
+### Maximized windows against an extended dock
+
+At 100% scale, set both outer margins to zero, enable Always visible, and maximize
+a window with a contrasting solid fill. Compare the last window pixel with the
+exterior capsule border on all four edges. Repeat with 40 px icons and 172% zoom
+to exercise fractional surface depth. With a translucent border and blur enabled,
+the wallpaper under the border should be blurred along with the fill.
+
+On a 960 × 640 KWin output with a normal 32 px Plasma panel and a 61 px dock on
+the top edge, the maximized window started at y = 61 and was 579 px tall.
+
+### Three zones on an extended dock
+
+Extend the dock and enable “Keep modules at the ends”. Dock alignment positions
+the pinned applications within the available space. On CachyOS KWin, a 1920 × 1080 output
+showed the launcher menu at the first end, five pins centered, and the folders
+and Trash at the opposite end on both bottom and left docks.
+
+The Qt Quick regression checks all three alignments on all four edges with 16 px outer margins.
+It inserts 50 more launchers, checks that a separator appears, then scrolls
+50 px and compares the positions of both modules and a central launcher.
+
+The split layout also exercises promoting a running task to a pin while its
+module rows move or are replaced. In a CachyOS KWin session, dragging Info
+Center from the unpinned module between Firefox and Konsole kept all six pins
+visible with center and end alignment. The outer modules remained accessible.
