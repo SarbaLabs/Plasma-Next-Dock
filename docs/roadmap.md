@@ -45,7 +45,7 @@ Eight additional desktops passed the maintainer's source-install campaign:
 
 On Bazzite KDE the maintainer compiled inside a Fedora 45 Distrobox and
 confirmed the dock worked after returning to the host desktop.
-[Bazzite installation procedure](../README.md#bazzite-kde-build-with-distrobox)
+[Bazzite installation procedure](installation.md#bazzite-kde-build-with-distrobox)
 
 **Automated validation.** The regression suite has 17 CTest entries. GitHub
 Actions checks dependency reporting, compilation, tests and staged installation
