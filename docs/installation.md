@@ -102,7 +102,7 @@ distrobox enter pnd-build
 
 ```bash
 mkdir -p ~/git
-git clone --branch main https://github.com/SarbaLabs/Plasma-Next-Dock.git ~/git/Plasma-Next-Dock
+git clone --branch v1.00.00 https://github.com/SarbaLabs/Plasma-Next-Dock.git ~/git/Plasma-Next-Dock
 cd ~/git/Plasma-Next-Dock
 CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh
 ```
@@ -129,12 +129,12 @@ are available from the host's application launcher.
 
 ## Install or update from source
 
-To install the current main branch:
+To install the [stable release](https://github.com/SarbaLabs/Plasma-Next-Dock/releases/tag/v1.00.00) using Git:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone --branch main https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch v1.00.00 https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -144,11 +144,12 @@ own application launcher and translation catalog under **`~/.local`**. The dock 
 autostart entry and does not restart Plasma Shell. Change the destination only
 when needed with `PLASMA_NEXT_DOCK_PREFIX=/your/prefix ./install.sh`.
 
-To update an existing checkout on the same branch:
+To switch an existing checkout to the current stable version, fetch the tags and select the release. For future updates, substitute the published tag:
 
 ```bash
 cd ~/git/Plasma-Next-Dock
-git pull --ff-only
+git fetch origin --tags
+git switch --detach v1.00.00
 ./install.sh
 ```
 

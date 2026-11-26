@@ -1,6 +1,6 @@
 # Development status and roadmap
 
-The functional, compatibility and modular development phases are complete. The next milestone is the first tagged source release.
+The functional, compatibility and modular development phases are complete. The [first stable source release](https://github.com/SarbaLabs/Plasma-Next-Dock/releases/tag/v1.00.00) is available. The next milestone is the AUR recipe.
 
 | Phase | Status | Outcome |
 | --- | --- | --- |
@@ -9,7 +9,7 @@ The functional, compatibility and modular development phases are complete. The n
 | 3. Code consolidation | Merged | Geometry, settings and task presentation reorganized while preserving existing profiles |
 | 4. Modular v1.0 | Implemented and validated | Module API 1, per-dock module placement and five official modules |
 | 5. Source distribution | Archive validated | Public repository, tested source installer, family-specific instructions and compatibility matrix |
-| 6. First release | Upcoming | Stable tag, release notes and an AUR recipe targeting that tag |
+| 6. First release | Published | Stable tag v1.00.00 and release notes |
 
 ## Completed work
 
@@ -25,7 +25,6 @@ The repository became public on the same day. Anonymous access was verified. Git
 
 ## Remaining release work
 
-1. **Publish the first source release.** Tag the validated commit `c159f86` as `v1.00.00`, publish the release notes, and point the [installation instructions](installation.md) to the released source.
-2. **Distribute through the AUR.** Build the same stable tag with a PKGBUILD for Arch and CachyOS. Verify installation, upgrade, independent module loading and removal before publishing the recipe.
+**Distribute through the AUR.** Build the same stable tag with a PKGBUILD for Arch and CachyOS. Verify installation, upgrade, independent module loading and removal before publishing the recipe.
 
 The [development history](development-history.md) includes the original PR notes and the [indicator parity checklist](development-history.md#final-version-parity-requirement).
