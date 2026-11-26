@@ -138,6 +138,12 @@ entry. KIO lists the shared `trash:/` location and reports additions and removal
 including hidden items. The package selects a theme icon and delegates opening,
 trashing, emptying, confirmations and errors to KDE.
 
+For internal drags, an entry may set `trashDropAction` to the ID of its
+shortcut, volume or drive action. The host dispatches the action while
+the entry and its matching action are enabled. The Trash icon switches to
+`media-eject` for USB volumes or `window-unpin` for shortcut removal. On drop
+the source module handles its own action.
+
 A module entry can declare `localFileMove: true` alongside `acceptsDocuments`.
 The dock negotiates a move for that entry only when the source offers a move and
 supplies exclusively local file URLs. This also lets the module receive a local
@@ -156,6 +162,9 @@ The last disabled instance releases the observer.
 KDE handles filesystem operations and reports busy-device errors. On Linux
 the package also reads the UDisks2 drive's power-off and eject capabilities
 asynchronously. Physical removal requires all its volumes to be unmounted.
+Dropping a mounted volume on Trash unmounts just that volume. A separate drag
+from an unmounted volume requests safe removal of its drive if supported and
+available. A red cross on the eject symbol marks an unavailable action.
 UDisks performs its own in-use and authorization checks.
 
 ## Module popups

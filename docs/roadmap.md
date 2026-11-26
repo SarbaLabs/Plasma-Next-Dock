@@ -193,7 +193,7 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
 - **Trash** opens `trash:/` and uses KIO for asynchronous drops and emptying,
   respecting KDE confirmations and errors. Its KIO directory lister tracks content changes for
   `user-trash` and `user-trash-full`.
-- **USB storage** uses Solid events for insertion, state changes and removal.
+- **USB storage** uses Solid events for insertion, state changes and removal. Each partition shows its mount state in the indicator area.
   Each visible volume offers open, mount, unmount and hardware-supported safe
   removal. See the [USB module checks](testing.md#usb-storage-module).
 - **KDE launcher, optional** investigates real Kickoff (default), Kicker and
@@ -209,7 +209,7 @@ The shadow passes pointer input through to the dock. Free edges and corners supp
 The menu also searches installed Plasma Search providers through KF6 KRunner. It does not host launcher
 plasmoids. See the [menu verification](testing.md#standalone-applications-menu).
 
-Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
+Manual reorder previews and the compositor-driven menu transition landed in PR #50. External launcher and folder insertion previews landed in PR #51. Running applications can also be dragged to the pinned section. Dropping a pinned application or folder shortcut on the Trash module removes its shortcut. The same target unmounts mounted USB volumes or requests safe drive removal from an unmounted volume, with a red cross when the operation is unavailable. PR #52 added adjustable smooth wheel scrolling and directional subcategory transitions. PR #53 placed dock context menus at the pointer, including over the applications menu. The project now uses the Capsule SVG as its application icon.
 
 The applications menu supports directional keyboard navigation and the Plasma launcher shortcut on outputs without a native launcher.
 

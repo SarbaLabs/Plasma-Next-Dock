@@ -1390,6 +1390,26 @@ folder dwell across moving targets, insertion at the end, exit/re-entry and
 direct copy routing. The module test checks ordered insertion, deduplication,
 stale destinations and automatic sorting.
 
+On CachyOS Wayland a disposable dock accepted KCalc from the unpinned module
+between Dolphin and Konsole. Dropping the newly pinned KCalc on Trash restored
+its running task in the module. Dropping an alphabetically sorted folder
+shortcut on Trash removed the shortcut and preserved the directory and its
+sentinel file. The QML drop test also covers returning to the source module
+before release without saving a pin.
+
+On CachyOS Wayland the USB provider was exercised with a simulated mounted
+volume. The Trash icon changed to eject during the drag and reverted on
+release.
+Dragging a pinned application showed the unpin icon instead.
+
+With two simulated USB partitions on a live CachyOS Wayland dock, the mounted
+partition showed a solid green dot and the unmounted partition showed a red
+dot with a white minus. Dropping the mounted partition on Trash changed only
+its dot, without restarting the dock. Dragging the already unmounted sibling
+first showed a red cross on the eject icon and left both volumes in place.
+With both partitions unmounted, a second drag dispatched drive removal and
+both simulated partitions disappeared.
+
 ### Applications menu scrolling and subcategories
 
 On CachyOS Wayland a disposable menu contained Internet → Navigateurs.
