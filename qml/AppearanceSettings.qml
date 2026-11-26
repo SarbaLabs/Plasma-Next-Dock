@@ -6,6 +6,7 @@ import org.kde.kirigami as Kirigami
 
 Controls.ScrollView {
     id: page
+    required property bool centeredAlignment
     required property QtObject paletteSource
     readonly property bool freeLayout: layoutMode.currentIndex === 1
 
@@ -27,6 +28,7 @@ Controls.ScrollView {
         glowOpacity.value = v.glowOpacity;
         backgroundType.currentIndex = backgroundType.modeIds.indexOf(v.backgroundType);
         systemBlur.checked = v.systemBlur;
+        splitDock.checked = v.splitExtendedDock ?? false;
         extendDock.checked = v.extendDock ?? false;
         midpoint.value = v.gradientMidpoint;
         glassOpacity.value = Math.round(v.glassOpacity * 100);
@@ -60,6 +62,7 @@ Controls.ScrollView {
             iconOffset: iconOffset.value,
             backgroundType: backgroundType.mode,
             systemBlur: systemBlur.checked,
+            splitExtendedDock: splitDock.checked,
             extendDock: extendDock.checked,
             gradientMidpoint: midpoint.value,
             glassOpacity: glassOpacity.value / 100,
@@ -178,6 +181,12 @@ Controls.ScrollView {
             }
             Controls.CheckBox { id: systemBlur; objectName: "systemBlurControl"; text: i18n("Use system blur") }
             Controls.CheckBox { id: extendDock; objectName: "extendDockControl"; text: i18n("Extend the dock") }
+            Controls.CheckBox {
+                id: splitDock
+                objectName: "splitExtendedDockControl"
+                visible: extendDock.checked && page.centeredAlignment
+                text: i18n("Keep modules at the ends and pinned applications in the center")
+            }
             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
             RowLayout {
                 id: corners

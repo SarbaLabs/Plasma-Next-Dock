@@ -1501,3 +1501,14 @@ the wallpaper under the border should be blurred along with the fill.
 
 On a 960 × 640 KWin output with a normal 32 px Plasma panel and a 61 px dock on
 the top edge, the maximized window started at y = 61 and was 579 px tall.
+
+### Three zones on an extended dock
+
+Select centered alignment, extend the dock and enable “Keep modules at the ends
+and pinned applications in the center”. On CachyOS KWin, a 1920 × 1080 output
+showed the launcher menu at the first end, five pins centered, and the folders
+and Trash at the opposite end on both bottom and left docks.
+
+The Qt Quick regression checks all four orientations with 16 px outer margins.
+It inserts 50 more launchers, checks that a separator appears, then scrolls
+50 px and compares the positions of both modules and a central launcher.

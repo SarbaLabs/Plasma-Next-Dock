@@ -249,6 +249,55 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_splitExtendedDock() {
+        const root = dock.item;
+        const tasks = findChild(root, "taskSourceLoader").item.tasks;
+        const viewport = findChild(root, "taskViewport");
+        const original = tasks.count;
+        const changes = {extendDock: true, splitExtendedDock: true, dockAlignment: 1, alignmentMargin: 16, zoom: 1};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            tasks.setProperty(0, "dockZone", -1);
+            tasks.setProperty(original - 1, "dockZone", 1);
+            tryCompare(root, "leadingCount", 1);
+            tryCompare(root, "trailingCount", 1);
+            const first = findChild(root, "task0");
+            const center = findChild(root, "task2");
+            const last = findChild(root, "task" + (original - 1));
+            const divider = findChild(root, "zoneSeparator0");
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.setEdge(edge);
+                const axis = item => {
+                    const point = item.mapToItem(root, item.width / 2, item.height / 2);
+                    return root.vertical ? point.y : point.x;
+                };
+                const length = root.vertical ? root.height : root.width;
+                tryVerify(() => Math.abs(axis(center) - length / 2) < 1);
+                verify(Math.abs(axis(first) - (16 + root.endPadding + root.base / 2)) < 1);
+                verify(Math.abs(length - axis(last) - axis(first)) < 1);
+                verify(!divider.visible);
+
+                for (let i = 0; i < 50; ++i)
+                    tasks.insert(1, {decoration: "folder", display: "Pinned", dockZone: 0});
+                tryVerify(() => viewport.contentWidth > viewport.width && divider.visible);
+                const left = axis(first), right = axis(last), pin = axis(center);
+                viewport.contentX = 50;
+                compare(axis(first), left);
+                compare(axis(last), right);
+                compare(axis(center), pin - 50);
+                tasks.remove(1, 50);
+                tryCompare(viewport, "contentX", 0);
+            }
+        } finally {
+            if (tasks.count > original) tasks.remove(1, tasks.count - original);
+            tasks.setProperty(0, "dockZone", 0);
+            tasks.setProperty(original - 1, "dockZone", 0);
+            testEnvironment.behaviorOptions(saved);
+            testEnvironment.setEdge(0);
+        }
+    }
     function test_synthesizedWheel() {
         tryCompare(dock, "status", Loader.Ready);
         const tasks = findChild(dock.item, "taskSourceLoader").item.tasks;

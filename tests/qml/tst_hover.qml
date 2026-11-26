@@ -74,7 +74,7 @@ TestCase {
         tryCompare(dock, "status", Loader.Ready);
         const panel = dock.item;
         const first = findChild(panel, "task0");
-        const row = first.parent;
+        const row = first.parent.parent;
         try {
             for (let edge = 0; edge < 4; ++edge) {
                 const span = edge < 2 ? outputSize.width : outputSize.height;

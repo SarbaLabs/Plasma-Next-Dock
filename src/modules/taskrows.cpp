@@ -8,6 +8,7 @@ static constexpr int nativeRowRole = Qt::UserRole + 65536;
 
 static constexpr int moduleEntryRole = nativeRowRole + 1;
 static constexpr int boundaryRole = nativeRowRole + 2;
+static constexpr int zoneRole = nativeRowRole + 3;
 
 static QString entryKey(const QVariantMap &entry)
 {
@@ -206,6 +207,7 @@ QHash<int, QByteArray> TaskRows::roleNames() const
     auto roles = m_tasks ? m_tasks->roleNames() : QAbstractItemModel::roleNames();
     roles.insert(nativeRowRole, "nativeTaskRow");
     roles.insert(moduleEntryRole, "moduleEntry");
+    roles.insert(zoneRole, "dockZone");
     roles.insert(boundaryRole, "separatorAfter");
     return roles;
 }
@@ -216,7 +218,7 @@ void TaskRows::queueBoundaries()
     m_boundariesPending = true;
     QMetaObject::invokeMethod(this, [this] {
         m_boundariesPending = false;
-        if (rowCount()) Q_EMIT dataChanged(index(0, 0), index(rowCount()-1, 0), {boundaryRole, nativeRowRole});
+        if (rowCount()) Q_EMIT dataChanged(index(0, 0), index(rowCount()-1, 0), {boundaryRole, nativeRowRole, zoneRole});
     }, Qt::QueuedConnection);
 }
 
@@ -224,6 +226,7 @@ QVariant TaskRows::data(const QModelIndex &idx, int role) const
 {
     if (!idx.isValid()) return {};
     const auto source = m_join.mapToSource(mapToSource(idx));
+    if (role == zoneRole) return zone(source);
     if (role == nativeRowRole) return source.model() == m_tasks ? source.row() : -1;
     if (role == boundaryRole) {
         if (idx.row()+1 >= rowCount()) return false;
