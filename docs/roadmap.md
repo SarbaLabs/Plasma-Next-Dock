@@ -17,11 +17,12 @@ CachyOS and Debian were the first reference desktops. The maintainer also tested
 
 The modular dock supports applications menu, unpinned applications, folders, Trash and USB storage modules. Each dock controls its own module placement. The native KDE launcher study is closed. The implemented Applications menu uses KDE’s application hierarchy and Plasma Search providers in a dock-owned popup. The [module guide](modules.md) describes the public contract and the [delivery record](development-history.md#modular-v10-delivery-record) preserves the original design and acceptance criteria.
 
+The dock reports its project version, 1.00.00, with `plasma-next-dock --version`.
+
 ## Remaining release work
 
-1. **Identify the build.** Define the v1.0.0 project version and expose it through `plasma-next-dock --version` so users can identify a build in a bug report.
-2. **Verify the source archive.** Extract the release candidate into a temporary directory on the existing reference VM, build with `./install.sh` into a temporary prefix, and launch a demo with isolated settings. This checks the archive contents using the already validated installation procedure.
-3. **Publish the first source release.** Once the maintainer makes the repository public, protect `main`, publish the stable tag and release notes, and point the [installation instructions](installation.md) to the released source.
-4. **Distribute through the AUR.** Build the same stable tag with a PKGBUILD for Arch and CachyOS. Verify installation, upgrade, independent module loading and removal before publishing the recipe.
+1. **Verify the source archive.** Extract the release candidate into a temporary directory on the existing reference VM, build with `./install.sh` into a temporary prefix, and launch a demo with isolated settings. This checks the archive contents using the already validated installation procedure.
+2. **Publish the first source release.** Once the maintainer makes the repository public, protect `main`, publish the stable tag and release notes, and point the [installation instructions](installation.md) to the released source.
+3. **Distribute through the AUR.** Build the same stable tag with a PKGBUILD for Arch and CachyOS. Verify installation, upgrade, independent module loading and removal before publishing the recipe.
 
 The [development history](development-history.md) includes the original PR notes and the [indicator parity checklist](development-history.md#final-version-parity-requirement).

@@ -26,6 +26,13 @@
 
 int main(int argc, char **argv)
 {
+    QCoreApplication::setApplicationVersion(QStringLiteral(DOCK_VERSION));
+    // A version query also works from a terminal outside the graphical session.
+    if (argc == 2 && (qstrcmp(argv[1], "--version") == 0 || qstrcmp(argv[1], "-v") == 0)) {
+        QCoreApplication app(argc, argv);
+        app.setApplicationName(QStringLiteral("plasma-next-dock"));
+        QCommandLineParser().showVersion();
+    }
     // Layer-shell frame callbacks can arrive more slowly than the output refresh.
     // Keep Qt Quick transitions on elapsed time as auxiliary windows come and go.
     if (!qEnvironmentVariableIsSet("QSG_USE_SIMPLE_ANIMATION_DRIVER"))
@@ -41,6 +48,7 @@ int main(int argc, char **argv)
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Plasma Next Dock — standalone Wayland dock"));
     parser.addHelpOption();
+    parser.addVersionOption();
     parser.addOptions({
         {"autostart", "Start at login if the dock is not already running."},
         {"demo", "Use demonstration icons and temporary settings."},
