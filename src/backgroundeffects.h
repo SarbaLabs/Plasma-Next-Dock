@@ -27,6 +27,7 @@ private:
     QPointer<QQuickWindow> m_window;
     QPainterPath m_capsule;
     QRegion m_lastRegion;
+    int m_borderWidth = 0;
     bool m_enabled = false, m_applied = false, m_queued = false;
     bool m_restore = true, m_surfaceDestroyed = false;
 };

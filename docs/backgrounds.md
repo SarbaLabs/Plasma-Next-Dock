@@ -46,8 +46,8 @@ into the preferred size. Border thickness and radius remain logical pixels.
 
 ## Geometry and ownership
 
-The visible capsule alone defines blur, never the larger icon canvas or edge
-input corridor. Geometry stays in logical window coordinates; KWindowSystem
+The blur mask covers the capsule fill and its visible exterior stroke. The shadow,
+icon canvas and edge input corridor stay outside the mask unless they overlap the capsule. Geometry stays in logical window coordinates; KWindowSystem
 handles Wayland. QRegion rasterization quantizes vector edges to logical pixels.
 A zero radius gives a square corner. Negative radii extend along the long axis.
 The renderer and native effects use the same path, capped at half the smaller dimension.

@@ -4,6 +4,7 @@
 #include "geometry.h"
 #include <KWindowEffects>
 #include <QCoreApplication>
+#include <QPainterPathStroker>
 #include <QPlatformSurfaceEvent>
 
 BackgroundEffects::BackgroundEffects(QQuickWindow *window, QObject *parent)
@@ -21,7 +22,11 @@ BackgroundEffects::~BackgroundEffects()
 void BackgroundEffects::configure(const QVariantMap &options)
 {
     const bool enabled = options.value("systemBlur").toBool();
-    if (enabled == m_enabled) return;
+    const bool visibleBorder = options.value("borderOpacity", 1).toReal() > 0
+        && (options.value("borderRole") != QStringLiteral("custom") || QColor(options.value("borderColor").toString()).alpha() > 0);
+    const int border = visibleBorder ? options.value("borderWidth").toInt() : 0;
+    if (enabled == m_enabled && border == m_borderWidth) return;
+    m_borderWidth = border;
     m_enabled = enabled;
     schedule();
 }
@@ -75,9 +80,18 @@ void BackgroundEffects::apply()
 {
     if (!m_window || m_surfaceDestroyed) return;
     // An empty region means full-window blur to KWin, so never enable it.
-    const QRegion region = QRegion(m_capsule.toFillPolygon().toPolygon())
-        .intersected(QRect(QPoint(), m_window->size()));
-    if (!m_enabled || region.isEmpty()) { clear(); return; }
+    if (!m_enabled || m_capsule.isEmpty()) { clear(); return; }
+    QRegion region(m_capsule.toFillPolygon().toPolygon());
+    if (m_borderWidth > 0) {
+        // A translucent exterior stroke otherwise reveals a stripe of sharp
+        // wallpaper between the blurred capsule and a maximized window.
+        QPainterPathStroker stroke;
+        stroke.setWidth(2 * m_borderWidth);
+        stroke.setJoinStyle(Qt::RoundJoin);
+        region |= QRegion(stroke.createStroke(m_capsule).toFillPolygon().toPolygon());
+    }
+    region &= QRect(QPoint(), m_window->size());
+    if (region.isEmpty()) { clear(); return; }
     if (!m_window->isVisible() || !m_window->isExposed()) return;
     if (!m_restore && m_applied && region == m_lastRegion) return;
     // Lifecycle restoration must also bypass KWindowSystem's region cache.

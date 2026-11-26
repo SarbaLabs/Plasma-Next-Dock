@@ -25,7 +25,7 @@ are handled explicitly; all geometry is in logical coordinates, not physical pix
 
 - `src/main.cpp`: validated CLI, screen selection, single live-instance lock,
   LayerShellQt setup and resource-backed QML. The surface uses LayerTop, no keyboard
-  focus, and exclusive zone -1: anchored to the output. Always-visible mode adds a transparent, input-free layer surface with a positive exclusive zone on the same output. Its single edge anchor keeps the reservation independent of corner alignment and hover animations.
+  focus, and exclusive zone -1: anchored to the output. Always-visible mode adds a transparent, input-free layer surface with a positive exclusive zone on the same output. When a Plasma panel already reserves the same edge on the same output, the dock requests only the remaining thickness. Its single edge anchor keeps the reservation independent of corner alignment and hover animations.
 - `src/geometry.*`: pure geometry functions for placement, rounded contact and input.
 - `src/controller.*`: event-driven collision checks against a QAbstractItemModel.
   Changes are coalesced through a queued invocation. Only geometry changes request

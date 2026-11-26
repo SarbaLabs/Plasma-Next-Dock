@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "launcherresolver.h"
 #include "dockhost.h"
+#include "panelreservation.h"
 #include "statussupport.h"
 #include "popupanchor.h"
 #include "applicationmenubackend.h"
@@ -204,6 +205,7 @@ void DockHost::position()
 void DockHost::updateReservation()
 {
     if (m_demo || m_settings->values()["visibilityMode"].toInt() != DockGeometry::AlwaysVisible || !m_view.rootObject()) {
+        m_panelReservation.reset();
         m_reservation.reset();
         return;
     }
@@ -211,6 +213,16 @@ void DockHost::updateReservation()
     // panels reserve space. A separate single-edge surface has an unambiguous
     // exclusive edge, including on earlier layer-shell protocol versions.
     using Layer = LayerShellQt::Window;
+    if (!m_panelReservation) {
+        m_panelReservation = std::make_unique<PanelReservation>(m_screen, m_edge);
+        connect(m_panelReservation.get(), &PanelReservation::changed, this, &DockHost::updateReservation);
+    }
+    const int thickness = std::max(0, m_view.rootObject()->property("reservedThickness").toInt()
+        - m_panelReservation->thickness());
+    if (!thickness) {
+        m_reservation.reset();
+        return;
+    }
     if (!m_reservation) {
         m_reservation = std::make_unique<QQuickWindow>();
         m_reservation->setScreen(m_screen);
@@ -227,7 +239,6 @@ void DockHost::updateReservation()
     const QSize size = m_edge < DockGeometry::Left ? QSize(m_screen->size().width(), 1) : QSize(1, m_screen->size().height());
     m_reservation->resize(size);
     desiredSize(layer, size);
-    const int thickness = m_view.rootObject()->property("reservedThickness").toInt();
     if (layer->exclusionZone() != thickness) {
         layer->setExclusiveZone(thickness);
         m_reservation->update();

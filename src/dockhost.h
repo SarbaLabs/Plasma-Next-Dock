@@ -7,6 +7,8 @@
 #include "modules/taskrows.h"
 #include "layersurfaceposition.h"
 #include <QQuickView>
+class PanelReservation;
+
 class DockHost : public QObject
 {
     Q_OBJECT
@@ -29,6 +31,7 @@ private Q_SLOTS:
     void syncKeyboard();
 private:
     void updateReservation();
+    std::unique_ptr<PanelReservation> m_panelReservation;
     std::unique_ptr<QQuickWindow> m_reservation;
     DockSettings *m_settings;
     QScreen *m_screen;

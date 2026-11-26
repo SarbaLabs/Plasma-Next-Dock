@@ -58,10 +58,12 @@ Item {
     readonly property real maximum: base * dockOptions.zoom
     // A custom marker can extend inward beyond a thin free capsule even with
     // small icons. Its drawing space is independent of the exclusive zone.
-    readonly property real depth: dockOptions.freeLayout && dockOptions.indicatorMode === 2
+    // The native surface is integer-sized. Snap its inward extent before
+    // anchoring artwork at the bottom or right edge of that surface.
+    readonly property int depth: Math.ceil(dockOptions.freeLayout && dockOptions.indicatorMode === 2
         ? Math.max(layoutMetrics.depth, Math.min((vertical ? outputSize.width : outputSize.height) - (dockOptions.borderWidth ?? 1),
             edgeSpacing + (dockOptions.indicatorEdgeDistance ?? 2) + 24))
-        : layoutMetrics.depth
+        : layoutMetrics.depth)
     readonly property real length: extended ? availableLength : Math.min(Math.max(1, availableLength - effectiveAlignmentMargin),
         Math.max(layoutMetrics.length, occupiedLength))
     readonly property real taskPadding: (dockOptions.verticalPadding === undefined ? 10 : dockOptions.verticalPadding) * fitScale

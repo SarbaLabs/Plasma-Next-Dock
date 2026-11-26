@@ -35,6 +35,21 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_fractionalZoomKeepsPhysicalEdge() {
+        const root = dock.item;
+        const capsule = findChild(root, "capsuleBackground");
+        const changes = {zoom: 1.72, iconSize: 40, spacing: 0, edge: 0, extendDock: true, freeLayout: false};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            for (const edge of [0, 3]) {
+                testEnvironment.behaviorOptions(Object.assign({}, changes, {edge: edge}));
+                const extent = root.vertical ? root.width : root.height;
+                compare(extent, Math.floor(extent));
+                compare(root.vertical ? capsule.x + capsule.width : capsule.y + capsule.height, extent);
+            }
+        } finally { testEnvironment.behaviorOptions(saved); }
+    }
     function test_reservationEndsAtVisibleContent() {
         const root = dock.item;
         const changes = {edge: 0, extendDock: true, spacing: 0, freeLayout: false,

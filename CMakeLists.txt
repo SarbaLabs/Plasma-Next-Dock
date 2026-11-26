@@ -33,7 +33,7 @@ qt_add_shaders(dockcore iconcolors PREFIX "/" FILES shaders/iconcolor.frag shade
 target_include_directories(dockcore PUBLIC src)
 target_link_libraries(dockcore PUBLIC Qt6::Quick Qt6::Widgets KF6::I18n KF6::I18nQml KF6::KIOFileWidgets KF6::Service KF6::Notifications Plasma::ActivitiesStats)
 target_link_libraries(dockcore PRIVATE Qt6::DBus Qt6::GuiPrivate KF6::WindowSystem)
-add_executable(plasma-next-dock src/main.cpp src/launcherrelay.cpp src/screenedge.cpp src/dockhost.cpp)
+add_executable(plasma-next-dock src/main.cpp src/panelreservation.cpp src/launcherrelay.cpp src/screenedge.cpp src/dockhost.cpp)
 target_link_libraries(plasma-next-dock PRIVATE dockcore Qt6::DBus KF6::CoreAddons KF6::GlobalAccel KF6::WindowSystem Qt6::WaylandClient Qt6::GuiPrivate LayerShellQt::Interface PkgConfig::WaylandClient)
 file(RELATIVE_PATH dock_autostart_entry "${CMAKE_INSTALL_FULL_BINDIR}"
     "${CMAKE_INSTALL_FULL_DATADIR}/plasma-next-dock/org.sarbalabs.PlasmaNextDock.desktop")

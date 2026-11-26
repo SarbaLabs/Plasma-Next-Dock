@@ -1490,3 +1490,14 @@ fill changes from transparent to opaque and to a transparent gradient.
 It also checks reduced and zero shadow strength and a sharp negative offset.
 The padding test covers horizontal and vertical 8 px capsules with a −96 px
 corner, which needs only 4 px of extra clearance.
+
+### Maximized windows against an extended dock
+
+At 100% scale, set both outer margins to zero, enable Always visible, and maximize
+a window with a contrasting solid fill. Compare the last window pixel with the
+exterior capsule border on all four edges. Repeat with 40 px icons and 172% zoom
+to exercise fractional surface depth. With a translucent border and blur enabled,
+the wallpaper under the border should be blurred along with the fill.
+
+On a 960 × 640 KWin output with a normal 32 px Plasma panel and a 61 px dock on
+the top edge, the maximized window started at y = 61 and was 579 px tall.
