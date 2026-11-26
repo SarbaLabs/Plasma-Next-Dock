@@ -1491,6 +1491,12 @@ It also checks reduced and zero shadow strength and a sharp negative offset.
 The padding test covers horizontal and vertical 8 px capsules with a −96 px
 corner, which needs only 4 px of extra clearance.
 
+### Visibility settings migration
+
+The settings tests load a profile saved with visibility mode 3 (Windows go below)
+and check that it opens in Always visible. They also reopen profiles saved with
+Auto hide and Dodge windows, and verify all three entries in the settings UI.
+
 ### Maximized windows against an extended dock
 
 At 100% scale, set both outer margins to zero, enable Always visible, and maximize

@@ -256,7 +256,7 @@ Controls.ApplicationWindow {
                             Controls.ComboBox {
                                 id: visibilityMode; objectName: "visibilityModeControl"
                                 Kirigami.FormData.label: i18n("Visibility:")
-                                model: [i18n("Always visible"), i18n("Auto hide"), i18n("Dodge windows"), i18n("Windows go below")]
+                                model: [i18n("Always visible"), i18n("Auto hide"), i18n("Dodge windows")]
                             }
                             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Session") }
                             Controls.CheckBox {

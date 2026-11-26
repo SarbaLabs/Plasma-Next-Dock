@@ -205,8 +205,10 @@ QVariantMap DockSettings::normalized(const QVariantMap &input)
     result["tintIcons"] = result["tintIcons"].toBool();
     number("iconTintSaturation", 0, 100, true);
     number("glowOpacity", 0, 100, true);
-    if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 3;
-    number("visibilityMode", 0, 3, true);
+    if (!input.contains("visibilityMode")) result["visibilityMode"] = result["dodge"].toBool() ? 2 : 0;
+    // Stored mode 3 was the non-reserving overlay. Migrate it to Always visible.
+    if (result["visibilityMode"].toInt() == 3) result["visibilityMode"] = 0;
+    number("visibilityMode", 0, 2, true);
     number("dockAlignment", 0, 2, true);
     number("alignmentMargin", 0, 512, true);
     result["dodge"] = result["visibilityMode"].toInt() == 2;
@@ -249,7 +251,7 @@ static QVariantMap mergeChanges(QVariantMap merged, const QVariantMap &changes)
     for (auto it = changes.begin(); it != changes.end(); ++it) merged[it.key()] = it.value();
     if (changes.contains("enabledModules") && !changes.contains("moduleZones")) merged.remove("moduleZones");
     if (changes.contains("dodge") && !changes.contains("visibilityMode"))
-        merged["visibilityMode"] = changes["dodge"].toBool() ? 2 : 3;
+        merged["visibilityMode"] = changes["dodge"].toBool() ? 2 : 0;
     if (changes.contains("radius")) {
         for (const auto key : {"topLeftRadius", "topRightRadius", "bottomRightRadius", "bottomLeftRadius"})
             if (!changes.contains(key)) merged[key] = changes["radius"];

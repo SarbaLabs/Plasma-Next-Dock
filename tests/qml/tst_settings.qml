@@ -41,6 +41,10 @@ TestCase {
         const edge = findChild(window, "edgeControl");
         const alignment = findChild(window, "dockAlignmentControl");
         const visibility = findChild(window, "visibilityModeControl");
+        compare(visibility.count, 3);
+        compare(visibility.textAt(0), i18n("Always visible"));
+        compare(visibility.textAt(1), i18n("Auto hide"));
+        compare(visibility.textAt(2), i18n("Dodge windows"));
         compare(alignment.currentIndex, 1);
         alignment.currentIndex = 2;
         edge.currentIndex = 2;

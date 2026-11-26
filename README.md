@@ -219,9 +219,9 @@ exits navigation. Outside this mode the dock requests no keyboard focus.
 Each dock can use **Always visible** to reserve its resting thickness plus the
 edge gap and exterior border. Maximized windows leave this strip free across
 the selected screen edge. Hover magnification does not move those windows.
-**Auto hide** recalls the dock at its edge; **Dodge windows** hides it on
-overlap; **Windows go below** keeps the dock above normal windows without
-reserving space. Existing profiles retain their previous dodge or overlay behavior.
+**Auto hide** recalls the dock at its edge. **Dodge windows** hides it on
+overlap. Profiles that previously used **Windows go below** now use **Always visible**
+and reserve space for the dock.
 
 Horizontal docks can align left, center or right. Vertical docks can align top,
 center or bottom. With either end selected, the capsule and icons grow toward
