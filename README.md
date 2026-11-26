@@ -25,12 +25,12 @@ You can write your own module in QML. Start with the working counter example, ch
 
 Use a **Plasma 6 Wayland session**. The oldest tested configuration is Debian 13 with Plasma 6.3.6 and Qt 6.8.2. See the [compatibility matrix](docs/compatibility.md) for tested distributions and desktop features.
 
-On a conventional Linux installation, run the following as your desktop user:
+Download and extract **Source code (tar.gz)** from the [1.00.00 release](https://github.com/SarbaLabs/Plasma-Next-Dock/releases/tag/v1.00.00), then run `./install.sh` inside the extracted directory. To get the same stable sources with Git:
 
 ```bash
 mkdir -p ~/git
 cd ~/git
-git clone https://github.com/SarbaLabs/Plasma-Next-Dock.git
+git clone --branch v1.00.00 https://github.com/SarbaLabs/Plasma-Next-Dock.git
 cd Plasma-Next-Dock
 ./install.sh
 ```
@@ -58,7 +58,7 @@ cd ~/git/Plasma-Next-Dock
 ./uninstall.sh
 ```
 
-The uninstaller removes the installed dock and its bundled modules. It keeps your preferences in `~/.config/plasma-next-dock.ini`.
+If you downloaded the archive, run the same script from its extracted directory. The uninstaller removes the installed dock and its bundled modules. It keeps your preferences in `~/.config/plasma-next-dock.ini`.
 
 ## License and credits
 
