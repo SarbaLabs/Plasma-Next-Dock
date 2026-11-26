@@ -1536,5 +1536,5 @@ listed and loaded all five official modules and ran the offscreen demo smoke
 test. APT upgraded the Folders module from a fixture with a lower package
 version, removed and reinstalled it independently, and purged all six packages.
 This exercise used the reference VM's existing runtime dependencies.
-A fresh-system install and a graphical Wayland session using the packaged
-executable remain release checks.
+The maintainer subsequently installed the packages on a fresh Debian KDE VM
+and confirmed the dock worked on first use.
