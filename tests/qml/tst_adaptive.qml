@@ -278,6 +278,22 @@ TestCase {
                 verify(Math.abs(axis(first) - (16 + root.endPadding + root.base / 2)) < 1);
                 verify(Math.abs(length - axis(last) - axis(first)) < 1);
                 verify(!divider.visible);
+                const leftModule = axis(first), rightModule = axis(last);
+                for (const align of [0, 2, 1]) {
+                    testEnvironment.behaviorOptions({dockAlignment: align});
+                    const firstPin = findChild(root, "task1");
+                    const lastPin = findChild(root, "task3");
+                    if (align === 1) tryVerify(() => Math.abs(axis(center) - length / 2) < 1);
+                    else {
+                        const pin = align === 0 ? firstPin : lastPin;
+                        const boundary = viewport.mapToItem(root, align === 0 ? 0 : viewport.width, viewport.height / 2);
+                        const expected = (root.vertical ? boundary.y : boundary.x) + (align === 0 ? 1 : -1) * pin.width / 2;
+                        tryVerify(() => Math.abs(axis(pin) - expected) < 1);
+                    }
+                    compare(axis(first), leftModule);
+                    compare(axis(last), rightModule);
+                    verify(!divider.visible);
+                }
 
                 for (let i = 0; i < 50; ++i)
                     tasks.insert(1, {decoration: "folder", display: "Pinned", dockZone: 0});

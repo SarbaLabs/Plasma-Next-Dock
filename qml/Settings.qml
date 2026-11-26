@@ -280,7 +280,6 @@ Controls.ApplicationWindow {
                 }
                 AppearanceSettings {
                     id: appearanceSettings
-                    centeredAlignment: alignment.currentIndex === 1
                     paletteSource: dockPalette
                 }
                 IconSettings {

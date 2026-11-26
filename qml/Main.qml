@@ -41,7 +41,7 @@ Item {
     }
     property int leadingCount: 0
     property int trailingCount: 0
-    readonly property bool split: extended && alignmentFactor === 0.5 && !!dockOptions.splitExtendedDock
+    readonly property bool split: extended && !!dockOptions.splitExtendedDock
     readonly property bool extended: dockOptions.extendDock ?? false
     readonly property real outputLength: vertical ? outputSize.height : outputSize.width
     // Keep one icon accessible when moving a profile to a much smaller output.
@@ -540,7 +540,7 @@ Item {
         onRightWidthChanged: root.queueGeometry()
         onCenterSpanChanged: root.queueGeometry()
         readonly property real centerOffset: Math.max(0, Math.min(viewport.width - centerSpan,
-            (width - centerSpan) / 2 - leftInset))
+            (width - centerSpan) * root.alignmentFactor - leftInset))
         Flickable {
             id: viewport
             objectName: "taskViewport"
@@ -933,7 +933,8 @@ Item {
             Rectangle {
                 required property int index
                 objectName: "zoneSeparator" + index
-                visible: axisFrame.centerWidth > 0 && (index === 0
+                visible: axisFrame.centerWidth > 0 && (root.alignmentFactor === 0.5 || axisFrame.centerSpan >= viewport.width)
+                    && (index === 0
                     ? root.leadingCount > 0 && axisFrame.centerOffset <= 0
                     : root.trailingCount > 0 && axisFrame.centerOffset + axisFrame.centerSpan >= viewport.width)
                 width: Math.max(1, root.fitScale)

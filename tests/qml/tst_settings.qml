@@ -221,8 +221,10 @@ TestCase {
         findChild(window, "dockAlignmentControl").currentIndex = 1;
         verify(split.visible);
         split.checked = true;
-        findChild(window, "dockAlignmentControl").currentIndex = 0;
-        verify(!split.visible);
+        for (const alignment of [0, 2]) {
+            findChild(window, "dockAlignmentControl").currentIndex = alignment;
+            verify(split.visible && split.checked);
+        }
         findChild(window, "dockAlignmentControl").currentIndex = 1;
         buttons.applied();
         compare(dockSettings.values.gradientMidpoint, 72);

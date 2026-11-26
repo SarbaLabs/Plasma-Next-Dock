@@ -1068,5 +1068,5 @@ msgstr "Gauche et droite"
 msgid "Top and bottom"
 msgstr "Haut et bas"
 
-msgid "Keep modules at the ends and pinned applications in the center"
-msgstr "Placer les modules aux extrémités et les applications épinglées au centre"
+msgid "Keep modules at the ends"
+msgstr "Placer les modules aux extrémités"

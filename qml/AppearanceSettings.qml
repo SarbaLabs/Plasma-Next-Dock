@@ -6,7 +6,6 @@ import org.kde.kirigami as Kirigami
 
 Controls.ScrollView {
     id: page
-    required property bool centeredAlignment
     required property QtObject paletteSource
     readonly property bool freeLayout: layoutMode.currentIndex === 1
 
@@ -184,8 +183,8 @@ Controls.ScrollView {
             Controls.CheckBox {
                 id: splitDock
                 objectName: "splitExtendedDockControl"
-                visible: extendDock.checked && page.centeredAlignment
-                text: i18n("Keep modules at the ends and pinned applications in the center")
+                visible: extendDock.checked
+                text: i18n("Keep modules at the ends")
             }
             Kirigami.Separator { Kirigami.FormData.isSection: true; Kirigami.FormData.label: i18n("Corners and border") }
             RowLayout {
