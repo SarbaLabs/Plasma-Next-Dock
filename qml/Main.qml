@@ -282,7 +282,11 @@ Item {
     property color applicationColor: Kirigami.Theme.highlightColor
     readonly property real barThickness: layoutMetrics.thickness
     readonly property real iconEdge: layoutMetrics.iconEdge
-    readonly property int reservedThickness: Math.ceil(Math.max(edgeSpacing + barThickness, layoutCount ? iconEdge + base : 0) + (dockOptions.borderWidth ?? 1))
+    // The exterior stroke belongs to the capsule only. A hidden stroke or
+    // a protruding icon must not leave an empty band in the maximized area.
+    readonly property real visibleBorderWidth: bar.borderOpacity > 0 && bar.customBorderColor.a > 0 ? bar.customBorderWidth : 0
+    readonly property int reservedThickness: Math.ceil(Math.max(edgeSpacing + barThickness + visibleBorderWidth,
+        layoutCount ? iconEdge + base : 0))
     readonly property real alignmentFactor: (dockOptions.dockAlignment ?? 1) / 2
     readonly property real barStart: startPad + endClearance + (length - barLength) * alignmentFactor
     // Row updates its implicit width during polish. Size the painted path from

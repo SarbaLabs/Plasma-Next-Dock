@@ -35,6 +35,26 @@ TestCase {
             testEnvironment.setEdge(0);
         }
     }
+    function test_reservationEndsAtVisibleContent() {
+        const root = dock.item;
+        const changes = {edge: 0, extendDock: true, spacing: 0, freeLayout: false,
+            borderWidth: 1, borderOpacity: 0, borderRole: "custom", borderColor: "#222222",
+            capsuleThickness: 4, iconOffset: 16};
+        const saved = {};
+        for (const key of Object.keys(changes)) saved[key] = dockOptions[key];
+        try {
+            testEnvironment.behaviorOptions(changes);
+            for (let edge = 0; edge < 4; ++edge) {
+                testEnvironment.behaviorOptions({edge: edge, freeLayout: false, borderOpacity: 0});
+                compare(root.reservedThickness, Math.ceil(root.barThickness));
+                testEnvironment.behaviorOptions({borderOpacity: 1});
+                compare(root.reservedThickness, Math.ceil(root.barThickness + 1));
+                testEnvironment.behaviorOptions({freeLayout: true});
+                verify(root.iconEdge + root.base > root.barThickness + 1);
+                compare(root.reservedThickness, Math.ceil(root.iconEdge + root.base));
+            }
+        } finally { testEnvironment.behaviorOptions(saved); }
+    }
     function test_initialCanvasIncludesTasks() {
         // Inspect the component before queued row-count notifications can run.
         dock.active = false;

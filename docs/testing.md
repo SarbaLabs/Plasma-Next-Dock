@@ -916,6 +916,11 @@ with two adjacent 960 × 640 outputs, a real fullscreen window triggered hiding
 on the dock's output. Moving it fullscreen to the right output disarmed the
 auto-hide edge while the window remained open.
 
+In Always visible mode on a 960 × 640 KWin output with zero gap, a maximized
+window measured 580 px high next to a 60 px capsule with a transparent border,
+and 579 px with a visible 1 px border. With a 4 px free capsule and 40 px
+icons offset by 16 px, KWin reserved 56 px and the window measured 584 px.
+
 ## Hover glow controls
 
 Compared fixed radii of 116 and 24 logical pixels over Firefox on the live KDE
