@@ -179,7 +179,7 @@ void DockHost::position()
     const int margin = m_view.rootObject() ? m_view.rootObject()->property("surfaceMargin").toInt() : 0;
     const auto margins = DockGeometry::alignmentMargins(output.size(), m_view.size(), m_edge, alignment, margin);
     const QRect rect = DockGeometry::surface(output.marginsRemoved(margins), m_view.size(), m_edge, alignment);
-    m_controller.setSurfaceOrigin(rect.topLeft());
+    m_controller.setSurfacePlacement(rect.topLeft(), output);
     if (m_surfacePosition) {
         using Layer = LayerShellQt::Window;
         auto *layer = Layer::get(&m_view);

@@ -907,7 +907,14 @@ first icon at 2× zoom. A bottom-right dock was also checked with a 96 px margin
 On a 1920 px CachyOS Wayland output, an extended top dock kept 48 px margins
 at both ends while the first left-aligned launcher magnified. The QML layout
 test covers all four edges and all three content alignments, including
-edge-to-edge magnification with zero lateral margin.
+edge-to-edge magnification with zero lateral margin. The dodge regression test
+places a fullscreen-sized rectangle on each adjacent side of an output with
+negative global coordinates. Edge contact keeps the dock visible. Moving the
+window one logical pixel onto the dock triggers dodge in both layout modes,
+with square, rounded and inverted corners. In an isolated CachyOS KWin session
+with two adjacent 960 × 640 outputs, a real fullscreen window triggered hiding
+on the dock's output. Moving it fullscreen to the right output disarmed the
+auto-hide edge while the window remained open.
 
 ## Hover glow controls
 

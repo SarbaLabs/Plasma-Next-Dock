@@ -92,10 +92,11 @@ void DockController::setModel(QAbstractItemModel *model)
     Q_EMIT modelChanged();
     scheduleEvaluation();
 }
-void DockController::setSurfaceOrigin(QPoint origin)
+void DockController::setSurfacePlacement(QPoint origin, QRect output)
 {
-    if (origin == m_origin) return;
+    if (origin == m_origin && output == m_output) return;
     m_origin = origin;
+    m_output = output;
     scheduleEvaluation();
 }
 QVariantMap DockController::capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const
@@ -177,11 +178,16 @@ bool DockController::overlapsVisibleWindow() const
 
     const auto bounds = m_dodgeBounds.translated(m_origin);
     const auto capsule = bounds.isEmpty() ? m_shape.translated(m_origin) : QPainterPath{};
+    // A path intersection includes boundary contact. Require positive area
+    // on this output first, including when inverted corners extend past it.
+    QRectF footprint = bounds.isEmpty() ? capsule.boundingRect() : bounds;
+    if (!m_output.isEmpty()) footprint = footprint.intersected(m_output);
     for (int row = 0; row < m_model->rowCount(); ++row) {
         const auto index = m_model->index(row, 0);
         if (!index.data(windowRole).toBool() || index.data(minimizedRole).toBool()) continue;
         const QRectF window = index.data(geometryRole).toRectF();
-        if (!window.isEmpty() && (bounds.isEmpty() ? capsule.intersects(window) : bounds.intersects(window))) return true;
+        const QRectF overlap = window.intersected(footprint);
+        if (!overlap.isEmpty() && (!bounds.isEmpty() || capsule.intersects(overlap))) return true;
     }
     return false;
 }

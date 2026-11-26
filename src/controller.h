@@ -30,7 +30,7 @@ public:
     bool edgeAvailable() const { return m_edgeAvailable; }
     void setEdgeAvailable(bool available);
     void setVisibility(DockGeometry::Visibility mode);
-    void setSurfaceOrigin(QPoint origin);
+    void setSurfacePlacement(QPoint origin, QRect output);
     Q_INVOKABLE void setGeometry(QRectF capsule, qreal radius, QVariantList icons, int edge = DockGeometry::Bottom, const QList<qreal> &corners = {}, QRectF interactionBounds = {}, QRectF dodgeBounds = {});
     Q_INVOKABLE QVariantMap capsuleDrawing(QSizeF size, const QList<qreal> &corners, bool vertical, qreal border) const;
     Q_INVOKABLE void setHovered(bool hovered);
@@ -65,6 +65,7 @@ private:
     QList<QMetaObject::Connection> m_connections;
     QTimer m_leaveTimer;
     QPoint m_origin;
+    QRectF m_output;
     QPainterPath m_shape;
     QRectF m_dodgeBounds; // Empty selects the centered capsule path.
     DockGeometry::Visibility m_visibility = DockGeometry::DodgeWindows;
