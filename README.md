@@ -231,6 +231,9 @@ its margin; centered docks ignore it.
 
 ## Build and install
 
+For the Fedora KDE 45 binary preview, see the
+[Fedora RPM installation and build instructions](packaging/fedora/README.md).
+
 Run `./install.sh` as your desktop user. The installer reads `ID` and
 `ID_LIKE` from os-release to select the distribution's package family. Before
 building, it checks the native package database. If dependencies are missing,

@@ -1067,6 +1067,17 @@ loaded after a guest restart, and the installed desktop entry launched the dock.
 The maintainer installed the dock and confirmed that it works on the Kubuntu
 26.10 desktop. The Ubuntu 26.10 container also passed the build and test suite.
 
+## Fedora 45 RPM preview (2026-11-26)
+
+The Fedora 45 x86_64 reference VM built the source RPM and six runtime RPMs
+using Qt 6.11.2 and Plasma 6.8.1. All 19 CTest entries passed. In a temporary
+snapshot of that system, DNF installed the packages, upgraded a lower-version
+Folders fixture, removed and reinstalled Folders independently, and removed
+the full set. With an isolated home, the packaged executable discovered and
+loaded each of the five modules. Its demo smoke test submitted a buffer to
+the running Wayland compositor. The RPM digests and transferred SHA-256 hashes
+were verified. A fresh Fedora KDE installation remains a separate manual check.
+
 ## Fedora KDE 45 Plasma Wayland
 
 Tested on Fedora 45 x86_64 with Plasma and KWin 6.8.1, Qt 6.11.2 and Mesa

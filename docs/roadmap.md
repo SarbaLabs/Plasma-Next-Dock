@@ -236,6 +236,9 @@ shared sources. Test installation, launch, upgrade and removal for each target.
 The dock uses private Qt GUI headers, so verify each binary against the Qt
 build shipped on its target.
 
+The [Fedora 45 packaging preview](../packaging/fedora/README.md) builds the dock
+and each official module as a separate RPM.
+
 For Bazzite, prototype a lightweight AppImage using the host KDE libraries.
 Validate library compatibility and Wayland integration on Bazzite before
 publishing it. The tested Distrobox procedure remains available. Evaluate
