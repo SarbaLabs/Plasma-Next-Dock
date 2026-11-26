@@ -3,7 +3,7 @@
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DBUILD_TESTING=OFF
+	dh_auto_configure -- -DBUILD_TESTING=$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),OFF,ON)
 
 override_dh_auto_install:
 	dh_auto_install --destdir=debian/tmp
