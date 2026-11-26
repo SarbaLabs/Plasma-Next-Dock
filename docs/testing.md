@@ -1523,3 +1523,18 @@ The split layout also exercises promoting a running task to a pin while its
 module rows move or are replaced. In a CachyOS KWin session, dragging Info
 Center from the unpinned module between Firefox and Konsole kept all six pins
 visible with center and end alignment. The outer modules remained accessible.
+
+### Debian 13 native package preview (2026-11-26)
+
+Debian 13.7 amd64, Qt 6.8.2: the native source package and six binary
+packages built with debhelper. All 19 CTest entries passed. The dock's
+generated dependencies include the private Qt base and Wayland client ABIs.
+
+APT installed the packages in a disposable copy-on-write view of the test
+VM. With a fresh XDG home and only system module data, the packaged executable
+listed and loaded all five official modules and ran the offscreen demo smoke
+test. APT upgraded the Folders module from a fixture with a lower package
+version, removed and reinstalled it independently, and purged all six packages.
+This exercise used the reference VM's existing runtime dependencies.
+A fresh-system install and a graphical Wayland session using the packaged
+executable remain release checks.
