@@ -1399,13 +1399,16 @@ before release without saving a pin.
 
 On CachyOS Wayland the USB provider was exercised with a simulated mounted
 volume. The Trash icon changed to eject during the drag and reverted on
-release. After unmount, dragging the same volume no longer offered eject.
+release.
 Dragging a pinned application showed the unpin icon instead.
 
 With two simulated USB partitions on a live CachyOS Wayland dock, the mounted
 partition showed a solid green dot and the unmounted partition showed a red
 dot with a white minus. Dropping the mounted partition on Trash changed only
-its dot, without restarting the dock.
+its dot, without restarting the dock. Dragging the already unmounted sibling
+first showed a red cross on the eject icon and left both volumes in place.
+With both partitions unmounted, a second drag dispatched drive removal and
+both simulated partitions disappeared.
 
 ### Applications menu scrolling and subcategories
 

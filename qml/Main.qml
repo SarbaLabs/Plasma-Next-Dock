@@ -94,6 +94,7 @@ Item {
     readonly property bool dragging: dragIndex >= 0
     // Use the live row for capabilities: a volume can become busy or disappear
     // between the initial grab and release. Never retarget a replacement row.
+    readonly property bool draggingUsbVolume: dragging && draggedModuleEntry?.moduleId === "org.sarbalabs.usb"
     readonly property string trashAction: {
         if (!dragging || !externalDrop.hasTrash) return "";
         const slot = repeater.itemAt(dragIndex);
@@ -101,6 +102,7 @@ Item {
             return slot?.pinned && slot.launchKey === draggedLauncher ? "unpin" : "";
         const entry = slot?.entry;
         return entry?.id === draggedModuleEntry.id && entry.moduleId === draggedModuleEntry.moduleId
+            && entry.trashDropAction === draggedModuleEntry.trashDropAction
             ? moduleTrashAction(entry) : "";
     }
     function moduleTrashAction(entry) {
@@ -740,11 +742,32 @@ Item {
                             shadowEnabled: root.iconShadowEnabled
                             highlighted: icon.active || (!!root.trashAction && root.trashDropRow === slot.index)
                             iconSource: {
-                                if (slot.entry?.moduleId === "org.sarbalabs.trash" && root.trashAction)
-                                    return root.trashAction === "unmount" ? "media-eject" : "window-unpin";
+                                if (slot.entry?.moduleId === "org.sarbalabs.trash") {
+                                    if (root.draggingUsbVolume) return "media-eject";
+                                    if (root.trashAction) return "window-unpin";
+                                }
                                 return slot.entry?.icon || slot.model.decoration;
                             }
                             paletteSource: dockPalette
+                        }
+                        Loader {
+                            active: slot.entry?.moduleId === "org.sarbalabs.trash" && root.draggingUsbVolume && !root.trashAction
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            width: parent.width * 0.52
+                            height: width
+                            sourceComponent: Rectangle {
+                                color: "#c83232"
+                                radius: width / 2
+                                border.color: "white"
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "×"
+                                    font.bold: true
+                                    font.pixelSize: parent.height * 0.85
+                                    color: "white"
+                                }
+                            }
                         }
                         PlasmaCore.ToolTipArea {
                             id: taskTip
@@ -877,7 +900,9 @@ Item {
                     return;
                 }
                 const hasTrash = externalDrop.hasTrash;
-                root.draggedModuleEntry = slot?.entry?.reorderable || (hasTrash && root.moduleTrashAction(slot?.entry))
+                // USB volumes can also be dragged to show why the target is unavailable.
+                root.draggedModuleEntry = slot?.entry?.reorderable || (hasTrash
+                    && (slot?.entry?.moduleId === "org.sarbalabs.usb" || root.moduleTrashAction(slot?.entry)))
                     ? slot.entry : null;
                 root.dragIndex = root.draggedModuleEntry || (slot?.pinned && (!dockOptions.taskSort || hasTrash)) ? row : -1;
                 root.draggedLauncher = slot?.launchKey ?? "";
