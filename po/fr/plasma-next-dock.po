@@ -1052,3 +1052,9 @@ msgstr "Vitesse de défilement :"
 
 msgid "%1×"
 msgstr "%1×"
+
+msgid "%1 — mounted"
+msgstr "%1 — monté"
+
+msgid "%1 — unmounted"
+msgstr "%1 — non monté"

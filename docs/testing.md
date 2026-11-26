@@ -1402,6 +1402,11 @@ volume. The Trash icon changed to eject during the drag and reverted on
 release. After unmount, dragging the same volume no longer offered eject.
 Dragging a pinned application showed the unpin icon instead.
 
+With two simulated USB partitions on a live CachyOS Wayland dock, the mounted
+partition showed a solid green dot and the unmounted partition showed a red
+dot with a white minus. Dropping the mounted partition on Trash changed only
+its dot, without restarting the dock.
+
 ### Applications menu scrolling and subcategories
 
 On CachyOS Wayland a disposable menu contained Internet → Navigateurs.

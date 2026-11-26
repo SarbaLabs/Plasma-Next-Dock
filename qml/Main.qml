@@ -761,7 +761,7 @@ Item {
                             objectName: "taskTip" + slot.index
                             anchors.fill: parent
                             location: root.tooltipLocation
-                            mainText: slot.entry?.name || slot.model.AppName || slot.model.display || ""
+                            mainText: slot.entry?.tooltip || slot.entry?.name || slot.model.AppName || slot.model.display || ""
                             textFormat: Text.PlainText
                             mainItem: previewPanel
                             interactive: !slot.entry && (!!slot.model.IsWindow || !!slot.model.IsGroupParent || dockOptions.showMediaControls !== false)
@@ -797,13 +797,28 @@ Item {
                         }
                     }
                     Rectangle {
-                        visible: (dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0) && (!!slot.model.IsWindow || !!slot.model.IsGroupParent)
-                        width: 4 * root.fitScale; height: width; radius: width / 2
+                        // Each USB partition reports its own state, independently of the task indicator style.
+                        readonly property bool volume: typeof slot.entry?.mounted === "boolean"
+                        visible: volume || ((dockOptions.indicatorMode === undefined || dockOptions.indicatorMode === 0)
+                            && (!!slot.model.IsWindow || !!slot.model.IsGroupParent))
+                        width: (volume ? 9 : 4) * root.fitScale; height: width; radius: width / 2
                         x: (slot.size - width) / 2
                         objectName: "macIndicator" + slot.index
                         readonly property real dotInset: root.edgeSpacing + (dockOptions.freeLayout ? 0 : 4 * root.fitScale)
                         y: (dockOptions.edge === 1 || dockOptions.edge === 3) ? dotInset : slot.height - dotInset - height
-                        color: slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+                        color: volume ? (slot.entry.mounted ? "#39bb69" : "#e65354")
+                                      : slot.model.IsActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+                        border.width: volume ? 1 : 0
+                        border.color: "#77202020"
+                        // A horizontal mark also identifies the unmounted state without relying on hue.
+                        Loader {
+                            active: parent.volume && !slot.entry.mounted
+                            anchors.centerIn: parent
+                            width: parent.width * 0.55
+                            height: Math.max(1, parent.height * 0.18)
+                            rotation: root.vertical ? -90 : 0
+                            sourceComponent: Rectangle { color: "white"; radius: height / 2 }
+                        }
                     }
                 }
             }

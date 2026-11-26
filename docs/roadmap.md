@@ -193,7 +193,7 @@ Use resting sizes for reservation so zoom and bounce never move desktop windows.
 - **Trash** opens `trash:/` and uses KIO for asynchronous drops and emptying,
   respecting KDE confirmations and errors. Its KIO directory lister tracks content changes for
   `user-trash` and `user-trash-full`.
-- **USB storage** uses Solid events for insertion, state changes and removal.
+- **USB storage** uses Solid events for insertion, state changes and removal. Each partition shows its mount state in the indicator area.
   Each visible volume offers open, mount, unmount and hardware-supported safe
   removal. See the [USB module checks](testing.md#usb-storage-module).
 - **KDE launcher, optional** investigates real Kickoff (default), Kicker and
