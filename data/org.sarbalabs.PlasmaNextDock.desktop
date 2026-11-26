@@ -1,7 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=Plasma Next Dock
-Comment=Experimental standalone dock for KDE Plasma Wayland
+Comment=Customizable dock with modules for KDE Plasma on Wayland
+Comment[fr]=Dock personnalisable avec modules pour KDE Plasma sous Wayland
 Exec=plasma-next-dock
 Icon=org.sarbalabs.PlasmaNextDock
 Terminal=false
