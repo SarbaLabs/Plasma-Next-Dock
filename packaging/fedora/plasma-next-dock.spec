@@ -1,3 +1,6 @@
+# The native QML plugins belong to individual modules, outside the public ABI.
+%global __provides_exclude_from ^%{_libdir}/plasma-next-dock/.*$
+
 Name:           plasma-next-dock
 Version:        0.9~preview1
 Release:        1%{?dist}
@@ -112,7 +115,7 @@ for module in folders trash usb appmenu; do
     install -d "%{buildroot}$dest"
     for plugin in "%{buildroot}$native"/*.so; do
         mv "$plugin" "%{buildroot}$dest/"
-        ln -s "$dest/${plugin##*/}" "$plugin"
+        ln -sr "%{buildroot}$dest/${plugin##*/}" "$plugin"
     done
 done
 %find_lang %{name}
@@ -150,3 +153,7 @@ done
 %files module-appmenu
 %{_datadir}/%{name}/modules/org.sarbalabs.appmenu/
 %{_libdir}/%{name}/appmenu/
+
+%changelog
+* Thu Nov 26 2026 SarbaLabs <SarbaLabs@users.noreply.github.com> - 0.9~preview1-1
+- Initial Fedora 45 packaging preview.
