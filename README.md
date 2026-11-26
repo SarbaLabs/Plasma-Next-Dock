@@ -246,6 +246,31 @@ The source, CMake build and user installation are shared
 across distributions. On small VMs, use `CMAKE_BUILD_PARALLEL_LEVEL=2 ./install.sh`
 to limit peak memory use.
 
+### Debian 13 package preview
+
+The Debian packaging builds the dock and its five official modules separately.
+From a directory containing the six Debian 13 packages for your architecture,
+install the full set with:
+
+```sh
+sudo apt install ./plasma-next-dock_*.deb ./plasma-next-dock-module-*.deb
+```
+
+The packaged executable is `/usr/bin/plasma-next-dock`. An earlier installation
+under `~/.local` can take precedence in the applications menu and module catalog.
+To remove a single module, use its package name, for example
+`sudo apt remove plasma-next-dock-module-folders`.
+
+To build the source and binary packages in a clean Debian 13 checkout:
+
+```sh
+sudo apt install build-essential dpkg-dev
+sudo apt build-dep ./
+DEB_BUILD_OPTIONS="parallel=2 noautodbgsym" dpkg-buildpackage -us -uc
+```
+
+The build writes the packages and source archive in the parent directory.
+
 ### Dependencies by distribution family
 
 All builds need a C++20 toolchain, CMake 3.22 or newer, pkg-config and gettext.

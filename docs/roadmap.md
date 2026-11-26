@@ -12,7 +12,7 @@ roadmap has been approved and merged.
 | 2. Source compatibility | Validated | Keep a common source tree through the Debian baseline |
 | 3. Code consolidation | Accepted and merged | [Cleanup PR #39](https://github.com/SarbaLabs/Plasma-Next-Dock/pull/39) |
 | 4. Modular v1.0 | Planned | Deliver the reviewed sequence below |
-| 5. Packaging | Planned | Validate artifacts and independently updatable modules |
+| 5. Packaging | In progress (Debian 13 preview) | Validate artifacts and independently updatable modules |
 | 6. First release | Planned | Publish documentation, compatibility and verified artifacts |
 
 ## 1. Functional development
